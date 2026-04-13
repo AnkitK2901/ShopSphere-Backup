@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="8400c94e-1704-47a4-a83e-5656b964a7b1" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/logistics-service/src/main/java/com/shopsphere/logistics/LogisticsServiceApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/logistics-service/src/main/java/com/shopsphere/logistics/LogisticsServiceApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/shopsphere/order/DTO/OrderResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/shopsphere/order/DTO/OrderResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/shopsphere/order/Entity/ProductEntity.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/shopsphere/order/Service/OrderServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/shopsphere/order/Service/OrderServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order-service/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/resources/application.properties" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Interface" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 0
+}</component>
+  <component name="ProjectId" id="3C3oDLYuV3wtc65hdfwicEeKDRI" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.AuthServer Application.executor&quot;: &quot;Run&quot;,
+    &quot;Application.CatalogService Application.executor&quot;: &quot;Run&quot;,
+    &quot;Application.EurekaServer Application.executor&quot;: &quot;Run&quot;,
+    &quot;Application.LogisticsService Application.executor&quot;: &quot;Run&quot;,
+    &quot;Application.LogisticsServiceApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Application.OrderService Application.executor&quot;: &quot;Run&quot;,
+    &quot;Application.OrderServiceApplication.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;Order__Service__Branch&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RunManager" selected="Application.LogisticsService Application">
+    <configuration name="AuthService Application" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="com.shopsphere.auth_service.AuthServiceApplication" />
+      <module name="auth-service" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="CatalogService Application" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="com.shopsphere.catalog.CatalogServiceApplication" />
+      <module name="catalog-service" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="EurekaService Application" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="com.shopsphere.eureka_server.EurekaServerApplication" />
+      <module name="infrastructure" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="LogisticsService Application" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="com.shopsphere.logistics.LogisticsServiceApplication" />
+      <module name="logistics-service" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="OrderService Application" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="com.shopsphere.order.OrderServiceApplication" />
+      <module name="order-service" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="ShopSphere-Backend" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="ShopSphere-Backend" />
+      <option name="filePath" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Application.AuthService Application" />
+      <item itemvalue="Application.CatalogService Application" />
+      <item itemvalue="Application.EurekaService Application" />
+      <item itemvalue="Application.LogisticsService Application" />
+      <item itemvalue="Application.OrderService Application" />
+    </list>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="8400c94e-1704-47a4-a83e-5656b964a7b1" name="Changes" comment="" />
+      <created>1775623494543</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1775623494543</updated>
+    </task>
+    <servers />
+  </component>
+</project>

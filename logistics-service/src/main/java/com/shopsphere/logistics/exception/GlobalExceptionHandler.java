@@ -1,6 +1,4 @@
 package com.shopsphere.logistics.exception;
-
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -17,5 +15,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ShipmentAlreadyExistsException.class)
     public ResponseEntity<String> handleConflict(ShipmentAlreadyExistsException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(InvalidShipmentStatusException .class)
+    public ResponseEntity<String> handleInvalidStatus(InvalidShipmentStatusException  ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 }

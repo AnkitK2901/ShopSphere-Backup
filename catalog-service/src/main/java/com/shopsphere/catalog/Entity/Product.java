@@ -18,7 +18,7 @@ public class Product {
     @Transient // Real-time calculated price (not stored in DB)
     private Double totalPrice = 0.0;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "product_selected_options",
             joinColumns = @JoinColumn(name = "product_id"),

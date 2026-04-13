@@ -1,11 +1,12 @@
 package com.shopsphere.catalog.Service;
-
 import com.shopsphere.catalog.Entity.CustomOption;
-
 import java.util.List;
 
 public interface CustomOptionService {
-    public CustomOption saveOption(CustomOption option);
+    CustomOption saveOption(CustomOption option);
+    List<CustomOption> getAllOptions();
+    CustomOption getOptionById(Long id);
+    void deleteOption(Long id);
 
-    public List<CustomOption> getAllOptions();
 }
+

@@ -23,6 +23,9 @@ public class OrderServiceImpl implements OrderService{
     private ProductClient productClient;
 
     @Autowired
+    private LogisticsClient logisticsClient;
+
+    @Autowired
     private OrderRepository orderRepository;
 
     @Override
@@ -83,8 +86,17 @@ public class OrderServiceImpl implements OrderService{
 
         order.setStatus(newStatus);
         order.setUpdatedAt(LocalDateTime.now());
+        OrderEntity savedOrder = orderRepository.save(order);
 
-        return mapToResponse(orderRepository.save(order));
+        if (newStatus == OrderStatus.SHIPPED) {
+            try {
+                logisticsClient.createShipment(String.valueOf(orderId));
+            } catch (Exception e) {
+                System.err.println("Could not create shipment for Order " + orderId + ": " + e.getMessage());
+            }
+        }
+
+        return mapToResponse(savedOrder);
     }
 
     @Override
@@ -132,7 +144,7 @@ public class OrderServiceImpl implements OrderService{
         }
     }
 
-    private OrderResponse mapToResponse(OrderEntity orderEntity){
+    private OrderResponse mapToResponse(OrderEntity orderEntity) {
         OrderResponse res = new OrderResponse();
         res.setOrderId(orderEntity.getOrderId());
         res.setCustomerId(orderEntity.getCustomerId());
@@ -142,6 +154,18 @@ public class OrderServiceImpl implements OrderService{
         res.setTotalOrderAmount(orderEntity.getTotalAmount());
         res.setCreatedAt(orderEntity.getCreatedAt());
         res.setUpdatedAt(orderEntity.getUpdatedAt());
+
+        if (orderEntity.getStatus() == OrderStatus.SHIPPED || orderEntity.getStatus() == OrderStatus.DELIVERED) {
+            try {
+                ShipmentResponse shipment = logisticsClient.getByOrderId(String.valueOf(orderEntity.getOrderId()));
+                if (shipment != null) {
+                    res.setTrackingUrl(shipment.getTrackingUrl());
+                    res.setCarrier(shipment.getCarrier());
+                }
+            } catch (Exception e) {
+                res.setTrackingUrl("Tracking information currently unavailable");
+            }
+        }
         return res;
     }
 }

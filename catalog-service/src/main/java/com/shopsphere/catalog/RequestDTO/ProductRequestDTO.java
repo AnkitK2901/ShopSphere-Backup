@@ -1,14 +1,22 @@
 package com.shopsphere.catalog.RequestDTO;
-
+import jakarta.validation.constraints.*;
 import java.util.List;
 
 public class ProductRequestDTO {
+    @NotBlank(message = "Name is required")
     private String name;
+
+    @NotNull(message = "Price is required")
+    @Positive(message = "Price must be positive")
     private Double basePrice;
-    private String previewImage; // Added this back
+
+    private String previewImage;
+
     private List<Long> selectedOptionIds;
 
-    // Getters and Setters
+
+
+// Getters and Setters
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
     public Double getBasePrice() { return basePrice; }

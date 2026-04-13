@@ -5,7 +5,6 @@ import com.shopsphere.logistics.service.ShipmentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -36,6 +35,14 @@ public class ShipmentController {
     @GetMapping("/order/{orderId}")
     public ResponseEntity<Shipment> getByOrderId(@PathVariable String orderId) {
         Shipment shipment = shipmentService.getShipmentByOrderId(orderId);
+        return ResponseEntity.ok(shipment);
+    }
+    @PatchMapping("/order/{orderId}/{status}")
+    public ResponseEntity<Shipment> updateStatusByOrderId(
+            @PathVariable String orderId,
+            @PathVariable String status) {
+
+        Shipment shipment = shipmentService.updateShipmentStatusByOrderId(orderId, status);
         return ResponseEntity.ok(shipment);
     }
 }

@@ -1,7 +1,9 @@
 package com.shopsphere.analytics_service.Service.Impl;
 
-import com.shopsphere.analytics_service.Client.OrderServiceClient;
-import com.shopsphere.analytics_service.Client.OrderServiceClient.OrderResponse;
+import com.shopsphere.analytics_service.Client.AuthFeignClient;
+import com.shopsphere.analytics_service.Client.CatalogFeignClient;
+import com.shopsphere.analytics_service.Client.OrderFeignClient;
+import com.shopsphere.analytics_service.Client.OrderFeignClient.OrderResponse;
 import com.shopsphere.analytics_service.DTO.EngagementReportRequest;
 import com.shopsphere.analytics_service.DTO.EngagementReportResponse;
 import com.shopsphere.analytics_service.Entity.BehaviorMetricsEntity;
@@ -24,7 +26,15 @@ public class EngagementReportServiceImpl implements EngagementReportService {
     private EngagementReportRepository engagementReportRepository;
 
     @Autowired
-    private OrderServiceClient orderServiceClient;
+    private OrderFeignClient orderFeignClient;
+
+    @Autowired
+    private AuthFeignClient authFeignClient;
+
+    @Autowired
+    private CatalogFeignClient catalogFeignClient;
+
+    // ── Read ──────────────────────────────────────────────────────────────────
 
     @Override
     public List<EngagementReportResponse> getAllReports() {
@@ -50,13 +60,19 @@ public class EngagementReportServiceImpl implements EngagementReportService {
         return reports.stream().map(this::mapToResponse).collect(Collectors.toList());
     }
 
+    // ── Write ─────────────────────────────────────────────────────────────────
+
     @Override
     public EngagementReportResponse createReport(EngagementReportRequest request) {
-        if (!orderServiceClient.customerExists(request.getCustomerId())) {
-            throw new ResourceNotFoundException("Customer not found in Order Service: " + request.getCustomerId());
+        // Validate customer exists via auth-service
+        try {
+            authFeignClient.getUserById(request.getCustomerId());
+        } catch (Exception e) {
+            throw new ResourceNotFoundException(
+                    "Customer not found in Auth Service: " + request.getCustomerId());
         }
 
-        List<OrderResponse> orders = orderServiceClient.getOrdersByCustomerId(request.getCustomerId());
+        List<OrderResponse> orders = orderFeignClient.getOrdersByCustomerId(request.getCustomerId());
 
         EngagementReportEntity report = new EngagementReportEntity();
         report.setCustomerId(request.getCustomerId());
@@ -71,7 +87,7 @@ public class EngagementReportServiceImpl implements EngagementReportService {
         EngagementReportEntity report = engagementReportRepository.findById(reportId)
                 .orElseThrow(() -> new ResourceNotFoundException("Report not found with id: " + reportId));
 
-        List<OrderResponse> orders = orderServiceClient.getOrdersByCustomerId(report.getCustomerId());
+        List<OrderResponse> orders = orderFeignClient.getOrdersByCustomerId(report.getCustomerId());
 
         report.setBehaviorMetrics(buildBehaviorMetrics(request, orders));
         report.setCampaignResponse(buildCampaignResponse(request));
@@ -86,9 +102,10 @@ public class EngagementReportServiceImpl implements EngagementReportService {
         engagementReportRepository.delete(report);
     }
 
-    // ----------- Private Helpers -----------
+    // ── Private Helpers ───────────────────────────────────────────────────────
 
-    private BehaviorMetricsEntity buildBehaviorMetrics(EngagementReportRequest request, List<OrderResponse> orders) {
+    private BehaviorMetricsEntity buildBehaviorMetrics(EngagementReportRequest request,
+                                                       List<OrderResponse> orders) {
         BehaviorMetricsEntity metrics = new BehaviorMetricsEntity();
 
         int totalOrders = orders.size();
@@ -96,28 +113,38 @@ public class EngagementReportServiceImpl implements EngagementReportService {
         metrics.setRepeatPurchaseCount(totalOrders > 1 ? totalOrders - 1 : 0);
         metrics.setAbandonedCartCount(request.getAbandonedCartCount());
 
+        // Favourite product — find most frequently ordered productId, then resolve
+        // its human-readable name from catalog-service
         orders.stream()
                 .collect(Collectors.groupingBy(OrderResponse::productId, Collectors.counting()))
                 .entrySet().stream()
                 .max(Map.Entry.comparingByValue())
-                .ifPresent(e -> metrics.setFavouriteProduct(
-                        request.getFavouriteProduct() != null
-                                ? request.getFavouriteProduct()
-                                : "Product-" + e.getKey()
-                ));
+                .ifPresent(e -> {
+                    if (request.getFavouriteProduct() != null) {
+                        metrics.setFavouriteProduct(request.getFavouriteProduct());
+                    } else {
+                        try {
+                            CatalogFeignClient.ProductResponse product =
+                                    catalogFeignClient.getProductById(e.getKey());
+                            metrics.setFavouriteProduct(
+                                    product != null ? product.name() : "Product-" + e.getKey()
+                            );
+                        } catch (Exception ex) {
+                            // catalog-service unreachable — degrade gracefully
+                            metrics.setFavouriteProduct("Product-" + e.getKey());
+                        }
+                    }
+                });
 
-        if (totalOrders > 0) {
-            double totalValue = orders.stream()
-                    .mapToDouble(order -> {
-                        OrderServiceClient.ProductResponse product =
-                                orderServiceClient.getProductById(order.productId());
-                        return product != null ? product.basePrice() : 0.0;
-                    })
-                    .sum();
-            metrics.setAverageOrderValue(totalValue / totalOrders);
-        } else {
-            metrics.setAverageOrderValue(0.0);
-        }
+        // Average order value — uses totalOrderAmount already stored in the order.
+        // No extra catalog-service call needed for this.
+        double avgValue = totalOrders > 0
+                ? orders.stream()
+                .mapToDouble(o -> o.totalOrderAmount() != null ? o.totalOrderAmount() : 0.0)
+                .average()
+                .orElse(0.0)
+                : 0.0;
+        metrics.setAverageOrderValue(avgValue);
 
         return metrics;
     }

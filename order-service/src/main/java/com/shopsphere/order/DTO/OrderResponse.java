@@ -22,6 +22,10 @@ public class OrderResponse {
 
     private LocalDateTime updatedAt;
 
+    private String trackingUrl;
+
+    private String carrier;
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -84,5 +88,21 @@ public class OrderResponse {
 
     public void setUnitPriceAtPurchase(Double unitPriceAtPurchase) {
         this.unitPriceAtPurchase = unitPriceAtPurchase;
+    }
+
+    public String getCarrier() {
+        return carrier;
+    }
+
+    public void setCarrier(String carrier) {
+        this.carrier = carrier;
+    }
+
+    public String getTrackingUrl() {
+        return trackingUrl;
+    }
+
+    public void setTrackingUrl(String trackingUrl) {
+        this.trackingUrl = trackingUrl;
     }
 }
