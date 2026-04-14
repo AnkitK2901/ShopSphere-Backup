@@ -1,7 +1,5 @@
 package com.shopsphere.logistics.scheduler;
 
-import com.shopsphere.logistics.entity.Shipment;
-import com.shopsphere.logistics.entity.ShipmentStatus;
 import com.shopsphere.logistics.service.ShipmentService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
