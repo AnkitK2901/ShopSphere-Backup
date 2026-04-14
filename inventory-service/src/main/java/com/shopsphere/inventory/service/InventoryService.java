@@ -55,22 +55,35 @@ public class InventoryService {
     public void processAutoReorder() {
         log.info("[Scheduler] Running Auto-Reorder Check...");
         List<InventoryItem> lowStockItems = inventoryRepository.findItemsRequiringReorder();
-        
-        if(lowStockItems.isEmpty()) {
+
+        if (lowStockItems.isEmpty()) {
             log.info("[Scheduler] All stock levels are healthy.");
             return;
         }
 
         for (InventoryItem item : lowStockItems) {
-            log.warn("[Scheduler] Auto-reordering Product ID: {} from Supplier: {}. Current Stock: {}, Threshold: {}. Estimated lead time: {} days.",
-                    item.getProductId(), item.getSupplierId(), item.getStockLevel(), item.getReorderThreshold(), item.getSupplierLeadTimeDays());
-            
+            log.warn(
+                    "[Scheduler] Auto-reordering Product ID: {} from Supplier: {}. Current Stock: {}, Threshold: {}. Estimated lead time: {} days.",
+                    item.getProductId(), item.getSupplierId(), item.getStockLevel(), item.getReorderThreshold(),
+                    item.getSupplierLeadTimeDays());
+
             // In a real scenario, this would call a Supplier API/Kafka Topic.
             // For simulation, we assume immediate fulfillment of +50 units.
-            item.setStockLevel(item.getStockLevel() + 50); 
+            item.setStockLevel(item.getStockLevel() + 50);
             inventoryRepository.save(item);
-            
+
             log.info("[Scheduler] Successfully requested restock for Product ID: {}", item.getProductId());
         }
+    }
+
+    // Add this method inside InventoryService.java
+    @Transactional
+    public void refundStock(String productId, Integer qty) {
+        log.info("Rolling back/Refunding {} items to Product ID: {}", qty, productId);
+        InventoryItem item = inventoryRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + productId));
+
+        item.setStockLevel(item.getStockLevel() + qty);
+        inventoryRepository.save(item);
     }
 }

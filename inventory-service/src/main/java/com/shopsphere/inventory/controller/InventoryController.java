@@ -35,4 +35,12 @@ public class InventoryController {
         return ResponseEntity
                 .ok("Successfully deducted " + request.getQuantity() + " items for product: " + request.getProductId());
     }
+
+    // Add this endpoint inside InventoryController.java
+    @PostMapping("/refund")
+    public ResponseEntity<String> refundStock(@Valid @RequestBody StockRequest request) {
+        log.info("Internal System: Refunding stock for Product ID: {}", request.getProductId());
+        inventoryService.refundStock(request.getProductId(), request.getQuantity());
+        return ResponseEntity.ok("Stock successfully refunded");
+    }
 }
