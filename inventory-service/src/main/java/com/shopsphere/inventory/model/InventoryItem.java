@@ -18,4 +18,7 @@ public class InventoryItem {
 	private Integer stockLevel;
 	private String supplierId;
 	private Integer reorderThreshold;
+	
+	// ADDED: Supplier Lead time tracking per LLD
+	private Integer supplierLeadTimeDays; 
 }

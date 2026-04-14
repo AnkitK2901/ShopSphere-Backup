@@ -5,9 +5,12 @@ import com.shopsphere.inventory.exception.ResourceNotFoundException;
 import com.shopsphere.inventory.model.InventoryItem;
 import com.shopsphere.inventory.repository.InventoryRepository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.scheduling.annotation.Scheduled;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @Slf4j
@@ -43,5 +46,31 @@ public class InventoryService {
         inventoryRepository.save(item);
         log.info("Successfully deducted stock. Product ID: {} | New Stock Level: {}",
                 productId, item.getStockLevel());
+    }
+
+    // ADDED: Auto-reorder feature from the LLD requirements
+    // Runs every 60 seconds (60000ms) for testing/demonstration purposes
+    @Scheduled(fixedRate = 60000)
+    @Transactional
+    public void processAutoReorder() {
+        log.info("[Scheduler] Running Auto-Reorder Check...");
+        List<InventoryItem> lowStockItems = inventoryRepository.findItemsRequiringReorder();
+        
+        if(lowStockItems.isEmpty()) {
+            log.info("[Scheduler] All stock levels are healthy.");
+            return;
+        }
+
+        for (InventoryItem item : lowStockItems) {
+            log.warn("[Scheduler] Auto-reordering Product ID: {} from Supplier: {}. Current Stock: {}, Threshold: {}. Estimated lead time: {} days.",
+                    item.getProductId(), item.getSupplierId(), item.getStockLevel(), item.getReorderThreshold(), item.getSupplierLeadTimeDays());
+            
+            // In a real scenario, this would call a Supplier API/Kafka Topic.
+            // For simulation, we assume immediate fulfillment of +50 units.
+            item.setStockLevel(item.getStockLevel() + 50); 
+            inventoryRepository.save(item);
+            
+            log.info("[Scheduler] Successfully requested restock for Product ID: {}", item.getProductId());
+        }
     }
 }

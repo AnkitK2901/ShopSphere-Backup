@@ -2,11 +2,15 @@ package com.shopsphere.auth_service.controller;
 
 import com.shopsphere.auth_service.model.User;
 import com.shopsphere.auth_service.service.AuthService;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/users")
+@Slf4j
 public class UserController {
 
     private final AuthService authService;

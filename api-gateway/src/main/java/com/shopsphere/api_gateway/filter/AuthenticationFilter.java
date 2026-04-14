@@ -35,10 +35,13 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
             ServerHttpRequest request = exchange.getRequest();
             String requestPath = request.getURI().getPath();
 
+            // Endpoints that do NOT require a JWT token
             List<String> openApiEndpoints = List.of(
                     "/api/auth/register",
                     "/api/auth/login",
-                    "/eureka"
+                    "/eureka",
+                    "/v3/api-docs",
+                    "/swagger-ui"
             );
 
             boolean isSecured = openApiEndpoints.stream()
