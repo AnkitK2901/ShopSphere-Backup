@@ -3,6 +3,7 @@ package com.shopsphere.order.Service;
 import com.shopsphere.order.DTO.*;
 import com.shopsphere.order.Entity.OrderEntity;
 import com.shopsphere.order.Enums.OrderStatus;
+import com.shopsphere.order.Enums.PaymentStatus;
 import com.shopsphere.order.Exception.ResourceNotFoundException;
 import com.shopsphere.order.Repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,17 +13,18 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j // Replaced System prints with proper logging
+@Slf4j 
 public class OrderServiceImpl implements OrderService {
 
     private final UserClient userClient;
     private final ProductClient productClient;
     private final LogisticsClient logisticsClient;
-    private final InventoryClient inventoryClient; // Added Inventory Client
+    private final InventoryClient inventoryClient; 
     private final OrderRepository orderRepository;
 
     @Override
@@ -49,66 +51,68 @@ public class OrderServiceImpl implements OrderService {
         ProductDTO product = productClient.findProductById(orderRequest.getProductId());
         UserDTO user = userClient.getUserByUserName(orderRequest.getUserName());
 
-        if (user == null) {
-            log.error("Customer not found: {}", orderRequest.getUserName());
-            throw new ResourceNotFoundException("Customer Not found");
+        if (user == null || product == null || product.getTotalPrice() == null) {
+            throw new ResourceNotFoundException("Validation failed for User or Product.");
         }
 
-        if (product == null) {
-            log.error("Product not found: {}", orderRequest.getProductId());
-            throw new ResourceNotFoundException("Product Not Found");
-        }
-
-        if (product.getTotalPrice() == null) {
-            log.error("Product price calculation failed for product: {}", product.getProductId());
-            throw new IllegalStateException("Product price calculation failed in Catalog Service");
-        }
-
-        // --- NEW: INVENTORY CHECK AND DEDUCTION ---
         StockRequest stockRequest = new StockRequest(String.valueOf(product.getProductId()), orderRequest.getQuantity());
-        
         try {
             Boolean isStockAvailable = inventoryClient.checkStock(stockRequest).getBody();
             if (Boolean.FALSE.equals(isStockAvailable)) {
-                log.warn("Insufficient stock for product ID: {}", product.getProductId());
                 throw new IllegalStateException("Insufficient stock available for this product.");
             }
-            // If available, deduct the stock
             inventoryClient.deductStock(stockRequest);
-            log.info("Successfully deducted {} units for product {}", orderRequest.getQuantity(), product.getProductId());
         } catch (Exception e) {
-            log.error("Failed to communicate with Inventory Service: {}", e.getMessage());
-            throw new IllegalStateException("Could not verify or deduct inventory at this time. Please try again.");
+            throw new IllegalStateException("Could not verify or deduct inventory at this time.");
         }
-        // ------------------------------------------
 
         OrderEntity order = new OrderEntity();
         order.setProductId(product.getProductId());
         order.setCustomerId(user.getId());
-        order.setCustomizationDetails(orderRequest.getCustomizationDetails()); // Save custom options
+        order.setCustomizationDetails(orderRequest.getCustomizationDetails());
 
         double unitPrice = product.getTotalPrice();
         order.setPriceAtPurchase(unitPrice);
         order.setTotalAmount(unitPrice * orderRequest.getQuantity());
-
         order.setStatus(OrderStatus.CONFIRMED);
         order.setQuantity(orderRequest.getQuantity());
+        order.setPaymentStatus(PaymentStatus.PENDING); // Initial status
 
         OrderEntity savedOrder = orderRepository.save(order);
-        log.info("Order successfully placed. Order ID: {}", savedOrder.getOrderId());
+        log.info("Order successfully placed. Awaiting Payment for Order ID: {}", savedOrder.getOrderId());
         
         return mapToResponse(savedOrder);
     }
 
+    // --- LLD REQUIRED: Payment Processing Mock ---
+    @Override
+    public OrderResponse processPayment(Long orderId, PaymentRequest request) {
+        log.info("Processing {} payment for Order ID: {}", request.getPaymentMethod(), orderId);
+        OrderEntity order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order Id not found"));
+
+        if (order.getPaymentStatus() == PaymentStatus.COMPLETED) {
+            throw new IllegalStateException("Payment has already been completed for this order.");
+        }
+
+        // Mocking communication with Stripe/Razorpay
+        String mockTransactionId = "txn_" + request.getPaymentMethod().toLowerCase() + "_" + UUID.randomUUID().toString().substring(0, 8);
+        
+        order.setPaymentStatus(PaymentStatus.COMPLETED);
+        order.setTransactionId(mockTransactionId);
+        order.setUpdatedAt(LocalDateTime.now());
+
+        log.info("Payment Successful. Transaction ID: {}", mockTransactionId);
+        return mapToResponse(orderRepository.save(order));
+    }
+    // ---------------------------------------------
+
     @Override
     public OrderResponse updateStatus(Long orderId, OrderStatus newStatus) {
-        log.info("Updating status for Order ID: {} to {}", orderId, newStatus);
-        
         OrderEntity order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order Id not found"));
 
         ValidTransaction(order.getStatus(), newStatus);
-
         order.setStatus(newStatus);
         order.setUpdatedAt(LocalDateTime.now());
         OrderEntity savedOrder = orderRepository.save(order);
@@ -116,40 +120,44 @@ public class OrderServiceImpl implements OrderService {
         if (newStatus == OrderStatus.SHIPPED) {
             try {
                 logisticsClient.createShipment(String.valueOf(orderId));
-                log.info("Shipment created successfully for Order ID: {}", orderId);
             } catch (Exception e) {
                 log.error("Could not create shipment for Order {}: {}", orderId, e.getMessage());
             }
         }
-
         return mapToResponse(savedOrder);
     }
 
     @Override
     public OrderResponse cancelOrder(Long orderId) {
-        log.info("Cancelling order ID: {}", orderId);
         OrderEntity order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order Id not found"));
-
         ValidTransaction(order.getStatus(), OrderStatus.CANCELLED);
-
         order.setStatus(OrderStatus.CANCELLED);
+        
+        // Auto-refund logic
+        if(order.getPaymentStatus() == PaymentStatus.COMPLETED) {
+            order.setPaymentStatus(PaymentStatus.REFUNDED);
+            log.info("Order Cancelled. Initiating refund for Transaction: {}", order.getTransactionId());
+        }
+        
         order.setUpdatedAt(LocalDateTime.now());
-
         return mapToResponse(orderRepository.save(order));
     }
 
     @Override
     public OrderResponse returnOrder(Long orderId) {
-        log.info("Initiating return for order ID: {}", orderId);
         OrderEntity order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order Id not found"));
-
         ValidTransaction(order.getStatus(), OrderStatus.RETURNED);
-
         order.setStatus(OrderStatus.RETURNED);
-        order.setUpdatedAt(LocalDateTime.now());
+        
+        // Auto-refund logic
+        if(order.getPaymentStatus() == PaymentStatus.COMPLETED) {
+            order.setPaymentStatus(PaymentStatus.REFUNDED);
+            log.info("Order Returned. Initiating refund for Transaction: {}", order.getTransactionId());
+        }
 
+        order.setUpdatedAt(LocalDateTime.now());
         return mapToResponse(orderRepository.save(order));
     }
 
@@ -165,11 +173,7 @@ public class OrderServiceImpl implements OrderService {
     private void ValidTransaction(OrderStatus current, OrderStatus newStatus) {
         List<OrderStatus> valid = ALLOWED_TRANSITIONS.getOrDefault(current, List.of());
         if (!valid.contains(newStatus)) {
-            log.warn("Invalid status transition attempted: {} to {}", current, newStatus);
-            throw new IllegalStateException(
-                    "Invalid transition: " + current + " → " + newStatus +
-                            ". Allowed: " + valid
-            );
+            throw new IllegalStateException("Invalid transition: " + current + " → " + newStatus);
         }
     }
 
@@ -178,8 +182,10 @@ public class OrderServiceImpl implements OrderService {
         res.setOrderId(orderEntity.getOrderId());
         res.setCustomerId(orderEntity.getCustomerId());
         res.setProductId(orderEntity.getProductId());
-        res.setCustomizationDetails(orderEntity.getCustomizationDetails()); // Map field to response
+        res.setCustomizationDetails(orderEntity.getCustomizationDetails()); 
         res.setOrderStatus(orderEntity.getStatus());
+        res.setPaymentStatus(orderEntity.getPaymentStatus()); // Mapping payment
+        res.setTransactionId(orderEntity.getTransactionId()); // Mapping transaction
         res.setUnitPriceAtPurchase(orderEntity.getPriceAtPurchase());
         res.setTotalOrderAmount(orderEntity.getTotalAmount());
         res.setCreatedAt(orderEntity.getCreatedAt());
@@ -193,7 +199,6 @@ public class OrderServiceImpl implements OrderService {
                     res.setCarrier(shipment.getCarrier());
                 }
             } catch (Exception e) {
-                log.warn("Tracking information unavailable for Order ID {}: {}", orderEntity.getOrderId(), e.getMessage());
                 res.setTrackingUrl("Tracking information currently unavailable");
             }
         }

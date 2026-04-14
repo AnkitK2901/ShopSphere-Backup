@@ -1,55 +1,49 @@
 package com.shopsphere.catalog.Entity;
 
 import jakarta.persistence.*;
-import java.util.ArrayList;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.List;
 
 @Entity
-@Table(name = "product")
+@Table(name = "products")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Product {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long productId;
 
     private String name;
     private Double basePrice;
+    private Double totalPrice;
     private String previewImage;
 
-    @Transient // Real-time calculated price (not stored in DB)
-    private Double totalPrice = 0.0;
+    // --- LLD REQUIRED: Multi-Vendor and Regional Support ---
+    private String vendorId; // To track which artisan made this
+    private String region;   // To track the regional category
+    // -------------------------------------------------------
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
-            name = "product_selected_options",
+            name = "product_options",
             joinColumns = @JoinColumn(name = "product_id"),
             inverseJoinColumns = @JoinColumn(name = "option_id")
     )
-    private List<CustomOption> customOptions = new ArrayList<>();
+    private List<CustomOption> customOptions;
 
-    // FEATURE: Real-time pricing update logic
-    @PostLoad @PrePersist @PreUpdate
+    @PrePersist
+    @PreUpdate
     public void calculateTotalPrice() {
-        double adjustments = (customOptions == null) ? 0.0 :
-                customOptions.stream()
-                        .filter(o -> o.getPriceAdjustment() != 0) // Extra safety
-                        .mapToDouble(CustomOption::getPriceAdjustment).sum();
-
-        // Ensure basePrice isn't null before adding
-        this.totalPrice = (this.basePrice != null ? this.basePrice : 0.0) + adjustments;
+        this.totalPrice = this.basePrice;
+        if (this.customOptions != null) {
+            for (CustomOption option : this.customOptions) {
+                this.totalPrice += option.getPriceModifier();
+            }
+        }
     }
-
-    // Getters and Setters
-    public Long getProductId() { return productId; }
-    public void setProductId(Long productId) { this.productId = productId; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    public Double getBasePrice() { return basePrice; }
-    public void setBasePrice(Double basePrice) { this.basePrice = basePrice; }
-    public String getPreviewImage() { return previewImage; }
-    public void setPreviewImage(String previewImage) { this.previewImage = previewImage; }
-    public Double getTotalPrice() { return totalPrice; }
-    public List<CustomOption> getCustomOptions() { return customOptions; }
-    public void setCustomOptions(List<CustomOption> customOptions) { this.customOptions = customOptions; }
-
-    public Product() {}
 }

@@ -1,6 +1,7 @@
 package com.shopsphere.order.Entity;
 
 import com.shopsphere.order.Enums.OrderStatus;
+import com.shopsphere.order.Enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,25 +21,26 @@ public class OrderEntity {
     private Long orderId;
 
     private int quantity;
-
     private Long productId;
-
     private Long customerId;
-
     private Double priceAtPurchase;
-    
     private Double totalAmount;
 
-    // Added field per LLD to store chosen colors, sizes, etc.
     @Column(columnDefinition = "TEXT")
     private String customizationDetails;
 
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
+    // --- LLD REQUIRED: Payment Gateway Tracking ---
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus paymentStatus;
+
+    private String transactionId; // To store Stripe/Razorpay generated IDs
+    // ----------------------------------------------
+
     @Column(updatable = false)
     private LocalDateTime createdAt;
-
     private LocalDateTime updatedAt;
 
     @PrePersist
@@ -47,6 +49,9 @@ public class OrderEntity {
         this.updatedAt = LocalDateTime.now();
         if(this.status == null) {
             this.status = OrderStatus.CONFIRMED;
+        }
+        if(this.paymentStatus == null) {
+            this.paymentStatus = PaymentStatus.PENDING;
         }
     }
 

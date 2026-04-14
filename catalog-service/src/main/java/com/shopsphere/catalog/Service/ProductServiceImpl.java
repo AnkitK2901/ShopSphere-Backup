@@ -25,13 +25,18 @@ public class ProductServiceImpl implements ProductService {
     private final CustomOptionRepository optionRepository;
 
     @Override
-    @CacheEvict(value = "products", allEntries = true) // Clears cache when new item is added
+    @CacheEvict(value = "products", allEntries = true)
     public Product createProduct(ProductRequestDTO dto) {
-        log.info("Creating product: {}", dto.getName());
+        log.info("Creating product: {} for Vendor: {}", dto.getName(), dto.getVendorId());
         Product product = new Product();
         product.setName(dto.getName());
         product.setBasePrice(dto.getBasePrice());
         product.setPreviewImage(dto.getPreviewImage());
+        
+        // --- Setting the new fields ---
+        product.setVendorId(dto.getVendorId());
+        product.setRegion(dto.getRegion());
+        // ------------------------------
 
         if (dto.getSelectedOptionIds() != null && !dto.getSelectedOptionIds().isEmpty()) {
             List<CustomOption> options = optionRepository.findAllById(dto.getSelectedOptionIds());
@@ -41,14 +46,14 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    @Cacheable(value = "products") // Caches the entire catalog for lightning-fast loading
+    @Cacheable(value = "products")
     public List<Product> getAllProducts() {
         log.info("Fetching all products from Database (Cache Miss)");
         return productRepository.findAll();
     }
 
     @Override
-    @Cacheable(value = "products", key = "#id") // Caches individual product lookups
+    @Cacheable(value = "products", key = "#id")
     public Product getProductById(Long id) {
         log.info("Fetching product with id: {} from Database (Cache Miss)", id);
         return productRepository.findById(id)
@@ -57,13 +62,18 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    @CacheEvict(value = "products", allEntries = true) // Clears cache to prevent stale data
+    @CacheEvict(value = "products", allEntries = true)
     public Product updateProduct(Long id, ProductRequestDTO dto) {
         log.info("Updating product with id: {}", id);
         Product product = getProductById(id);
         product.setName(dto.getName());
         product.setBasePrice(dto.getBasePrice());
         product.setPreviewImage(dto.getPreviewImage());
+        
+        // --- Setting the new fields ---
+        product.setVendorId(dto.getVendorId());
+        product.setRegion(dto.getRegion());
+        // ------------------------------
 
         if (dto.getSelectedOptionIds() != null) {
             List<CustomOption> options = optionRepository.findAllById(dto.getSelectedOptionIds());
