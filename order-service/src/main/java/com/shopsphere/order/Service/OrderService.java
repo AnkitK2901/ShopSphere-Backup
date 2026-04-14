@@ -2,21 +2,23 @@ package com.shopsphere.order.Service;
 
 import com.shopsphere.order.DTO.OrderRequest;
 import com.shopsphere.order.DTO.OrderResponse;
+// import com.shopsphere.order.Entity.OrderEntity;
 import com.shopsphere.order.Enums.OrderStatus;
+// import com.shopsphere.order.Repository.OrderRepository;
 
 import java.util.List;
 
 public interface OrderService {
 
-    List<OrderResponse> getAllOrders();
+    public List<OrderResponse> getAllOrders();
 
-    OrderResponse getOrderById(Long orderId);
+    public OrderResponse getOrderById(Long orderId);
 
-    OrderResponse placeOrder(OrderRequest orderRequest, String username);
+    public OrderResponse placeOrder(OrderRequest orderRequest);
 
-    OrderResponse updateStatus(Long orderId, OrderStatus newStatus);
+    public OrderResponse updateStatus(Long orderId, OrderStatus newStatus);
 
-    OrderResponse cancelOrder(Long orderId);
+    public OrderResponse cancelOrder(Long orderId);
 
-    OrderResponse returnOrder(Long orderId);
+    public OrderResponse returnOrder(Long orderId);
 }

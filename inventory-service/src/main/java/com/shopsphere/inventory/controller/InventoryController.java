@@ -16,29 +16,18 @@ public class InventoryController {
 
     private final InventoryService inventoryService;
 
-
     @PostMapping("/check")
     public ResponseEntity<Boolean> checkStock(@Valid @RequestBody StockRequest request) {
-        log.info("Internal System: Checking stock for Product ID: {}, Requested Quantity: {}", request.getProductId(), request.getQuantity());
+        log.info("Received POST request to check stock for Product: {}", request.getProductId());
         boolean inStock = inventoryService.checkStock(request.getProductId(), request.getQuantity());
         return ResponseEntity.ok(inStock);
     }
 
     @PostMapping("/deduct")
     public ResponseEntity<String> deductStock(@Valid @RequestBody StockRequest request) {
-        log.info("Internal System: Deducting stock for Product ID: {}, Quantity: {}", request.getProductId(), request.getQuantity());
+        log.info("Received POST request to deduct stock for Product: {}", request.getProductId());
         inventoryService.deductStock(request.getProductId(), request.getQuantity());
-        return ResponseEntity.ok("Successfully deducted " + request.getQuantity() + " items for product: " + request.getProductId());
-    }
-
-
-    @PutMapping("/update")
-    public ResponseEntity<String> updateStock(
-            @Valid @RequestBody StockRequest request,
-            @RequestHeader("X-Logged-In-User") String artisanUsername) {
-            
-        log.info("Stock level update requested by Artisan: {} for Product ID: {}", artisanUsername, request.getProductId());
-        inventoryService.updateStock(request, artisanUsername);
-        return ResponseEntity.ok("Stock updated successfully for product: " + request.getProductId());
+        return ResponseEntity
+                .ok("Successfully deducted " + request.getQuantity() + " items for product: " + request.getProductId());
     }
 }

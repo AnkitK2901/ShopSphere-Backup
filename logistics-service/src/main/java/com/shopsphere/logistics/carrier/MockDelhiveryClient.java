@@ -18,8 +18,4 @@ public class MockDelhiveryClient implements CarrierClient {
         return shipment;
     }
 
-    @Override
-    public Shipment trackShipment(String trackingNumber) {
-        return null;
-    }
 }

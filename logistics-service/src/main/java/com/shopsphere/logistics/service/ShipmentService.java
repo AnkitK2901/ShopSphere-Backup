@@ -5,11 +5,11 @@ import com.shopsphere.logistics.carrier.MockDelhiveryClient;
 import com.shopsphere.logistics.carrier.MockShiprocketClient;
 import com.shopsphere.logistics.entity.Shipment;
 import com.shopsphere.logistics.entity.ShipmentStatus;
-import com.shopsphere.logistics.event.ShipmentEvent;
+//import com.shopsphere.logistics.event.ShipmentEvent;
 import com.shopsphere.logistics.exception.InvalidShipmentStatusException;
 import com.shopsphere.logistics.exception.ShipmentAlreadyExistsException;
 import com.shopsphere.logistics.exception.ShipmentNotFoundException;
-import com.shopsphere.logistics.kafka.ShipmentEventPublisher;
+//import com.shopsphere.logistics.kafka.ShipmentEventPublisher;
 import com.shopsphere.logistics.repository.ShipmentRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,16 +25,16 @@ public class ShipmentService {
     private final ShipmentRepository repository;
     private final MockDelhiveryClient delhiveryClient;
     private final MockShiprocketClient shiprocketClient;
-    private final ShipmentEventPublisher eventPublisher;
+    //private final ShipmentEventPublisher eventPublisher;
 
     public ShipmentService(ShipmentRepository repository,
                            MockDelhiveryClient delhiveryClient,
-                           MockShiprocketClient shiprocketClient,
-                           ShipmentEventPublisher eventPublisher) {
+                           MockShiprocketClient shiprocketClient
+                           /*,ShipmentEventPublisher eventPublisher*/) {
         this.repository = repository;
         this.delhiveryClient = delhiveryClient;
         this.shiprocketClient = shiprocketClient;
-        this.eventPublisher = eventPublisher;
+        //this.eventPublisher = eventPublisher;
     }
 
     public List<Shipment> getAllShipments() {
@@ -143,15 +143,15 @@ public class ShipmentService {
             default -> throw new IllegalStateException("Shipment already delivered");
         };
     }
-    private ShipmentEvent toEvent(Shipment shipment, String eventType) {
-        ShipmentEvent event = new ShipmentEvent();
-        event.setOrderId(shipment.getOrderId());
-        event.setShipmentId(shipment.getShipmentId());
-        event.setTrackingNumber(shipment.getTrackingNumber());
-        event.setStatus(shipment.getStatus());
-        event.setEventType(eventType);
-        event.setEventTime(LocalDateTime.now());
-        return event;
-    }
+//    private ShipmentEvent toEvent(Shipment shipment, String eventType) {
+//        ShipmentEvent event = new ShipmentEvent();
+//        event.setOrderId(shipment.getOrderId());
+//        event.setShipmentId(shipment.getShipmentId());
+//        event.setTrackingNumber(shipment.getTrackingNumber());
+//        event.setStatus(shipment.getStatus());
+//        event.setEventType(eventType);
+//        event.setEventTime(LocalDateTime.now());
+//        return event;
+//    }
 }
 

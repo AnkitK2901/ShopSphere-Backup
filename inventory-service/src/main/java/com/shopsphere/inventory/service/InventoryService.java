@@ -1,6 +1,5 @@
 package com.shopsphere.inventory.service;
 
-import com.shopsphere.inventory.dto.StockRequest;
 import com.shopsphere.inventory.exception.InsufficientStockException;
 import com.shopsphere.inventory.exception.ResourceNotFoundException;
 import com.shopsphere.inventory.model.InventoryItem;
@@ -30,28 +29,19 @@ public class InventoryService {
         log.info("Attempting to deduct {} items from Product ID: {}", qty, productId);
         InventoryItem item = inventoryRepository.findById(productId)
                 .orElseThrow(() -> {
-                    log.error("Deduction failed. Product ID {} does not exist.", productId);
+                    log.error("Deduction failed. Product ID {} does not exist in the database.", productId);
                     return new ResourceNotFoundException("Product ID not found: " + productId);
                 });
 
         if (item.getStockLevel() < qty) {
-            log.warn("Insufficient stock for Product ID: {}. Requested: {}, Available: {}", productId, qty, item.getStockLevel());
+            log.warn("Insufficient stock for Product ID: {}. Requested: {}, Available: {}",
+                    productId, qty, item.getStockLevel());
             throw new InsufficientStockException("Not enough stock available!");
         }
 
         item.setStockLevel(item.getStockLevel() - qty);
         inventoryRepository.save(item);
-        log.info("Successfully deducted stock. Product ID: {} | New Stock Level: {}", productId, item.getStockLevel());
-    }
-
-    @Transactional
-    public void updateStock(StockRequest request, String artisanUsername) {
-        log.info("Artisan {} updating stock for Product ID: {}", artisanUsername, request.getProductId());
-        InventoryItem item = inventoryRepository.findById(request.getProductId())
-                .orElseThrow(() -> new ResourceNotFoundException("Product ID not found: " + request.getProductId()));
-
-        item.setStockLevel(request.getQuantity());
-        inventoryRepository.save(item);
-        log.info("Stock updated to {} for Product ID: {}", request.getQuantity(), request.getProductId());
+        log.info("Successfully deducted stock. Product ID: {} | New Stock Level: {}",
+                productId, item.getStockLevel());
     }
 }

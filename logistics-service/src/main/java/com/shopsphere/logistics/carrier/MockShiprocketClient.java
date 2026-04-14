@@ -17,9 +17,4 @@ public class MockShiprocketClient implements CarrierClient {
         shipment.setEstimatedDelivery(LocalDate.now().plusDays(3));
         return shipment;
     }
-
-    @Override
-    public Shipment trackShipment(String trackingNumber) {
-        return null;
-    }
 }
