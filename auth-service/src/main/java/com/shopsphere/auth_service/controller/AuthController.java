@@ -4,18 +4,12 @@ import com.shopsphere.auth_service.dto.AuthResponse;
 import com.shopsphere.auth_service.dto.LoginRequest;
 import com.shopsphere.auth_service.model.User;
 import com.shopsphere.auth_service.service.AuthService;
-
-import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.extern.slf4j.Slf4j;
-
 // import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
-@Slf4j
-@Tag(name = "Authentication", description = "User registration and login")
 public class AuthController {
 
     private final AuthService authService;

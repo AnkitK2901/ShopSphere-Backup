@@ -1,13 +1,34 @@
 package com.shopsphere.order.DTO;
 
-import lombok.Data;
-
-@Data
 public class OrderRequest {
+
     private String userName;
+
     private Long productId;
+
     private int quantity;
-    private String paymentMode;
-    // Added to receive customization choices from the frontend
-    private String customizationDetails; 
+
+    public Long getProductId() {
+        return productId;
+    }
+
+    public void setProductId(Long productId) {
+        this.productId = productId;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
 }

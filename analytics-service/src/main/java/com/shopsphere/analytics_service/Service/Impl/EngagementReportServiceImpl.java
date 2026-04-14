@@ -12,8 +12,7 @@ import com.shopsphere.analytics_service.Entity.EngagementReportEntity;
 import com.shopsphere.analytics_service.Exception.ResourceNotFoundException;
 import com.shopsphere.analytics_service.Repository.EngagementReportRepository;
 import com.shopsphere.analytics_service.Service.EngagementReportService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,20 +20,24 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class EngagementReportServiceImpl implements EngagementReportService {
 
-    private final EngagementReportRepository engagementReportRepository;
-    private final OrderFeignClient orderFeignClient;
-    private final AuthFeignClient authFeignClient;
-    private final CatalogFeignClient catalogFeignClient;
+    @Autowired
+    private EngagementReportRepository engagementReportRepository;
+
+    @Autowired
+    private OrderFeignClient orderFeignClient;
+
+    @Autowired
+    private AuthFeignClient authFeignClient;
+
+    @Autowired
+    private CatalogFeignClient catalogFeignClient;
 
     // ── Read ──────────────────────────────────────────────────────────────────
 
     @Override
     public List<EngagementReportResponse> getAllReports() {
-        log.info("Fetching all engagement reports from the database");
         return engagementReportRepository.findAll()
                 .stream()
                 .map(this::mapToResponse)
@@ -43,21 +46,15 @@ public class EngagementReportServiceImpl implements EngagementReportService {
 
     @Override
     public EngagementReportResponse getReportById(Long reportId) {
-        log.info("Fetching engagement report with ID: {}", reportId);
         EngagementReportEntity report = engagementReportRepository.findById(reportId)
-                .orElseThrow(() -> {
-                    log.error("Report not found with ID: {}", reportId);
-                    return new ResourceNotFoundException("Report not found with id: " + reportId);
-                });
+                .orElseThrow(() -> new ResourceNotFoundException("Report not found with id: " + reportId));
         return mapToResponse(report);
     }
 
     @Override
     public List<EngagementReportResponse> getReportsByCustomerId(Long customerId) {
-        log.info("Fetching engagement reports for Customer ID: {}", customerId);
         List<EngagementReportEntity> reports = engagementReportRepository.findByCustomerId(customerId);
         if (reports.isEmpty()) {
-            log.warn("No reports found for Customer ID: {}", customerId);
             throw new ResourceNotFoundException("No reports found for customer id: " + customerId);
         }
         return reports.stream().map(this::mapToResponse).collect(Collectors.toList());
@@ -67,17 +64,14 @@ public class EngagementReportServiceImpl implements EngagementReportService {
 
     @Override
     public EngagementReportResponse createReport(EngagementReportRequest request) {
-        log.info("Creating new engagement report for Customer ID: {}", request.getCustomerId());
-        
         // Validate customer exists via auth-service
         try {
             authFeignClient.getUserById(request.getCustomerId());
         } catch (Exception e) {
-            log.error("Customer validation failed. Customer ID {} not found in Auth Service.", request.getCustomerId());
-            throw new ResourceNotFoundException("Customer not found in Auth Service: " + request.getCustomerId());
+            throw new ResourceNotFoundException(
+                    "Customer not found in Auth Service: " + request.getCustomerId());
         }
 
-        log.info("Fetching order history for Customer ID: {} to build metrics", request.getCustomerId());
         List<OrderResponse> orders = orderFeignClient.getOrdersByCustomerId(request.getCustomerId());
 
         EngagementReportEntity report = new EngagementReportEntity();
@@ -85,15 +79,11 @@ public class EngagementReportServiceImpl implements EngagementReportService {
         report.setBehaviorMetrics(buildBehaviorMetrics(request, orders));
         report.setCampaignResponse(buildCampaignResponse(request));
 
-        EngagementReportEntity savedReport = engagementReportRepository.save(report);
-        log.info("Successfully created engagement report with ID: {}", savedReport.getReportId());
-        
-        return mapToResponse(savedReport);
+        return mapToResponse(engagementReportRepository.save(report));
     }
 
     @Override
     public EngagementReportResponse updateReport(Long reportId, EngagementReportRequest request) {
-        log.info("Updating engagement report ID: {}", reportId);
         EngagementReportEntity report = engagementReportRepository.findById(reportId)
                 .orElseThrow(() -> new ResourceNotFoundException("Report not found with id: " + reportId));
 
@@ -107,18 +97,15 @@ public class EngagementReportServiceImpl implements EngagementReportService {
 
     @Override
     public void deleteReport(Long reportId) {
-        log.info("Deleting engagement report ID: {}", reportId);
         EngagementReportEntity report = engagementReportRepository.findById(reportId)
                 .orElseThrow(() -> new ResourceNotFoundException("Report not found with id: " + reportId));
         engagementReportRepository.delete(report);
-        log.info("Successfully deleted report ID: {}", reportId);
     }
 
     // ── Private Helpers ───────────────────────────────────────────────────────
 
     private BehaviorMetricsEntity buildBehaviorMetrics(EngagementReportRequest request,
                                                        List<OrderResponse> orders) {
-        log.debug("Building behavior metrics. Total orders found: {}", orders.size());
         BehaviorMetricsEntity metrics = new BehaviorMetricsEntity();
 
         int totalOrders = orders.size();
@@ -143,13 +130,14 @@ public class EngagementReportServiceImpl implements EngagementReportService {
                                     product != null ? product.name() : "Product-" + e.getKey()
                             );
                         } catch (Exception ex) {
-                            log.warn("Catalog service unreachable while resolving favorite product ID: {}. Degraded gracefully.", e.getKey());
+                            // catalog-service unreachable — degrade gracefully
                             metrics.setFavouriteProduct("Product-" + e.getKey());
                         }
                     }
                 });
 
-        // Average order value
+        // Average order value — uses totalOrderAmount already stored in the order.
+        // No extra catalog-service call needed for this.
         double avgValue = totalOrders > 0
                 ? orders.stream()
                 .mapToDouble(o -> o.totalOrderAmount() != null ? o.totalOrderAmount() : 0.0)

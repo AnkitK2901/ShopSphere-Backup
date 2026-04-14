@@ -3,34 +3,33 @@ package com.shopsphere.order.Service;
 import com.shopsphere.order.DTO.*;
 import com.shopsphere.order.Entity.OrderEntity;
 import com.shopsphere.order.Enums.OrderStatus;
-import com.shopsphere.order.Enums.PaymentStatus;
 import com.shopsphere.order.Exception.ResourceNotFoundException;
 import com.shopsphere.order.Repository.OrderRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
-@Slf4j
-public class OrderServiceImpl implements OrderService {
+public class OrderServiceImpl implements OrderService{
 
-    private final UserClient userClient;
-    private final ProductClient productClient;
-    private final LogisticsClient logisticsClient;
-    private final InventoryClient inventoryClient;
-    private final OrderRepository orderRepository;
+    @Autowired
+    private UserClient userClient;
+
+    @Autowired
+    private ProductClient productClient;
+
+    @Autowired
+    private LogisticsClient logisticsClient;
+
+    @Autowired
+    private OrderRepository orderRepository;
 
     @Override
-    public List<OrderResponse> getAllOrders() {
-        log.info("Fetching all orders from the database");
+    public List<OrderResponse> getAllOrders(){
         return orderRepository.findAll()
                 .stream()
                 .map(this::mapToResponse)
@@ -38,146 +37,92 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public OrderResponse getOrderById(Long orderId) {
-        log.info("Fetching order details for ID: {}", orderId);
-        OrderEntity order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order ID " + orderId + " not found"));
+    public OrderResponse getOrderById(Long orderId){
+        OrderEntity order =  orderRepository.findById(orderId)
+                .orElseThrow(()-> new ResourceNotFoundException("Order ID is not Found"));
         return mapToResponse(order);
     }
 
     @Override
-    @Transactional
-    public OrderResponse placeOrder(OrderRequest orderRequest) {
-        log.info("Initiating order placement for user: {}", orderRequest.getUserName());
+    public OrderResponse placeOrder(OrderRequest orderRequest){
 
         ProductDTO product = productClient.findProductById(orderRequest.getProductId());
         UserDTO user = userClient.getUserByUserName(orderRequest.getUserName());
 
-        if (user == null || product == null || product.getTotalPrice() == null) {
-            throw new ResourceNotFoundException("Validation failed: User or Product not found.");
+        if(user == null){
+            throw new ResourceNotFoundException("Customer Not found");
         }
 
-        // --- 1. MOCK PAYMENT GATEWAY ---
-        log.info("Processing mock payment step...");
-        if (orderRequest.getPaymentMode() != null && orderRequest.getPaymentMode().equalsIgnoreCase("FAIL_TEST")) {
-            log.error("Payment gateway declined transaction for user: {}", orderRequest.getUserName());
-            throw new IllegalStateException("Payment failed: Transaction declined by gateway.");
+        if(product == null){
+            throw new ResourceNotFoundException("Product Not Found");
         }
 
-        // --- 2. STOCK VALIDATION & DEDUCTION ---
-        StockRequest stockRequest = new StockRequest(String.valueOf(product.getProductId()), orderRequest.getQuantity());
-        Boolean isStockAvailable = inventoryClient.checkStock(stockRequest).getBody();
-
-        if (Boolean.FALSE.equals(isStockAvailable)) {
-            log.warn("Stock check failed for product: {}", product.getProductId());
-            throw new IllegalStateException("Insufficient stock available.");
+        if (product.getTotalPrice() == null) {
+            throw new IllegalStateException("Product price calculation failed in Catalog Service");
         }
 
-        inventoryClient.deductStock(stockRequest);
-        log.info("Stock successfully reserved for product: {}", product.getProductId());
+        OrderEntity orders = new OrderEntity();
 
-        // --- 3. PERSIST ORDER WITH COMPENSATING TRANSACTION ---
-        OrderEntity order = new OrderEntity();
-        order.setProductId(product.getProductId());
-        order.setCustomerId(user.getId());
-        order.setPriceAtPurchase(product.getTotalPrice());
-        order.setTotalAmount(product.getTotalPrice() * orderRequest.getQuantity());
-        order.setStatus(OrderStatus.CONFIRMED);
-        order.setQuantity(orderRequest.getQuantity());
-        order.setPaymentStatus(PaymentStatus.COMPLETED); // Assuming instant mock success
-        order.setTransactionId("txn_" + UUID.randomUUID().toString().substring(0, 8));
+        orders.setProductId(product.getProductId());
+        orders.setCustomerId(user.getId());
 
-        try {
-            OrderEntity savedOrder = orderRepository.save(order);
-            log.info("Order {} saved successfully", savedOrder.getOrderId());
-            return mapToResponse(savedOrder);
-        } catch (Exception e) {
-            // --- 4. THE ROLLBACK (PUTTING STOCK BACK) ---
-            log.error("Database save failed. Rolling back inventory for product: {}", product.getProductId());
-            inventoryClient.refundStock(stockRequest); 
-            throw new IllegalStateException("Internal system error: Order could not be saved. Inventory has been released.", e);
-        }
+        double unitPrice = product.getTotalPrice();
+        orders.setPriceAtPurchase(unitPrice);
+
+        orders.setTotalAmount(unitPrice * orderRequest.getQuantity());
+
+        orders.setStatus(OrderStatus.CONFIRMED);
+        orders.setQuantity(orderRequest.getQuantity());
+
+        return mapToResponse(orderRepository.save(orders));
     }
 
     @Override
-    public OrderResponse processPayment(Long orderId, PaymentRequest request) {
-        log.info("Processing manual payment update for Order ID: {}", orderId);
+    public OrderResponse updateStatus(Long orderId, OrderStatus newStatus){
         OrderEntity order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
-
-        if (order.getPaymentStatus() == PaymentStatus.COMPLETED) {
-            throw new IllegalStateException("Order is already paid.");
-        }
-
-        order.setPaymentStatus(PaymentStatus.COMPLETED);
-        order.setTransactionId("txn_" + UUID.randomUUID().toString().substring(0, 8));
-        order.setUpdatedAt(LocalDateTime.now());
-
-        return mapToResponse(orderRepository.save(order));
-    }
-
-    @Override
-    public OrderResponse updateStatus(Long orderId, OrderStatus newStatus) {
-        log.info("Updating status for Order ID: {} to {}", orderId, newStatus);
-        OrderEntity order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+                .orElseThrow(()-> new ResourceNotFoundException("Order Id not found"));
 
         ValidTransaction(order.getStatus(), newStatus);
+
         order.setStatus(newStatus);
         order.setUpdatedAt(LocalDateTime.now());
-        
         OrderEntity savedOrder = orderRepository.save(order);
 
         if (newStatus == OrderStatus.SHIPPED) {
             try {
                 logisticsClient.createShipment(String.valueOf(orderId));
             } catch (Exception e) {
-                log.error("Logistics integration failed for Order {}: {}", orderId, e.getMessage());
+                System.err.println("Could not create shipment for Order " + orderId + ": " + e.getMessage());
             }
         }
+
         return mapToResponse(savedOrder);
     }
 
     @Override
-    public OrderResponse cancelOrder(Long orderId) {
-        log.info("Cancelling Order ID: {}", orderId);
+    public OrderResponse cancelOrder(Long orderId){
         OrderEntity order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+                .orElseThrow(()-> new ResourceNotFoundException("Order Id not found"));
 
         ValidTransaction(order.getStatus(), OrderStatus.CANCELLED);
+
         order.setStatus(OrderStatus.CANCELLED);
-        
-        if (order.getPaymentStatus() == PaymentStatus.COMPLETED) {
-            order.setPaymentStatus(PaymentStatus.REFUNDED);
-            log.info("Order cancelled. Payment marked for refund.");
-        }
-        
         order.setUpdatedAt(LocalDateTime.now());
+
         return mapToResponse(orderRepository.save(order));
     }
 
     @Override
-    public OrderResponse returnOrder(Long orderId) {
-        log.info("Initiating return for Order ID: {}", orderId);
+    public OrderResponse returnOrder(Long orderId){
         OrderEntity order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+                .orElseThrow(()-> new ResourceNotFoundException("Order Id not found"));
 
         ValidTransaction(order.getStatus(), OrderStatus.RETURNED);
+
         order.setStatus(OrderStatus.RETURNED);
-        
-        if (order.getPaymentStatus() == PaymentStatus.COMPLETED) {
-            order.setPaymentStatus(PaymentStatus.REFUNDED);
-        }
-
         order.setUpdatedAt(LocalDateTime.now());
-        return mapToResponse(orderRepository.save(order));
-    }
 
-    private void ValidTransaction(OrderStatus current, OrderStatus newStatus) {
-        List<OrderStatus> validTransitions = ALLOWED_TRANSITIONS.getOrDefault(current, List.of());
-        if (!validTransitions.contains(newStatus)) {
-            throw new IllegalStateException("Transition from " + current + " to " + newStatus + " is not allowed.");
-        }
+        return mapToResponse(orderRepository.save(order));
     }
 
     private static final Map<OrderStatus, List<OrderStatus>> ALLOWED_TRANSITIONS = Map.of(
@@ -189,30 +134,39 @@ public class OrderServiceImpl implements OrderService {
             OrderStatus.RETURNED, List.of()
     );
 
-    private OrderResponse mapToResponse(OrderEntity entity) {
-        OrderResponse res = new OrderResponse();
-        res.setOrderId(entity.getOrderId());
-        res.setCustomerId(entity.getCustomerId());
-        res.setProductId(entity.getProductId());
-        res.setOrderStatus(entity.getStatus());
-        res.setPaymentStatus(entity.getPaymentStatus());
-        res.setTransactionId(entity.getTransactionId());
-        res.setUnitPriceAtPurchase(entity.getPriceAtPurchase());
-        res.setTotalOrderAmount(entity.getTotalAmount());
-        res.setCreatedAt(entity.getCreatedAt());
-        res.setUpdatedAt(entity.getUpdatedAt());
+    private void ValidTransaction(OrderStatus current, OrderStatus newStatus){
+        List<OrderStatus> valid = ALLOWED_TRANSITIONS.getOrDefault(current, List.of());
+        if (!valid.contains(newStatus)) {
+            throw new IllegalStateException(
+                    "Invalid transition: " + current + " → " + newStatus +
+                            ". Allowed: " + valid
+            );
+        }
+    }
 
-        if (entity.getStatus() == OrderStatus.SHIPPED || entity.getStatus() == OrderStatus.DELIVERED) {
+    private OrderResponse mapToResponse(OrderEntity orderEntity) {
+        OrderResponse res = new OrderResponse();
+        res.setOrderId(orderEntity.getOrderId());
+        res.setCustomerId(orderEntity.getCustomerId());
+        res.setProductId(orderEntity.getProductId());
+        res.setOrderStatus(orderEntity.getStatus());
+        res.setUnitPriceAtPurchase(orderEntity.getPriceAtPurchase());
+        res.setTotalOrderAmount(orderEntity.getTotalAmount());
+        res.setCreatedAt(orderEntity.getCreatedAt());
+        res.setUpdatedAt(orderEntity.getUpdatedAt());
+
+        if (orderEntity.getStatus() == OrderStatus.SHIPPED || orderEntity.getStatus() == OrderStatus.DELIVERED) {
             try {
-                ShipmentResponse shipment = logisticsClient.getByOrderId(String.valueOf(entity.getOrderId()));
+                ShipmentResponse shipment = logisticsClient.getByOrderId(String.valueOf(orderEntity.getOrderId()));
                 if (shipment != null) {
                     res.setTrackingUrl(shipment.getTrackingUrl());
                     res.setCarrier(shipment.getCarrier());
                 }
             } catch (Exception e) {
-                res.setTrackingUrl("Tracking information unavailable");
+                res.setTrackingUrl("Tracking information currently unavailable");
             }
         }
         return res;
     }
 }
+

@@ -1,28 +1,27 @@
 package com.shopsphere.auth_service.util;
 
+// import com.shopsphere.auth_service.filter.JwtFilter;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
 
 @Component
-@Slf4j
 public class JwtUtil {
 
-    // Secret signature key
+    // This is our secret signature key. It MUST be long and complex!
+    // In a real production app, this would be hidden in your application.properties file.
     public static final String SECRET = "5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437";
 
     public String generateToken(String username) {
-        log.info("Generating JWT token for user: {}", username);
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30)) // 30 minutes
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30)) // Token expires in 30 minutes
                 .signWith(getSignKey(), SignatureAlgorithm.HS256).compact();
     }
 

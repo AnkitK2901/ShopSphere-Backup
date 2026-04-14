@@ -5,13 +5,12 @@ import com.shopsphere.logistics.carrier.MockDelhiveryClient;
 import com.shopsphere.logistics.carrier.MockShiprocketClient;
 import com.shopsphere.logistics.entity.Shipment;
 import com.shopsphere.logistics.entity.ShipmentStatus;
+//import com.shopsphere.logistics.event.ShipmentEvent;
 import com.shopsphere.logistics.exception.InvalidShipmentStatusException;
 import com.shopsphere.logistics.exception.ShipmentAlreadyExistsException;
 import com.shopsphere.logistics.exception.ShipmentNotFoundException;
+//import com.shopsphere.logistics.kafka.ShipmentEventPublisher;
 import com.shopsphere.logistics.repository.ShipmentRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,107 +20,111 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class ShipmentService {
 
     private final ShipmentRepository repository;
     private final MockDelhiveryClient delhiveryClient;
     private final MockShiprocketClient shiprocketClient;
+    //private final ShipmentEventPublisher eventPublisher;
+
+    public ShipmentService(ShipmentRepository repository,
+                           MockDelhiveryClient delhiveryClient,
+                           MockShiprocketClient shiprocketClient
+                           /*,ShipmentEventPublisher eventPublisher*/) {
+        this.repository = repository;
+        this.delhiveryClient = delhiveryClient;
+        this.shiprocketClient = shiprocketClient;
+        //this.eventPublisher = eventPublisher;
+    }
 
     public List<Shipment> getAllShipments() {
-        log.info("Fetching all shipments from the database");
         return repository.findAll();
     }
 
-    @Transactional
     public Shipment createShipment(String orderId) {
-        log.info("Attempting to create shipment for Order ID: {}", orderId);
         if (repository.findByOrderId(orderId).isPresent()) {
-            log.error("Shipment already exists for Order ID: {}", orderId);
             throw new ShipmentAlreadyExistsException(
                     "Shipment already exists for orderId: " + orderId);
         }
 
-        // Logic to assign carrier dynamically
-        CarrierClient carrier = orderId.hashCode() % 2 == 0 ? delhiveryClient : shiprocketClient;
-        
+        CarrierClient carrier =
+                orderId.hashCode() % 2 == 0 ? delhiveryClient : shiprocketClient;
+
         Shipment shipment = carrier.createShipment(orderId);
         shipment.setShipmentId(UUID.randomUUID().toString());
         shipment.setOrderId(orderId);
         shipment.setStatus(ShipmentStatus.CREATED);
 
         Shipment savedShipment = repository.save(shipment);
-        log.info("Shipment successfully created. Shipment ID: {}, Assigned Carrier: {}", savedShipment.getShipmentId(), savedShipment.getCarrier());
+
+        //eventPublisher.publish(toEvent(savedShipment, "CREATED"));
 
         return savedShipment;
     }
 
+
     public Shipment getShipmentByOrderId(String orderId) {
-        log.info("Fetching shipment details for Order ID: {}", orderId);
         return repository.findByOrderId(orderId)
-                .orElseThrow(() -> {
-                    log.error("Shipment not found for Order ID: {}", orderId);
-                    return new ShipmentNotFoundException("Shipment not found for orderId: " + orderId);
-                });
+                .orElseThrow(() -> new ShipmentNotFoundException(
+                        "Shipment not found for orderId: " + orderId));
     }
 
-    @Transactional
     public Shipment updateShipmentStatusByOrderId(String orderId, String status) {
-        log.info("Manual request to update Shipment status for Order ID: {} to {}", orderId, status);
+
         ShipmentStatus newStatus;
         try {
             newStatus = ShipmentStatus.valueOf(status.toUpperCase());
         } catch (IllegalArgumentException ex) {
-            log.error("Invalid status provided: {}", status);
-            throw new InvalidShipmentStatusException("Invalid shipment status: " + status);
+            throw new InvalidShipmentStatusException(
+                    "Invalid shipment status: " + status);
         }
 
-        Shipment shipment = getShipmentByOrderId(orderId);
+        Shipment shipment = repository.findByOrderId(orderId)
+                .orElseThrow(() ->
+                        new ShipmentNotFoundException(
+                                "Shipment not found for orderId: " + orderId));
+
         ShipmentStatus currentStatus = shipment.getStatus();
 
         if (!currentStatus.canTransitionTo(newStatus)) {
-            log.warn("Invalid transition attempt from {} to {}", currentStatus, newStatus);
             throw new InvalidShipmentStatusException(
-                    "Invalid status transition from " + currentStatus + " to " + newStatus);
+                    "Invalid status transition from "
+                            + currentStatus + " to " + newStatus);
         }
 
         shipment.setStatus(newStatus);
+
         Shipment updatedShipment = repository.save(shipment);
-        log.info("Shipment status updated successfully for Order ID: {}", orderId);
+
+        //eventPublisher.publish(toEvent(updatedShipment, "STATUS_UPDATED"));
 
         return updatedShipment;
     }
 
-    // ADDED: @Scheduled so this automatically moves shipments forward
-    // Runs every 60 seconds (60000ms) to simulate real-world logistics
-    @Scheduled(fixedRate = 60000)
     @Transactional
     public void simulateShipmentProgress() {
-        log.info("[Scheduler] Simulating active shipment progress...");
-        List<Shipment> activeShipments = repository.findByStatusNot(ShipmentStatus.DELIVERED);
-
-        if (activeShipments.isEmpty()) {
-            log.info("[Scheduler] No active shipments to update.");
-            return;
-        }
+        List<Shipment> activeShipments =
+                repository.findByStatusNot(ShipmentStatus.DELIVERED);
 
         for (Shipment shipment : activeShipments) {
+
             if (!isReadyForNextStage(shipment)) {
                 continue;
             }
 
             ShipmentStatus nextStatus = getNextStatus(shipment.getStatus());
             shipment.setStatus(nextStatus);
+
             repository.save(shipment);
-            
-            log.info("[Scheduler] Shipment for Order ID: {} has progressed to {}", shipment.getOrderId(), nextStatus);
+
+            //eventPublisher.publish(toEvent(shipment, "STATUS_UPDATED"));
+
         }
     }
-
     private boolean isReadyForNextStage(Shipment shipment) {
         LocalDateTime lastUpdated = shipment.getUpdatedAt();
-        long minutesElapsed = Duration.between(lastUpdated, LocalDateTime.now()).toMinutes();
+        long minutesElapsed =
+                Duration.between(lastUpdated, LocalDateTime.now()).toMinutes();
 
         return switch (shipment.getStatus()) {
             case CREATED -> minutesElapsed >= 1;
@@ -131,7 +134,6 @@ public class ShipmentService {
             default -> false;
         };
     }
-
     private ShipmentStatus getNextStatus(ShipmentStatus current) {
         return switch (current) {
             case CREATED -> ShipmentStatus.PICKED_UP;
@@ -141,4 +143,15 @@ public class ShipmentService {
             default -> throw new IllegalStateException("Shipment already delivered");
         };
     }
+//    private ShipmentEvent toEvent(Shipment shipment, String eventType) {
+//        ShipmentEvent event = new ShipmentEvent();
+//        event.setOrderId(shipment.getOrderId());
+//        event.setShipmentId(shipment.getShipmentId());
+//        event.setTrackingNumber(shipment.getTrackingNumber());
+//        event.setStatus(shipment.getStatus());
+//        event.setEventType(eventType);
+//        event.setEventTime(LocalDateTime.now());
+//        return event;
+//    }
 }
+
