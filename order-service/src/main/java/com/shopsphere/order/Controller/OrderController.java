@@ -25,11 +25,11 @@ public class OrderController {
     public ResponseEntity<OrderResponse> placeOrder(
             @Valid @RequestBody OrderRequest orderRequest,
             @RequestHeader(value = "X-Logged-In-User", defaultValue = "UNKNOWN_USER") String username) {
-        
+
         log.info("Order placement initiated by secure user: {}", username);
-        
+
         orderRequest.setUserName(username);
-        
+
         OrderResponse response = orderService.placeOrder(orderRequest);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
@@ -42,6 +42,11 @@ public class OrderController {
     @GetMapping("/{orderId}")
     public ResponseEntity<OrderResponse> getOrderById(@PathVariable Long orderId) {
         return ResponseEntity.ok(orderService.getOrderById(orderId));
+    }
+
+    @GetMapping("/customer/{customerId}")
+    public ResponseEntity<List<OrderResponse>> getOrdersByCustomerId(@PathVariable Long customerId) {
+        return ResponseEntity.ok(orderService.getOrdersByCustomerId(customerId));
     }
 
     @PutMapping("/{orderId}/status")

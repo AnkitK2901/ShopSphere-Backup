@@ -31,25 +31,25 @@ start "CATALOG-SERVICE" cmd /k "mvnw.cmd spring-boot:run"
 cd ..
 
 :: 5. Start Inventory Service
-echo [5/8] Starting Inventory Service (Port: 8083)...
+echo [5/8] Starting Inventory Service (Port: 8084)...
 cd inventory-service
 start "INVENTORY-SERVICE" cmd /k "mvnw.cmd spring-boot:run"
 cd ..
 
 :: 6. Start Logistics Service
-echo [6/8] Starting Logistics Service (Port: 8084)...
+echo [6/8] Starting Logistics Service (Port: 8086)...
 cd logistics-service
 start "LOGISTICS-SERVICE" cmd /k "mvnw.cmd spring-boot:run"
 cd ..
 
 :: 7. Start Order Service
-echo [7/8] Starting Order Service (Port: 8085)...
+echo [7/8] Starting Order Service (Port: 8083)...
 cd order-service
 start "ORDER-SERVICE" cmd /k "mvnw.cmd spring-boot:run"
 cd ..
 
 :: 8. Start Analytics Service
-echo [8/8] Starting Analytics Service (Port: 8086)...
+echo [8/8] Starting Analytics Service (Port: 8087)...
 cd analytics-service
 start "ANALYTICS-SERVICE" cmd /k "mvnw.cmd spring-boot:run"
 cd ..
