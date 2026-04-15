@@ -21,4 +21,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleInvalidEmail(InvalidEmailFormatException ex) {
         return ResponseEntity.status(400).body(ex.getMessage());
     }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
+        return ResponseEntity.status(500).body(ex.getMessage());
+    }
 }

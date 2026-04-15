@@ -44,6 +44,14 @@ public class OrderServiceImpl implements OrderService{
     }
 
     @Override
+    public List<OrderResponse> getOrdersByCustomerId(Long customerId) {
+        List<OrderEntity> orders = orderRepository.findByCustomerId(customerId);
+        return orders.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public OrderResponse placeOrder(OrderRequest orderRequest){
 
         ProductDTO product = productClient.findProductById(orderRequest.getProductId());

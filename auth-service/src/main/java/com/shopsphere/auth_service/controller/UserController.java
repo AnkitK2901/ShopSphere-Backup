@@ -11,24 +11,31 @@ public class UserController {
 
     private final AuthService authService;
 
-    public UserController (AuthService authService){
+    public UserController(AuthService authService) {
         this.authService = authService;
     }
 
+    // NEW — get by ID (called by analytics-service Feign)
+    @GetMapping("/id/{id}")
+    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+        User user = authService.getUserById(id);
+        return ResponseEntity.ok(user);
+    }
+
     @GetMapping("/{userName}")
-    public ResponseEntity<User> getUserByUsername(@PathVariable String userName){
+    public ResponseEntity<User> getUserByUsername(@PathVariable String userName) {
         User user = authService.getUserByUsername(userName);
         return ResponseEntity.ok(user);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUserById(@PathVariable Long id, @RequestBody User userDetails){
+    public ResponseEntity<User> updateUserById(@PathVariable Long id, @RequestBody User userDetails) {
         User user = authService.updateUserById(id, userDetails);
         return ResponseEntity.ok(user);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteUser(@PathVariable Long id){
+    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
         authService.deleteUser(id);
         return ResponseEntity.ok("User Deleted Successfully");
     }
