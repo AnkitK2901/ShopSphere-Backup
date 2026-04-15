@@ -10,7 +10,7 @@ public class OrderResponse {
 
     private Long customerId;
 
-    private Long productId;
+    private String productId;
 
     private Double unitPriceAtPurchase;
 
@@ -42,11 +42,11 @@ public class OrderResponse {
         this.customerId = customerId;
     }
 
-    public Long getProductId() {
+    public String getProductId() {
         return productId;
     }
 
-    public void setProductId(Long productId) {
+    public void setProductId(String productId) {
         this.productId = productId;
     }
 

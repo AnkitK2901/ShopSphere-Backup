@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ProductDTO {
-    private Long productId;
+    private String productId;
     private String name;
     private Double basePrice;
     private String previewImage;
@@ -43,11 +43,11 @@ public class ProductDTO {
         this.previewImage = previewImage;
     }
 
-    public Long getProductId() {
+    public String getProductId() {
         return productId;
     }
 
-    public void setProductId(Long productId) {
+    public void setProductId(String productId) {
         this.productId = productId;
     }
 

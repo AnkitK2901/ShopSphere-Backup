@@ -15,7 +15,7 @@ public class OrderEntity {
 
     private int quantity;
 
-    private Long productId;
+    private String productId;
 
     private Long customerId;
 
@@ -69,11 +69,11 @@ public class OrderEntity {
         this.customerId = customerId;
     }
 
-    public Long getProductId() {
+    public String getProductId() {
         return productId;
     }
 
-    public void setProductId(Long productId) {
+    public void setProductId(String productId) {
         this.productId = productId;
     }
 
@@ -120,7 +120,7 @@ public class OrderEntity {
     public OrderEntity(){}
 
     public OrderEntity(LocalDateTime createdAt, Long customerId, Long orderId,
-                       Double priceAtPurchase, Long productId, int quantity,
+                       Double priceAtPurchase, String productId, int quantity,
                        OrderStatus status, Double totalAmount, LocalDateTime updatedAt) {
         this.createdAt = createdAt;
         this.customerId = customerId;
