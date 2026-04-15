@@ -126,22 +126,49 @@ public class ShipmentService {
         long minutesElapsed =
                 Duration.between(lastUpdated, LocalDateTime.now()).toMinutes();
 
-        return switch (shipment.getStatus()) {
-            case CREATED -> minutesElapsed >= 1;
-            case PICKED_UP -> minutesElapsed >= 2;
-            case IN_TRANSIT -> minutesElapsed >= 5;
-            case OUT_FOR_DELIVERY -> minutesElapsed >= 2;
-            default -> false;
-        };
+        boolean result;
+
+        switch (shipment.getStatus()) {
+            case CREATED:
+                result = minutesElapsed >= 1;
+                break;
+            case PICKED_UP:
+                result = minutesElapsed >= 2;
+                break;
+            case IN_TRANSIT:
+                result = minutesElapsed >= 5;
+                break;
+            case OUT_FOR_DELIVERY:
+                result = minutesElapsed >= 2;
+                break;
+            default:
+                result = false;
+                break;
+        }
+
+        return result;
     }
     private ShipmentStatus getNextStatus(ShipmentStatus current) {
-        return switch (current) {
-            case CREATED -> ShipmentStatus.PICKED_UP;
-            case PICKED_UP -> ShipmentStatus.IN_TRANSIT;
-            case IN_TRANSIT -> ShipmentStatus.OUT_FOR_DELIVERY;
-            case OUT_FOR_DELIVERY -> ShipmentStatus.DELIVERED;
-            default -> throw new IllegalStateException("Shipment already delivered");
-        };
+        ShipmentStatus nextStatus;
+
+        switch (current) {
+            case CREATED:
+                nextStatus = ShipmentStatus.PICKED_UP;
+                break;
+            case PICKED_UP:
+                nextStatus = ShipmentStatus.IN_TRANSIT;
+                break;
+            case IN_TRANSIT:
+                nextStatus = ShipmentStatus.OUT_FOR_DELIVERY;
+                break;
+            case OUT_FOR_DELIVERY:
+                nextStatus = ShipmentStatus.DELIVERED;
+                break;
+            default:
+                throw new IllegalStateException("Shipment already delivered");
+        }
+
+        return nextStatus;
     }
 //    private ShipmentEvent toEvent(Shipment shipment, String eventType) {
 //        ShipmentEvent event = new ShipmentEvent();

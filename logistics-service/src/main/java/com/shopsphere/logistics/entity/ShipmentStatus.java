@@ -8,12 +8,29 @@ public enum ShipmentStatus {
     DELIVERED;
 
     public boolean canTransitionTo(ShipmentStatus nextStatus) {
-        return switch (this) {
-            case CREATED -> nextStatus == PICKED_UP;
-            case PICKED_UP -> nextStatus == IN_TRANSIT;
-            case IN_TRANSIT -> nextStatus == OUT_FOR_DELIVERY;
-            case OUT_FOR_DELIVERY -> nextStatus == DELIVERED;
-            case DELIVERED -> false;
-        };
+        boolean isValid;
+
+        switch (this) {
+            case CREATED:
+                isValid = nextStatus == PICKED_UP;
+                break;
+            case PICKED_UP:
+                isValid = nextStatus == IN_TRANSIT;
+                break;
+            case IN_TRANSIT:
+                isValid = nextStatus == OUT_FOR_DELIVERY;
+                break;
+            case OUT_FOR_DELIVERY:
+                isValid = nextStatus == DELIVERED;
+                break;
+            case DELIVERED:
+                isValid = false;
+                break;
+            default:
+                isValid = false;
+                break;
+        }
+
+        return isValid;
     }
 }
