@@ -8,13 +8,14 @@ import com.shopsphere.order.Repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-public class OrderServiceImpl implements OrderService{
+public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private UserClient userClient;
@@ -28,8 +29,11 @@ public class OrderServiceImpl implements OrderService{
     @Autowired
     private OrderRepository orderRepository;
 
+    @Autowired
+    private InventoryClient inventoryClient;
+
     @Override
-    public List<OrderResponse> getAllOrders(){
+    public List<OrderResponse> getAllOrders() {
         return orderRepository.findAll()
                 .stream()
                 .map(this::mapToResponse)
@@ -37,9 +41,9 @@ public class OrderServiceImpl implements OrderService{
     }
 
     @Override
-    public OrderResponse getOrderById(Long orderId){
-        OrderEntity order =  orderRepository.findById(orderId)
-                .orElseThrow(()-> new ResourceNotFoundException("Order ID is not Found"));
+    public OrderResponse getOrderById(Long orderId) {
+        OrderEntity order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order ID is not Found"));
         return mapToResponse(order);
     }
 
@@ -54,15 +58,14 @@ public class OrderServiceImpl implements OrderService{
 
     @Override
     @Transactional
-    public OrderResponse placeOrder(OrderRequest orderRequest){
-
+    public OrderResponse placeOrder(OrderRequest orderRequest) {
         ProductDTO product = productClient.findProductById(orderRequest.getProductId());
         UserDTO user = userClient.getUserByUserName(orderRequest.getUserName());
 
-        if(user == null){
+        if (user == null) {
             throw new ResourceNotFoundException("Customer Not found");
         }
-        if(product == null){
+        if (product == null) {
             throw new ResourceNotFoundException("Product Not Found");
         }
 
@@ -72,23 +75,31 @@ public class OrderServiceImpl implements OrderService{
             throw new ResourceNotFoundException("Product price is completely unavailable");
         }
 
+        // 1. Create and save the order first
         OrderEntity orders = new OrderEntity();
         orders.setProductId(product.getProductId());
         orders.setCustomerId(user.getId());
-        
         orders.setPriceAtPurchase(unitPrice);
         orders.setTotalAmount(unitPrice * orderRequest.getQuantity());
-
         orders.setStatus(OrderStatus.CONFIRMED);
         orders.setQuantity(orderRequest.getQuantity());
 
-        return mapToResponse(orderRepository.save(orders));
+        OrderEntity savedOrder = orderRepository.save(orders);
+
+        // 2. Synchronously deduct inventory
+        // FIX: Create the StockRequest object expected by the InventoryClient
+        StockRequest stockRequest = new StockRequest(String.valueOf(product.getProductId()),
+                orderRequest.getQuantity());
+        inventoryClient.deductStock(stockRequest);
+
+        return mapToResponse(savedOrder);
     }
 
     @Override
-    public OrderResponse updateStatus(Long orderId, OrderStatus newStatus){
+    @Transactional // Ensure this method is transactional to allow rollback
+    public OrderResponse updateStatus(Long orderId, OrderStatus newStatus) {
         OrderEntity order = orderRepository.findById(orderId)
-                .orElseThrow(()-> new ResourceNotFoundException("Order Id not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order Id not found"));
 
         ValidTransaction(order.getStatus(), newStatus);
 
@@ -100,7 +111,9 @@ public class OrderServiceImpl implements OrderService{
             try {
                 logisticsClient.createShipment(String.valueOf(orderId));
             } catch (Exception e) {
-                System.err.println("Could not create shipment for Order " + orderId + ": " + e.getMessage());
+                // FIX: Throw a RuntimeException to rollback the transaction
+                // so the order status does not change to SHIPPED in the database
+                throw new IllegalStateException("Logistics failure: Could not create shipment for Order " + orderId, e);
             }
         }
 
@@ -108,9 +121,9 @@ public class OrderServiceImpl implements OrderService{
     }
 
     @Override
-    public OrderResponse cancelOrder(Long orderId){
+    public OrderResponse cancelOrder(Long orderId) {
         OrderEntity order = orderRepository.findById(orderId)
-                .orElseThrow(()-> new ResourceNotFoundException("Order Id not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order Id not found"));
 
         ValidTransaction(order.getStatus(), OrderStatus.CANCELLED);
 
@@ -121,9 +134,9 @@ public class OrderServiceImpl implements OrderService{
     }
 
     @Override
-    public OrderResponse returnOrder(Long orderId){
+    public OrderResponse returnOrder(Long orderId) {
         OrderEntity order = orderRepository.findById(orderId)
-                .orElseThrow(()-> new ResourceNotFoundException("Order Id not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order Id not found"));
 
         ValidTransaction(order.getStatus(), OrderStatus.RETURNED);
 
@@ -139,16 +152,14 @@ public class OrderServiceImpl implements OrderService{
             OrderStatus.SHIPPED, List.of(OrderStatus.DELIVERED),
             OrderStatus.DELIVERED, List.of(OrderStatus.RETURNED),
             OrderStatus.CANCELLED, List.of(),
-            OrderStatus.RETURNED, List.of()
-    );
+            OrderStatus.RETURNED, List.of());
 
-    private void ValidTransaction(OrderStatus current, OrderStatus newStatus){
+    private void ValidTransaction(OrderStatus current, OrderStatus newStatus) {
         List<OrderStatus> valid = ALLOWED_TRANSITIONS.getOrDefault(current, List.of());
         if (!valid.contains(newStatus)) {
             throw new IllegalStateException(
                     "Invalid transition: " + current + " → " + newStatus +
-                            ". Allowed: " + valid
-            );
+                            ". Allowed: " + valid);
         }
     }
 
@@ -177,4 +188,3 @@ public class OrderServiceImpl implements OrderService{
         return res;
     }
 }
-

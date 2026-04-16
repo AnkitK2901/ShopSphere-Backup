@@ -17,11 +17,17 @@ public class FeignConfig {
 
             if (attributes != null) {
                 HttpServletRequest request = attributes.getRequest();
+                
+                // 1. Forward the JWT Token (You already had this)
                 String authHeader = request.getHeader("Authorization");
-
                 if (authHeader != null) {
-                    // This "forwards" your Bearer token to the Auth Service
                     requestTemplate.header("Authorization", authHeader);
+                }
+
+                // 2. NEW: Forward the User Role so downstream services know WHO is calling
+                String userRole = request.getHeader("X-User-Role");
+                if (userRole != null) {
+                    requestTemplate.header("X-User-Role", userRole);
                 }
             }
         };

@@ -25,7 +25,8 @@ class JwtUtilTest {
 
     @Test
     void generateToken_validUsername_returnsNonNullToken() {
-        String token = jwtUtil.generateToken("testuser");
+        // FIX: Added "ROLE_BUYER" as the second argument
+        String token = jwtUtil.generateToken("testuser", "ROLE_BUYER");
 
         assertNotNull(token);
         assertFalse(token.isEmpty());
@@ -33,7 +34,8 @@ class JwtUtilTest {
 
     @Test
     void generateToken_validUsername_tokenContainsThreeParts() {
-        String token = jwtUtil.generateToken("testuser");
+        // FIX: Added "ROLE_BUYER" as the second argument
+        String token = jwtUtil.generateToken("testuser", "ROLE_BUYER");
 
         // JWT format: header.payload.signature
         String[] parts = token.split("\\.");
@@ -42,8 +44,9 @@ class JwtUtilTest {
 
     @Test
     void generateToken_differentUsernames_returnsDifferentTokens() {
-        String token1 = jwtUtil.generateToken("user1");
-        String token2 = jwtUtil.generateToken("user2");
+        // FIX: Added "ROLE_BUYER" as the second argument
+        String token1 = jwtUtil.generateToken("user1", "ROLE_BUYER");
+        String token2 = jwtUtil.generateToken("user2", "ROLE_BUYER");
 
         assertNotEquals(token1, token2);
     }
@@ -52,7 +55,8 @@ class JwtUtilTest {
 
     @Test
     void extractUsername_validToken_returnsCorrectUsername() {
-        String token = jwtUtil.generateToken("johndoe");
+        // FIX: Added "ROLE_BUYER" as the second argument
+        String token = jwtUtil.generateToken("johndoe", "ROLE_BUYER");
 
         String username = jwtUtil.extractUsername(token);
 
@@ -61,8 +65,9 @@ class JwtUtilTest {
 
     @Test
     void extractUsername_differentUsers_returnsMatchingUsername() {
-        String token1 = jwtUtil.generateToken("alice");
-        String token2 = jwtUtil.generateToken("bob");
+        // FIX: Added "ROLE_BUYER" as the second argument
+        String token1 = jwtUtil.generateToken("alice", "ROLE_BUYER");
+        String token2 = jwtUtil.generateToken("bob", "ROLE_BUYER");
 
         assertEquals("alice", jwtUtil.extractUsername(token1));
         assertEquals("bob", jwtUtil.extractUsername(token2));
@@ -75,7 +80,8 @@ class JwtUtilTest {
 
     @Test
     void extractUsername_tamperedToken_throwsException() {
-        String token = jwtUtil.generateToken("testuser");
+        // FIX: Added "ROLE_BUYER" as the second argument
+        String token = jwtUtil.generateToken("testuser", "ROLE_BUYER");
         // Tamper with the signature
         String tampered = token.substring(0, token.length() - 5) + "XXXXX";
 
@@ -90,6 +96,7 @@ class JwtUtilTest {
 
         String expiredToken = Jwts.builder()
                 .setSubject("testuser")
+                .claim("role", "ROLE_BUYER")
                 .setIssuedAt(new Date(System.currentTimeMillis() - 3600000))
                 .setExpiration(new Date(System.currentTimeMillis() - 1800000))
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -103,7 +110,8 @@ class JwtUtilTest {
     @Test
     void generateAndExtract_roundTrip_preservesUsername() {
         String username = "roundTripUser";
-        String token = jwtUtil.generateToken(username);
+        // FIX: Added "ROLE_BUYER" as the second argument
+        String token = jwtUtil.generateToken(username, "ROLE_BUYER");
         String extracted = jwtUtil.extractUsername(token);
 
         assertEquals(username, extracted);
@@ -111,7 +119,8 @@ class JwtUtilTest {
 
     @Test
     void generateToken_tokenNotExpiredImmediately_extractsSuccessfully() {
-        String token = jwtUtil.generateToken("testuser");
+        // FIX: Added "ROLE_BUYER" as the second argument
+        String token = jwtUtil.generateToken("testuser", "ROLE_BUYER");
 
         // Should not throw — token was just created and has 30 min expiry
         assertDoesNotThrow(() -> jwtUtil.extractUsername(token));

@@ -50,6 +50,7 @@ class AuthServiceTest {
         testUser.setPassword("password123");
         testUser.setAddress("123 Main St");
         testUser.setGender("Male");
+        testUser.setRole("ROLE_BUYER"); // Added role for testing
 
         loginRequest = new LoginRequest();
         loginRequest.setUsername("johndoe");
@@ -70,6 +71,7 @@ class AuthServiceTest {
         verify(passwordEncoder).encode("password123");
         verify(userRepository).save(testUser);
         assertEquals("encodedPassword", testUser.getPassword());
+        assertEquals("ROLE_BUYER", testUser.getRole()); // Verify default role logic
     }
 
     @Test
@@ -152,15 +154,17 @@ class AuthServiceTest {
         User storedUser = new User();
         storedUser.setUsername("johndoe");
         storedUser.setPassword("encodedPassword");
+        storedUser.setRole("ROLE_BUYER"); // Ensure role is set on stored user
 
         when(userRepository.findByUsername("johndoe")).thenReturn(storedUser);
         when(passwordEncoder.matches("password123", "encodedPassword")).thenReturn(true);
-        when(jwtUtil.generateToken("johndoe")).thenReturn("jwt-token-123");
+        // FIX: Expecting two parameters for generateToken
+        when(jwtUtil.generateToken("johndoe", "ROLE_BUYER")).thenReturn("jwt-token-123");
 
         String token = authService.loginUser(loginRequest);
 
         assertEquals("jwt-token-123", token);
-        verify(jwtUtil).generateToken("johndoe");
+        verify(jwtUtil).generateToken("johndoe", "ROLE_BUYER");
     }
 
     @Test
@@ -171,7 +175,8 @@ class AuthServiceTest {
                 () -> authService.loginUser(loginRequest));
 
         assertEquals("Invalid user credentials", ex.getMessage());
-        verify(jwtUtil, never()).generateToken(anyString());
+        // FIX: Expecting two parameters for the never() check
+        verify(jwtUtil, never()).generateToken(anyString(), anyString());
     }
 
     @Test
@@ -187,7 +192,8 @@ class AuthServiceTest {
                 () -> authService.loginUser(loginRequest));
 
         assertEquals("Invalid user credentials", ex.getMessage());
-        verify(jwtUtil, never()).generateToken(anyString());
+        // FIX: Expecting two parameters for the never() check
+        verify(jwtUtil, never()).generateToken(anyString(), anyString());
     }
 
     // ======================== getUserByUsername Tests ========================

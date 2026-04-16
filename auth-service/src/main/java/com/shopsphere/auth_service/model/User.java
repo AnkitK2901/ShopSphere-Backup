@@ -29,6 +29,10 @@ public class User {
     @Column(name = "user_gender")
     private String gender;
 
+    // NEW: Role field for Authorization
+    @Column(name = "user_role")
+    private String role;
+
     public User() {}
 
     // Getters and Setters
@@ -52,4 +56,7 @@ public class User {
 
     public String getGender() { return gender; }
     public void setGender(String gender) { this.gender = gender; }
+
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
 }

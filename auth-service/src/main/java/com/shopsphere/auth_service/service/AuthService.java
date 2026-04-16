@@ -34,6 +34,15 @@ public class AuthService {
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new UserAlreadyExistsException("Error: Email is already registered!");
         }
+
+        // --- SMART ROLE FIX ---
+        if (user.getRole() == null || user.getRole().trim().isEmpty()) {
+            user.setRole("ROLE_BUYER");
+        } else if (!user.getRole().startsWith("ROLE_")) {
+            // Automatically converts "SELLER" to "ROLE_SELLER"
+            user.setRole("ROLE_" + user.getRole().toUpperCase());
+        }
+
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
     }
@@ -43,10 +52,10 @@ public class AuthService {
         if (existingUser == null || !passwordEncoder.matches(loginRequest.getPassword(), existingUser.getPassword())) {
             throw new InvalidCredentialsException("Invalid user credentials");
         }
-        return jwtUtil.generateToken(loginRequest.getUsername());
+        // UPDATED: Pass both username and role to generateToken
+        return jwtUtil.generateToken(existingUser.getUsername(), existingUser.getRole());
     }
 
-    // NEW — get user by ID (used by analytics-service via Feign)
     public User getUserById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
@@ -66,6 +75,8 @@ public class AuthService {
         existingUser.setName(userDetails.getName());
         existingUser.setAddress(userDetails.getAddress());
         existingUser.setGender(userDetails.getGender());
+        // Optionally update role here if needed, but normally restricted to Admin
+
         if (userDetails.getPassword() != null) {
             existingUser.setPassword(passwordEncoder.encode(userDetails.getPassword()));
         }
