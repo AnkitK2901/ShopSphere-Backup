@@ -8,6 +8,8 @@ public class OrderRequest {
 
     private int quantity;
 
+    private String paymentMode;
+
     public String getProductId() {
         return productId;
     }
@@ -32,7 +34,11 @@ public class OrderRequest {
         this.quantity = quantity;
     }
 
-    public void setPaymentMode(String string) {
-        throw new UnsupportedOperationException("Unimplemented method 'setPaymentMode'");
+    public String getPaymentMode() {
+        return paymentMode;
+    }
+
+    public void setPaymentMode(String paymentMode) {
+        this.paymentMode = paymentMode;
     }
 }

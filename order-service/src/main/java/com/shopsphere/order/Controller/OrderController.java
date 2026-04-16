@@ -49,7 +49,7 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getOrdersByCustomerId(customerId));
     }
 
-    @PutMapping("/{orderId}/status")
+    @PatchMapping("/{orderId}/status")
     public ResponseEntity<OrderResponse> updateStatus(
             @PathVariable Long orderId,
             @Valid @RequestBody StatusUpdateRequest request) {

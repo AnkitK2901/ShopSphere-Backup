@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+
 @Component
 public class AuthenticationFilter extends AbstractGatewayFilterFactory<AuthenticationFilter.Config> {
 
@@ -29,9 +30,12 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                 return exchange.getResponse().setComplete();
             }
 
-            String authHeader = exchange.getRequest().getHeaders().get(HttpHeaders.AUTHORIZATION).get(0);
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                authHeader = authHeader.substring(7);
+            // Keep the original header string intact
+            String originalAuthHeader = exchange.getRequest().getHeaders().get(HttpHeaders.AUTHORIZATION).get(0);
+            String token = originalAuthHeader;
+
+            if (token != null && token.startsWith("Bearer ")) {
+                token = token.substring(7);
             } else {
                 exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                 return exchange.getResponse().setComplete();
@@ -43,14 +47,16 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                 Claims claims = Jwts.parserBuilder()
                         .setSigningKey(Keys.hmacShaKeyFor(keyBytes))
                         .build()
-                        .parseClaimsJws(authHeader)
+                        .parseClaimsJws(token)
                         .getBody();
 
                 String username = claims.getSubject();
 
+                // Forward BOTH the username and the original Authorization header
                 ServerWebExchange modifiedExchange = exchange.mutate()
                         .request(exchange.getRequest().mutate()
                                 .header("X-Logged-In-User", username)
+                                .header(HttpHeaders.AUTHORIZATION, originalAuthHeader) 
                                 .build())
                         .build();
 
