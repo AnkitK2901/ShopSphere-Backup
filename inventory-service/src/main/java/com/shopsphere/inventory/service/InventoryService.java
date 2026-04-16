@@ -23,6 +23,12 @@ public class InventoryService {
                 .map(item -> item.getStockLevel() >= qty)
                 .orElse(false);
     }
+    
+    @Transactional
+    public com.shopsphere.inventory.model.InventoryItem addInventory(
+            com.shopsphere.inventory.model.InventoryItem item) {
+        return inventoryRepository.save(item);
+    }
 
     @Transactional
     public void deductStock(String productId, Integer qty) {

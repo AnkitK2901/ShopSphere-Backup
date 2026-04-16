@@ -1,8 +1,9 @@
 package com.shopsphere.catalog.Entity;
 
 import jakarta.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
+// import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "product")
@@ -24,7 +25,7 @@ public class Product {
             joinColumns = @JoinColumn(name = "product_id"),
             inverseJoinColumns = @JoinColumn(name = "option_id")
     )
-    private List<CustomOption> customOptions = new ArrayList<>();
+    private Set<CustomOption> customOptions = new LinkedHashSet<>();
 
     // FEATURE: Real-time pricing update logic
     @PostLoad @PrePersist @PreUpdate
@@ -48,8 +49,8 @@ public class Product {
     public String getPreviewImage() { return previewImage; }
     public void setPreviewImage(String previewImage) { this.previewImage = previewImage; }
     public Double getTotalPrice() { return totalPrice; }
-    public List<CustomOption> getCustomOptions() { return customOptions; }
-    public void setCustomOptions(List<CustomOption> customOptions) { this.customOptions = customOptions; }
+    public Set<CustomOption> getCustomOptions() { return customOptions; }
+    public void setCustomOptions(Set<CustomOption> customOptions) { this.customOptions = customOptions; }
 
     public Product() {}
 }

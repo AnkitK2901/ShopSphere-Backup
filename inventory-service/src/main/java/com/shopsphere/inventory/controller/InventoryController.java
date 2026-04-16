@@ -23,6 +23,13 @@ public class InventoryController {
         return ResponseEntity.ok(inStock);
     }
 
+    @PostMapping
+    public ResponseEntity<String> addInventory(@RequestBody com.shopsphere.inventory.model.InventoryItem item) {
+        log.info("Received POST request to add inventory for Product: {}", item.getProductId());
+        inventoryService.addInventory(item);
+        return ResponseEntity.ok("Successfully added inventory for product: " + item.getProductId());
+    }
+
     @PostMapping("/deduct")
     public ResponseEntity<String> deductStock(@Valid @RequestBody StockRequest request) {
         log.info("Received POST request to deduct stock for Product: {}", request.getProductId());

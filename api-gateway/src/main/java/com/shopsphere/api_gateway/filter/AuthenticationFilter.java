@@ -9,7 +9,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
-
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 @Component
 public class AuthenticationFilter extends AbstractGatewayFilterFactory<AuthenticationFilter.Config> {
 
@@ -37,8 +38,10 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
             }
 
             try {
+                byte[] keyBytes = Decoders.BASE64.decode(secret);
+                
                 Claims claims = Jwts.parserBuilder()
-                        .setSigningKey(secret.getBytes())
+                        .setSigningKey(Keys.hmacShaKeyFor(keyBytes))
                         .build()
                         .parseClaimsJws(authHeader)
                         .getBody();

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 @Service
@@ -33,7 +34,7 @@ public class ProductServiceImpl implements ProductService {
 
            if (dto.getSelectedOptionIds() != null && !dto.getSelectedOptionIds().isEmpty()) {
                List<CustomOption> options = optionRepository.findAllById(dto.getSelectedOptionIds());
-               product.setCustomOptions(options);
+               product.setCustomOptions(new LinkedHashSet<>(options));
            }
            return productRepository.save(product);
     }
@@ -62,7 +63,7 @@ public class ProductServiceImpl implements ProductService {
 
         if (dto.getSelectedOptionIds() != null) {
             List<CustomOption> options = optionRepository.findAllById(dto.getSelectedOptionIds());
-            product.setCustomOptions(options);
+            product.setCustomOptions(new LinkedHashSet<>(options));
         }
         return productRepository.save(product);
     }

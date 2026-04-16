@@ -7,7 +7,7 @@ import com.shopsphere.order.Exception.ResourceNotFoundException;
 import com.shopsphere.order.Repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +44,7 @@ public class OrderServiceImpl implements OrderService{
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<OrderResponse> getOrdersByCustomerId(Long customerId) {
         List<OrderEntity> orders = orderRepository.findByCustomerId(customerId);
         return orders.stream()
@@ -52,6 +53,7 @@ public class OrderServiceImpl implements OrderService{
     }
 
     @Override
+    @Transactional
     public OrderResponse placeOrder(OrderRequest orderRequest){
 
         ProductDTO product = productClient.findProductById(orderRequest.getProductId());
