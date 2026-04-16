@@ -14,15 +14,14 @@ public interface OrderFeignClient {
     record OrderResponse(
             Long orderId,
             Long customerId,
-            Long productId,
+            String productId,
             Double unitPriceAtPurchase,
             Double totalOrderAmount,
-            String orderStatus,          // OrderStatus enum → String over JSON
+            String orderStatus,
             LocalDateTime createdAt,
             LocalDateTime updatedAt
     ) {}
 
-    // Requires new endpoint added to order-service — see Order Service section below
     @GetMapping("/api/orders/customer/{customerId}")
     List<OrderResponse> getOrdersByCustomerId(@PathVariable("customerId") Long customerId);
 }

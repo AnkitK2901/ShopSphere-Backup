@@ -34,7 +34,7 @@ public class EngagementReportServiceImpl implements EngagementReportService {
     @Autowired
     private CatalogFeignClient catalogFeignClient;
 
-    // ── Read ──────────────────────────────────────────────────────────────────
+    // ── Read
 
     @Override
     public List<EngagementReportResponse> getAllReports() {
@@ -60,8 +60,7 @@ public class EngagementReportServiceImpl implements EngagementReportService {
         return reports.stream().map(this::mapToResponse).collect(Collectors.toList());
     }
 
-    // ── Write ─────────────────────────────────────────────────────────────────
-
+    // ── Write
     @Override
     public EngagementReportResponse createReport(EngagementReportRequest request) {
         // Validate customer exists via auth-service
@@ -102,7 +101,7 @@ public class EngagementReportServiceImpl implements EngagementReportService {
         engagementReportRepository.delete(report);
     }
 
-    // ── Private Helpers ───────────────────────────────────────────────────────
+    // ── Private Helpers
 
     private BehaviorMetricsEntity buildBehaviorMetrics(EngagementReportRequest request,
                                                        List<OrderResponse> orders) {
@@ -114,7 +113,7 @@ public class EngagementReportServiceImpl implements EngagementReportService {
         metrics.setAbandonedCartCount(request.getAbandonedCartCount());
 
         // Favourite product — find most frequently ordered productId, then resolve
-        // its human-readable name from catalog-service
+
         orders.stream()
                 .collect(Collectors.groupingBy(OrderResponse::productId, Collectors.counting()))
                 .entrySet().stream()
@@ -130,21 +129,19 @@ public class EngagementReportServiceImpl implements EngagementReportService {
                                     product != null ? product.name() : "Product-" + e.getKey()
                             );
                         } catch (Exception ex) {
-                            // catalog-service unreachable — degrade gracefully
                             metrics.setFavouriteProduct("Product-" + e.getKey());
                         }
                     }
                 });
 
-        // Average order value — uses totalOrderAmount already stored in the order.
-        // No extra catalog-service call needed for this.
+        // Average order value rounded to 2 decimal places
         double avgValue = totalOrders > 0
                 ? orders.stream()
                 .mapToDouble(o -> o.totalOrderAmount() != null ? o.totalOrderAmount() : 0.0)
                 .average()
                 .orElse(0.0)
                 : 0.0;
-        metrics.setAverageOrderValue(avgValue);
+        metrics.setAverageOrderValue(Math.round(avgValue * 100.0) / 100.0);
 
         return metrics;
     }

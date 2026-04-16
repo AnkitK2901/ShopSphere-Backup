@@ -8,6 +8,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 public interface UserClient {
 
     @GetMapping("/api/users/{userName}")
-    public UserDTO getUserByUserName(@PathVariable String userName);
+    public UserDTO getUserByUserName(@PathVariable("userName") String userName);
 
 }

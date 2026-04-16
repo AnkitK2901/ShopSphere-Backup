@@ -62,23 +62,21 @@ public class OrderServiceImpl implements OrderService{
         if(user == null){
             throw new ResourceNotFoundException("Customer Not found");
         }
-
         if(product == null){
             throw new ResourceNotFoundException("Product Not Found");
         }
 
-        if (product.getTotalPrice() == null) {
-            throw new IllegalStateException("Product price calculation failed in Catalog Service");
+        // --- SAFE PRICE CALCULATION FIX ---
+        Double unitPrice = product.getTotalPrice() != null ? product.getTotalPrice() : product.getBasePrice();
+        if (unitPrice == null) {
+            throw new ResourceNotFoundException("Product price is completely unavailable");
         }
 
         OrderEntity orders = new OrderEntity();
-
         orders.setProductId(product.getProductId());
         orders.setCustomerId(user.getId());
-
-        double unitPrice = product.getTotalPrice();
+        
         orders.setPriceAtPurchase(unitPrice);
-
         orders.setTotalAmount(unitPrice * orderRequest.getQuantity());
 
         orders.setStatus(OrderStatus.CONFIRMED);
