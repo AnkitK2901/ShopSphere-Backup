@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 @FeignClient(name = "logistics-service")
 public interface LogisticsClient {
 
-    @PostMapping("/api/shipments/{orderId}")
+    @PostMapping("/api/shipments/createShipment/{orderId}")
     public ShipmentResponse createShipment(@PathVariable("orderId") String orderId);
 
     @GetMapping("/api/shipments/order/{orderId}")
