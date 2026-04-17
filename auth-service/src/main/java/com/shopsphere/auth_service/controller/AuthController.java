@@ -25,8 +25,13 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> loginUser(@RequestBody LoginRequest loginRequest) {
+        // 1. Generate the token
         String token = authService.loginUser(loginRequest);
-        return ResponseEntity.ok(new AuthResponse(token));
+        
+        // 2. Fetch the user details dynamically
+        User user = authService.getUserByUsername(loginRequest.getUsername());
+        
+        // 3. Return both the token AND the dynamic ID!
+        return ResponseEntity.ok(new AuthResponse(token, user.getId()));
     }
-
 }

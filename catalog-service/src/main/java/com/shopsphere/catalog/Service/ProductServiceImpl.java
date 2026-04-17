@@ -1,4 +1,5 @@
 package com.shopsphere.catalog.Service;
+
 import com.shopsphere.catalog.Entity.Product;
 import com.shopsphere.catalog.Entity.CustomOption;
 import com.shopsphere.catalog.Exception.ResourceNotFoundException;
@@ -31,6 +32,7 @@ public class ProductServiceImpl implements ProductService {
            product.setName(dto.getName());
            product.setBasePrice(dto.getBasePrice());
            product.setPreviewImage(dto.getPreviewImage());
+           product.setActive(true); // Ensure it defaults to true
 
            if (dto.getSelectedOptionIds() != null && !dto.getSelectedOptionIds().isEmpty()) {
                List<CustomOption> options = optionRepository.findAllById(dto.getSelectedOptionIds());
@@ -41,16 +43,18 @@ public class ProductServiceImpl implements ProductService {
 
    @Override
     public List<Product> getAllProducts() {
-        logger.info("Fetching all products");
-        return productRepository.findAll();
+        logger.info("Fetching all ACTIVE products");
+        // FIX: Only return active products to the catalog
+        return productRepository.findByIsActiveTrue();
     }
 
     @Override
     public Product getProductById(Long id) {
         logger.info("Fetching product with id: {}", id);
-        return productRepository.findById(id)
+        // FIX: Prevent fetching deactivated products
+        return productRepository.findByProductIdAndIsActiveTrue(id)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("Product not found with id: " + id));
+                        new ResourceNotFoundException("Active Product not found with id: " + id));
     }
 
     @Override
@@ -70,9 +74,10 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void deleteProduct(Long id) {
-        logger.info("Deleting product with id: {}", id);
+        logger.info("Deactivating product with id: {}", id);
         Product product = getProductById(id);
-        productRepository.delete(product);
+        // FIX: Soft Delete instead of hard repository.delete()
+        product.setActive(false);
+        productRepository.save(product);
     }
 }
-

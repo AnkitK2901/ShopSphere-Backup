@@ -2,7 +2,6 @@ package com.shopsphere.catalog.Entity;
 
 import jakarta.persistence.*;
 import java.util.LinkedHashSet;
-// import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -16,7 +15,10 @@ public class Product {
     private Double basePrice;
     private String previewImage;
 
-    @Transient // Real-time calculated price (not stored in DB)
+    // --- NEW ADDITION: Soft delete flag ---
+    private boolean isActive = true;
+
+    @Transient
     private Double totalPrice = 0.0;
 
     @ManyToMany(fetch = FetchType.EAGER)
@@ -27,15 +29,13 @@ public class Product {
     )
     private Set<CustomOption> customOptions = new LinkedHashSet<>();
 
-    // FEATURE: Real-time pricing update logic
     @PostLoad @PrePersist @PreUpdate
     public void calculateTotalPrice() {
         double adjustments = (customOptions == null) ? 0.0 :
                 customOptions.stream()
-                        .filter(o -> o.getPriceAdjustment() != 0) // Extra safety
+                        .filter(o -> o.getPriceAdjustment() != 0) 
                         .mapToDouble(CustomOption::getPriceAdjustment).sum();
 
-        // Ensure basePrice isn't null before adding
         this.totalPrice = (this.basePrice != null ? this.basePrice : 0.0) + adjustments;
     }
 
@@ -51,6 +51,10 @@ public class Product {
     public Double getTotalPrice() { return totalPrice; }
     public Set<CustomOption> getCustomOptions() { return customOptions; }
     public void setCustomOptions(Set<CustomOption> customOptions) { this.customOptions = customOptions; }
+    
+    // --- NEW GETTERS/SETTERS ---
+    public boolean isActive() { return isActive; }
+    public void setActive(boolean active) { isActive = active; }
 
     public Product() {}
 }

@@ -28,7 +28,7 @@ public class InventoryServiceTest {
 
     @BeforeEach
     void setUp() {
-        mockItem = new InventoryItem("P101", 50, "SUP_001", 10);
+        mockItem = new InventoryItem("P101", 50, "SUP_001", 10,5);
     }
 
     @Test

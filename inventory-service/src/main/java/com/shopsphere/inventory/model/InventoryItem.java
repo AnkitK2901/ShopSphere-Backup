@@ -13,9 +13,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class InventoryItem {
-	@Id
-	private String productId;
-	private Integer stockLevel;
-	private String supplierId;
-	private Integer reorderThreshold;
+    @Id
+    private String productId;
+    
+    private Integer stockLevel;
+    
+    private String supplierId;
+    
+    private Integer reorderThreshold;
+    
+    // --- NEW ADDITION: LLD 4.3.1 Supplier Tracking ---
+    private Integer supplierLeadTimeDays;
 }

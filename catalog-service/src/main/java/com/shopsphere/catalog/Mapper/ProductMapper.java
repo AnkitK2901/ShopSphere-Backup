@@ -20,6 +20,7 @@ public class ProductMapper {
         dto.setName(product.getName());
         dto.setBasePrice(product.getBasePrice());
         dto.setPreviewImage(product.getPreviewImage());
+        dto.setActive(product.isActive()); // --- NEW ADDITION ---
 
         product.calculateTotalPrice();
         dto.setTotalPrice(product.getTotalPrice());

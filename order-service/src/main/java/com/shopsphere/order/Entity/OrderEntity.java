@@ -4,6 +4,7 @@ import com.shopsphere.order.Enums.OrderStatus;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "Orders")
@@ -30,6 +31,12 @@ public class OrderEntity {
 
     private LocalDateTime updatedAt;
 
+    // --- NEW ADDITION: Safely store customized options ---
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "order_customizations", joinColumns = @JoinColumn(name = "order_id"))
+    @Column(name = "custom_detail")
+    private List<String> customizationDetails;
+
     @PrePersist
     protected void onCreate(){
         this.createdAt = LocalDateTime.now();
@@ -44,84 +51,43 @@ public class OrderEntity {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public Long getOrderId() {
-        return orderId;
-    }
+    // Getters and Setters
+    public Long getOrderId() { return orderId; }
+    public void setOrderId(Long orderId) { this.orderId = orderId; }
 
-    public void setOrderId(Long orderId) {
-        this.orderId = orderId;
-    }
+    public int getQuantity() { return quantity; }
+    public void setQuantity(int quantity) { this.quantity = quantity; }
 
+    public Long getCustomerId() { return customerId; }
+    public void setCustomerId(Long customerId) { this.customerId = customerId; }
 
-    public int getQuantity() {
-        return quantity;
-    }
+    public String getProductId() { return productId; }
+    public void setProductId(String productId) { this.productId = productId; }
 
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public Long getCustomerId() {
-        return customerId;
-    }
+    public OrderStatus getStatus() { return status; }
+    public void setStatus(OrderStatus status) { this.status = status; }
 
-    public void setCustomerId(Long customerId) {
-        this.customerId = customerId;
-    }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 
-    public String getProductId() {
-        return productId;
-    }
+    public Double getPriceAtPurchase() { return priceAtPurchase; }
+    public void setPriceAtPurchase(Double priceAtPurchase) { this.priceAtPurchase = priceAtPurchase; }
 
-    public void setProductId(String productId) {
-        this.productId = productId;
-    }
+    public Double getTotalAmount() { return totalAmount; }
+    public void setTotalAmount(Double totalAmount) { this.totalAmount = totalAmount; }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public OrderStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(OrderStatus status) {
-        this.status = status;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public Double getPriceAtPurchase() {
-        return priceAtPurchase;
-    }
-
-    public void setPriceAtPurchase(Double priceAtPurchase) {
-        this.priceAtPurchase = priceAtPurchase;
-    }
-
-    public Double getTotalAmount() {
-        return totalAmount;
-    }
-
-    public void setTotalAmount(Double totalAmount) {
-        this.totalAmount = totalAmount;
-    }
+    public List<String> getCustomizationDetails() { return customizationDetails; }
+    public void setCustomizationDetails(List<String> customizationDetails) { this.customizationDetails = customizationDetails; }
 
     public OrderEntity(){}
 
     public OrderEntity(LocalDateTime createdAt, Long customerId, Long orderId,
                        Double priceAtPurchase, String productId, int quantity,
-                       OrderStatus status, Double totalAmount, LocalDateTime updatedAt) {
+                       OrderStatus status, Double totalAmount, LocalDateTime updatedAt,
+                       List<String> customizationDetails) {
         this.createdAt = createdAt;
         this.customerId = customerId;
         this.orderId = orderId;
@@ -131,5 +97,6 @@ public class OrderEntity {
         this.status = status;
         this.totalAmount = totalAmount;
         this.updatedAt = updatedAt;
+        this.customizationDetails = customizationDetails;
     }
 }

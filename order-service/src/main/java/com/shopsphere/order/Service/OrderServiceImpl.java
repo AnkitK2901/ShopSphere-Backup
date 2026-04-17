@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -69,13 +70,20 @@ public class OrderServiceImpl implements OrderService {
             throw new ResourceNotFoundException("Product Not Found");
         }
 
-        // --- SAFE PRICE CALCULATION FIX ---
         Double unitPrice = product.getTotalPrice() != null ? product.getTotalPrice() : product.getBasePrice();
         if (unitPrice == null) {
             throw new ResourceNotFoundException("Product price is completely unavailable");
         }
 
-        // 1. Create and save the order first
+        // --- NEW ADDITION: Extract customizations cleanly ---
+        List<String> formattedOptions = new ArrayList<>();
+        if (product.getCustomOptions() != null && !product.getCustomOptions().isEmpty()) {
+            for (CustomOptionDTO option : product.getCustomOptions()) {
+                // Creates clean readable strings like "Material: Italian Leather"
+                formattedOptions.add(option.getType() + ": " + option.getValue());
+            }
+        }
+
         OrderEntity orders = new OrderEntity();
         orders.setProductId(product.getProductId());
         orders.setCustomerId(user.getId());
@@ -83,11 +91,12 @@ public class OrderServiceImpl implements OrderService {
         orders.setTotalAmount(unitPrice * orderRequest.getQuantity());
         orders.setStatus(OrderStatus.CONFIRMED);
         orders.setQuantity(orderRequest.getQuantity());
+        
+        // Save the customizations!
+        orders.setCustomizationDetails(formattedOptions);
 
         OrderEntity savedOrder = orderRepository.save(orders);
 
-        // 2. Synchronously deduct inventory
-        // FIX: Create the StockRequest object expected by the InventoryClient
         StockRequest stockRequest = new StockRequest(String.valueOf(product.getProductId()),
                 orderRequest.getQuantity());
         inventoryClient.deductStock(stockRequest);
@@ -96,7 +105,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    @Transactional // Ensure this method is transactional to allow rollback
+    @Transactional
     public OrderResponse updateStatus(Long orderId, OrderStatus newStatus) {
         OrderEntity order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order Id not found"));
@@ -111,8 +120,6 @@ public class OrderServiceImpl implements OrderService {
             try {
                 logisticsClient.createShipment(String.valueOf(orderId));
             } catch (Exception e) {
-                // FIX: Throw a RuntimeException to rollback the transaction
-                // so the order status does not change to SHIPPED in the database
                 throw new IllegalStateException("Logistics failure: Could not create shipment for Order " + orderId, e);
             }
         }
@@ -173,6 +180,9 @@ public class OrderServiceImpl implements OrderService {
         res.setTotalOrderAmount(orderEntity.getTotalAmount());
         res.setCreatedAt(orderEntity.getCreatedAt());
         res.setUpdatedAt(orderEntity.getUpdatedAt());
+        
+        // --- NEW ADDITION ---
+        res.setCustomizationDetails(orderEntity.getCustomizationDetails());
 
         if (orderEntity.getStatus() == OrderStatus.SHIPPED || orderEntity.getStatus() == OrderStatus.DELIVERED) {
             try {

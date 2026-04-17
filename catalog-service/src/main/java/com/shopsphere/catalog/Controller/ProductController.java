@@ -20,7 +20,6 @@ public class ProductController {
     @Autowired
     private ProductService productService;
 
-    // SECURED: Only Admin or Seller can create
     @PostMapping("/create")
     public ResponseEntity<?> create(
             @Valid @RequestBody ProductRequestDTO dto,
@@ -35,7 +34,6 @@ public class ProductController {
         return new ResponseEntity<>(ProductMapper.toDTO(saved), HttpStatus.CREATED);
     }
 
-    // PUBLIC: Anyone can view the catalog
     @GetMapping
     public ResponseEntity<List<ProductResponseDTO>> getAll() {
         List<ProductResponseDTO> list = productService.getAllProducts()
@@ -45,13 +43,11 @@ public class ProductController {
         return ResponseEntity.ok(list);
     }
 
-    // PUBLIC: Anyone can view a specific product
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponseDTO> getById(@PathVariable Long id) {
         return ResponseEntity.ok(ProductMapper.toDTO(productService.getProductById(id)));
     }
 
-    // SECURED: Only Admin or Seller can update
     @PutMapping("/{id}")
     public ResponseEntity<?> update(
             @PathVariable Long id,
@@ -66,7 +62,6 @@ public class ProductController {
         return ResponseEntity.ok(ProductMapper.toDTO(productService.updateProduct(id, dto)));
     }
 
-    // SECURED: Only Admin can delete (Sellers shouldn't delete outright, maybe just deactivate!)
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(
             @PathVariable Long id,
@@ -78,6 +73,8 @@ public class ProductController {
         }
 
         productService.deleteProduct(id);
-        return ResponseEntity.ok("Product deleted successfully");
+        
+        // --- FIX: Updated the message to be accurate to the backend logic ---
+        return ResponseEntity.ok("Product deactivated successfully");
     }
 }
