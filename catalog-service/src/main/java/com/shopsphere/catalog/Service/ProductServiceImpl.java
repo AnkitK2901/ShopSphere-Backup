@@ -7,6 +7,8 @@ import com.shopsphere.catalog.Repository.ProductRepository;
 import com.shopsphere.catalog.Repository.CustomOptionRepository;
 import com.shopsphere.catalog.RequestDTO.ProductRequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
@@ -26,13 +28,14 @@ public class ProductServiceImpl implements ProductService {
     private CustomOptionRepository optionRepository;
 
     @Override
+    @CacheEvict(value = {"products", "product"}, allEntries = true)
     public Product createProduct(ProductRequestDTO dto) {
            logger.info("Creating product: {}", dto.getName());
            Product product = new Product();
            product.setName(dto.getName());
            product.setBasePrice(dto.getBasePrice());
            product.setPreviewImage(dto.getPreviewImage());
-           product.setActive(true); // Ensure it defaults to true
+           product.setActive(true);
 
            if (dto.getSelectedOptionIds() != null && !dto.getSelectedOptionIds().isEmpty()) {
                List<CustomOption> options = optionRepository.findAllById(dto.getSelectedOptionIds());
@@ -42,22 +45,23 @@ public class ProductServiceImpl implements ProductService {
     }
 
    @Override
+   @Cacheable(value = "products")
     public List<Product> getAllProducts() {
-        logger.info("Fetching all ACTIVE products");
-        // FIX: Only return active products to the catalog
+        logger.info("Fetching all ACTIVE products from Database");
         return productRepository.findByIsActiveTrue();
     }
 
     @Override
+    @Cacheable(value = "product", key = "#id")
     public Product getProductById(Long id) {
-        logger.info("Fetching product with id: {}", id);
-        // FIX: Prevent fetching deactivated products
+        logger.info("Fetching product with id: {} from Database", id);
         return productRepository.findByProductIdAndIsActiveTrue(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Active Product not found with id: " + id));
     }
 
     @Override
+    @CacheEvict(value = {"products", "product"}, allEntries = true)
     public Product updateProduct(Long id, ProductRequestDTO dto) {
         logger.info("Updating product with id: {}", id);
         Product product = getProductById(id);
@@ -73,10 +77,10 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @CacheEvict(value = {"products", "product"}, allEntries = true)
     public void deleteProduct(Long id) {
         logger.info("Deactivating product with id: {}", id);
         Product product = getProductById(id);
-        // FIX: Soft Delete instead of hard repository.delete()
         product.setActive(false);
         productRepository.save(product);
     }

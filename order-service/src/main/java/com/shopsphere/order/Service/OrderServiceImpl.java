@@ -75,11 +75,9 @@ public class OrderServiceImpl implements OrderService {
             throw new ResourceNotFoundException("Product price is completely unavailable");
         }
 
-        // --- NEW ADDITION: Extract customizations cleanly ---
         List<String> formattedOptions = new ArrayList<>();
         if (product.getCustomOptions() != null && !product.getCustomOptions().isEmpty()) {
             for (CustomOptionDTO option : product.getCustomOptions()) {
-                // Creates clean readable strings like "Material: Italian Leather"
                 formattedOptions.add(option.getType() + ": " + option.getValue());
             }
         }
@@ -89,19 +87,33 @@ public class OrderServiceImpl implements OrderService {
         orders.setCustomerId(user.getId());
         orders.setPriceAtPurchase(unitPrice);
         orders.setTotalAmount(unitPrice * orderRequest.getQuantity());
-        orders.setStatus(OrderStatus.CONFIRMED);
+        orders.setStatus(OrderStatus.PENDING_PAYMENT); // Fixed LLD Requirement
         orders.setQuantity(orderRequest.getQuantity());
-        
-        // Save the customizations!
         orders.setCustomizationDetails(formattedOptions);
 
         OrderEntity savedOrder = orderRepository.save(orders);
 
-        StockRequest stockRequest = new StockRequest(String.valueOf(product.getProductId()),
-                orderRequest.getQuantity());
+        // NOTE: Stock deduction is moved to confirmPayment to avoid distributed transaction loss
+        return mapToResponse(savedOrder);
+    }
+
+    @Override
+    @Transactional
+    public OrderResponse confirmPayment(Long orderId) {
+        OrderEntity order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order Id not found"));
+
+        ValidTransaction(order.getStatus(), OrderStatus.CONFIRMED);
+
+        // Synchronous Saga-Lite: If inventory fails, the transaction rolls back 
+        // and the order safely remains in PENDING_PAYMENT.
+        StockRequest stockRequest = new StockRequest(String.valueOf(order.getProductId()), order.getQuantity());
         inventoryClient.deductStock(stockRequest);
 
-        return mapToResponse(savedOrder);
+        order.setStatus(OrderStatus.CONFIRMED);
+        order.setUpdatedAt(LocalDateTime.now());
+        
+        return mapToResponse(orderRepository.save(order));
     }
 
     @Override
@@ -112,17 +124,19 @@ public class OrderServiceImpl implements OrderService {
 
         ValidTransaction(order.getStatus(), newStatus);
 
-        order.setStatus(newStatus);
-        order.setUpdatedAt(LocalDateTime.now());
-        OrderEntity savedOrder = orderRepository.save(order);
-
         if (newStatus == OrderStatus.SHIPPED) {
             try {
                 logisticsClient.createShipment(String.valueOf(orderId));
             } catch (Exception e) {
-                throw new IllegalStateException("Logistics failure: Could not create shipment for Order " + orderId, e);
+                // If logistics is down, we throw an exception to roll back the transaction.
+                // This prevents the DB from showing SHIPPED when no shipment exists.
+                throw new IllegalStateException("Logistics failure: Could not create shipment. Order status rollback applied.", e);
             }
         }
+
+        order.setStatus(newStatus);
+        order.setUpdatedAt(LocalDateTime.now());
+        OrderEntity savedOrder = orderRepository.save(order);
 
         return mapToResponse(savedOrder);
     }
@@ -154,6 +168,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private static final Map<OrderStatus, List<OrderStatus>> ALLOWED_TRANSITIONS = Map.of(
+            OrderStatus.PENDING_PAYMENT, List.of(OrderStatus.CONFIRMED, OrderStatus.CANCELLED),
             OrderStatus.CONFIRMED, List.of(OrderStatus.PACKED, OrderStatus.CANCELLED),
             OrderStatus.PACKED, List.of(OrderStatus.SHIPPED, OrderStatus.CANCELLED),
             OrderStatus.SHIPPED, List.of(OrderStatus.DELIVERED),
@@ -180,8 +195,6 @@ public class OrderServiceImpl implements OrderService {
         res.setTotalOrderAmount(orderEntity.getTotalAmount());
         res.setCreatedAt(orderEntity.getCreatedAt());
         res.setUpdatedAt(orderEntity.getUpdatedAt());
-        
-        // --- NEW ADDITION ---
         res.setCustomizationDetails(orderEntity.getCustomizationDetails());
 
         if (orderEntity.getStatus() == OrderStatus.SHIPPED || orderEntity.getStatus() == OrderStatus.DELIVERED) {

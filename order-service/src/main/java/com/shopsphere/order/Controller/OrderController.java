@@ -27,11 +27,16 @@ public class OrderController {
             @RequestHeader(value = "X-Logged-In-User", defaultValue = "UNKNOWN_USER") String username) {
 
         log.info("Order placement initiated by secure user: {}", username);
-
         orderRequest.setUserName(username);
-
         OrderResponse response = orderService.placeOrder(orderRequest);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/{orderId}/confirm-payment")
+    public ResponseEntity<OrderResponse> confirmPayment(@PathVariable Long orderId) {
+        log.info("Payment confirmed for Order ID: {}", orderId);
+        OrderResponse response = orderService.confirmPayment(orderId);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping

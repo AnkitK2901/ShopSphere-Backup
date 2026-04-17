@@ -12,9 +12,11 @@ public interface OrderService {
 
     OrderResponse getOrderById(Long orderId);
 
-    List<OrderResponse> getOrdersByCustomerId(Long customerId);  // NEW
+    List<OrderResponse> getOrdersByCustomerId(Long customerId);
 
     OrderResponse placeOrder(OrderRequest orderRequest);
+
+    OrderResponse confirmPayment(Long orderId);
 
     OrderResponse updateStatus(Long orderId, OrderStatus newStatus);
 
