@@ -1,31 +1,34 @@
 package com.shopsphere.auth_service.util;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.security.Key;
 import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SpringBootTest
 class JwtUtilTest {
 
+    @Autowired
     private JwtUtil jwtUtil;
 
-    @BeforeEach
-    void setUp() {
-        jwtUtil = new JwtUtil();
-    }
+    // Injecting the secret directly from application.properties just for the expired token test
+    @Value("${jwt.secret}")
+    private String secret;
 
     // ======================== generateToken Tests ========================
 
     @Test
     void generateToken_validUsername_returnsNonNullToken() {
-        // FIX: Added "ROLE_BUYER" as the second argument
         String token = jwtUtil.generateToken("testuser", "ROLE_BUYER");
 
         assertNotNull(token);
@@ -34,7 +37,6 @@ class JwtUtilTest {
 
     @Test
     void generateToken_validUsername_tokenContainsThreeParts() {
-        // FIX: Added "ROLE_BUYER" as the second argument
         String token = jwtUtil.generateToken("testuser", "ROLE_BUYER");
 
         // JWT format: header.payload.signature
@@ -44,7 +46,6 @@ class JwtUtilTest {
 
     @Test
     void generateToken_differentUsernames_returnsDifferentTokens() {
-        // FIX: Added "ROLE_BUYER" as the second argument
         String token1 = jwtUtil.generateToken("user1", "ROLE_BUYER");
         String token2 = jwtUtil.generateToken("user2", "ROLE_BUYER");
 
@@ -55,9 +56,7 @@ class JwtUtilTest {
 
     @Test
     void extractUsername_validToken_returnsCorrectUsername() {
-        // FIX: Added "ROLE_BUYER" as the second argument
         String token = jwtUtil.generateToken("johndoe", "ROLE_BUYER");
-
         String username = jwtUtil.extractUsername(token);
 
         assertEquals("johndoe", username);
@@ -65,7 +64,6 @@ class JwtUtilTest {
 
     @Test
     void extractUsername_differentUsers_returnsMatchingUsername() {
-        // FIX: Added "ROLE_BUYER" as the second argument
         String token1 = jwtUtil.generateToken("alice", "ROLE_BUYER");
         String token2 = jwtUtil.generateToken("bob", "ROLE_BUYER");
 
@@ -80,7 +78,6 @@ class JwtUtilTest {
 
     @Test
     void extractUsername_tamperedToken_throwsException() {
-        // FIX: Added "ROLE_BUYER" as the second argument
         String token = jwtUtil.generateToken("testuser", "ROLE_BUYER");
         // Tamper with the signature
         String tampered = token.substring(0, token.length() - 5) + "XXXXX";
@@ -90,19 +87,19 @@ class JwtUtilTest {
 
     @Test
     void extractUsername_expiredToken_throwsException() {
-        // Build a token that expired in the past
-        byte[] keyBytes = Decoders.BASE64.decode(JwtUtil.SECRET);
+        // Build a token that expired in the past using the injected secret
+        byte[] keyBytes = Decoders.BASE64.decode(secret);
         Key key = Keys.hmacShaKeyFor(keyBytes);
 
         String expiredToken = Jwts.builder()
                 .setSubject("testuser")
                 .claim("role", "ROLE_BUYER")
                 .setIssuedAt(new Date(System.currentTimeMillis() - 3600000))
-                .setExpiration(new Date(System.currentTimeMillis() - 1800000))
+                .setExpiration(new Date(System.currentTimeMillis() - 1800000)) // Expired 30 mins ago
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
-        assertThrows(Exception.class, () -> jwtUtil.extractUsername(expiredToken));
+        assertThrows(ExpiredJwtException.class, () -> jwtUtil.extractUsername(expiredToken));
     }
 
     // ======================== Round-Trip Tests ========================
@@ -110,7 +107,6 @@ class JwtUtilTest {
     @Test
     void generateAndExtract_roundTrip_preservesUsername() {
         String username = "roundTripUser";
-        // FIX: Added "ROLE_BUYER" as the second argument
         String token = jwtUtil.generateToken(username, "ROLE_BUYER");
         String extracted = jwtUtil.extractUsername(token);
 
@@ -119,7 +115,6 @@ class JwtUtilTest {
 
     @Test
     void generateToken_tokenNotExpiredImmediately_extractsSuccessfully() {
-        // FIX: Added "ROLE_BUYER" as the second argument
         String token = jwtUtil.generateToken("testuser", "ROLE_BUYER");
 
         // Should not throw — token was just created and has 30 min expiry

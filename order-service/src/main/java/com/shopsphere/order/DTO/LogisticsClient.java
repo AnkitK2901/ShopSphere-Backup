@@ -5,12 +5,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
-@FeignClient(name = "logistics-service", url = "${logistics.service.url}")
+@FeignClient(name = "logistics-service")
 public interface LogisticsClient {
 
-    @PostMapping("/api/shipments/createShipment/{orderId}")
-    ShipmentResponse createShipment(@PathVariable String orderId);
+    @PostMapping("/api/shipments/{orderId}")
+    public ShipmentResponse createShipment(@PathVariable("orderId") String orderId);
 
     @GetMapping("/api/shipments/order/{orderId}")
-    ShipmentResponse getByOrderId(@PathVariable("orderId") String orderId);
+    public ShipmentResponse getByOrderId(@PathVariable("orderId") String orderId);
 }
