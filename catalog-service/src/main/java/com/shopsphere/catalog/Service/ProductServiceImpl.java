@@ -7,8 +7,6 @@ import com.shopsphere.catalog.Repository.ProductRepository;
 import com.shopsphere.catalog.Repository.CustomOptionRepository;
 import com.shopsphere.catalog.RequestDTO.ProductRequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
@@ -28,7 +26,6 @@ public class ProductServiceImpl implements ProductService {
     private CustomOptionRepository optionRepository;
 
     @Override
-    @CacheEvict(value = {"products", "product"}, allEntries = true)
     public Product createProduct(ProductRequestDTO dto) {
            logger.info("Creating product: {}", dto.getName());
            Product product = new Product();
@@ -45,23 +42,20 @@ public class ProductServiceImpl implements ProductService {
     }
 
    @Override
-   @Cacheable(value = "products")
     public List<Product> getAllProducts() {
-        logger.info("Fetching all ACTIVE products from Database");
+        logger.info("Fetching all ACTIVE products directly from DB");
         return productRepository.findByIsActiveTrue();
     }
 
     @Override
-    @Cacheable(value = "product", key = "#id")
     public Product getProductById(Long id) {
-        logger.info("Fetching product with id: {} from Database", id);
+        logger.info("Fetching product {} directly from DB", id);
         return productRepository.findByProductIdAndIsActiveTrue(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Active Product not found with id: " + id));
     }
 
     @Override
-    @CacheEvict(value = {"products", "product"}, allEntries = true)
     public Product updateProduct(Long id, ProductRequestDTO dto) {
         logger.info("Updating product with id: {}", id);
         Product product = getProductById(id);
@@ -77,7 +71,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    @CacheEvict(value = {"products", "product"}, allEntries = true)
     public void deleteProduct(Long id) {
         logger.info("Deactivating product with id: {}", id);
         Product product = getProductById(id);
