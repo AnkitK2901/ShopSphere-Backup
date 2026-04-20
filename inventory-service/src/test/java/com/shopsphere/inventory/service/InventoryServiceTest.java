@@ -1,6 +1,7 @@
 package com.shopsphere.inventory.service;
 
 import com.shopsphere.inventory.exception.InsufficientStockException;
+import com.shopsphere.inventory.exception.ResourceNotFoundException;
 import com.shopsphere.inventory.model.InventoryItem;
 import com.shopsphere.inventory.repository.InventoryRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -28,7 +30,7 @@ public class InventoryServiceTest {
 
     @BeforeEach
     void setUp() {
-        mockItem = new InventoryItem("P101", 50, "SUP_001", 10,5);
+        mockItem = new InventoryItem("P101", 50, "SUP_001", 10, 5);
     }
 
     @Test
@@ -46,10 +48,11 @@ public class InventoryServiceTest {
     }
 
     @Test
-    void checkStock_WhenProductNotFound_ShouldReturnFalse() {
+    void checkStock_WhenProductNotFound_ShouldThrowException() {
         when(inventoryRepository.findById("P999")).thenReturn(Optional.empty());
-        boolean result = inventoryService.checkStock("P999", 10);
-        assertFalse(result);
+        assertThrows(ResourceNotFoundException.class, () -> {
+            inventoryService.checkStock("P999", 10);
+        });
     }
 
     @Test
@@ -68,5 +71,27 @@ public class InventoryServiceTest {
         });
         assertEquals(50, mockItem.getStockLevel());
         verify(inventoryRepository, never()).save(any(InventoryItem.class));
+    }
+
+    @Test
+    void addInventory_WhenItemExists_ShouldUpdateFieldsAndSave() {
+        when(inventoryRepository.findById("P101")).thenReturn(Optional.of(mockItem));
+        InventoryItem updateItem = new InventoryItem("P101", 20, "NEW_SUP", 15, 7);
+
+        inventoryService.addInventory(updateItem);
+
+        assertEquals(70, mockItem.getStockLevel()); // 50 original + 20 new
+        assertEquals("NEW_SUP", mockItem.getSupplierId());
+        verify(inventoryRepository, times(1)).save(mockItem);
+    }
+
+    @Test
+    void addInventory_WhenItemDoesNotExist_ShouldSaveNewItem() {
+        when(inventoryRepository.findById("P202")).thenReturn(Optional.empty());
+        InventoryItem newItem = new InventoryItem("P202", 20, "SUP_002", 15, 7);
+
+        inventoryService.addInventory(newItem);
+
+        verify(inventoryRepository, times(1)).save(newItem);
     }
 }

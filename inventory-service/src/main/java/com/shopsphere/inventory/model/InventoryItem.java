@@ -22,6 +22,5 @@ public class InventoryItem {
     
     private Integer reorderThreshold;
     
-    // --- NEW ADDITION: LLD 4.3.1 Supplier Tracking ---
     private Integer supplierLeadTimeDays;
 }

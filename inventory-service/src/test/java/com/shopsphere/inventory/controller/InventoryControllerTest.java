@@ -2,6 +2,7 @@ package com.shopsphere.inventory.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shopsphere.inventory.dto.StockRequest;
+import com.shopsphere.inventory.model.InventoryItem;
 import com.shopsphere.inventory.service.InventoryService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -36,5 +37,27 @@ public class InventoryControllerTest {
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().string("true"));
+    }
+
+    @Test
+    void addInventory_WhenRoleIsAdmin_ShouldReturnOk() throws Exception {
+        InventoryItem item = new InventoryItem("P101", 10, "SUP_001", 5, 2);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/inventory")
+                .header("X-User-Role", "ROLE_ADMIN")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(item)))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+    }
+
+    @Test
+    void addInventory_WhenRoleIsNotAdmin_ShouldReturnForbidden() throws Exception {
+        InventoryItem item = new InventoryItem("P101", 10, "SUP_001", 5, 2);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/inventory")
+                .header("X-User-Role", "ROLE_USER")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(item)))
+                .andExpect(MockMvcResultMatchers.status().isForbidden());
     }
 }

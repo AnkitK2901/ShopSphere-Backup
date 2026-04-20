@@ -25,17 +25,18 @@ public class InventoryService {
     @Transactional
     public void addInventory(InventoryItem item) {
         inventoryRepository.findById(item.getProductId()).ifPresentOrElse(
-            existing -> {
-                existing.setStockLevel(existing.getStockLevel() + item.getStockLevel());
-                if(item.getSupplierId() != null) existing.setSupplierId(item.getSupplierId());
-                if(item.getReorderThreshold() != null) existing.setReorderThreshold(item.getReorderThreshold());
-                // Safely update the new lead time field if provided
-                if(item.getSupplierLeadTimeDays() != null) existing.setSupplierLeadTimeDays(item.getSupplierLeadTimeDays());
-                
-                inventoryRepository.save(existing);
-            },
-            () -> inventoryRepository.save(item)
-        );
+                existing -> {
+                    existing.setStockLevel(existing.getStockLevel() + item.getStockLevel());
+                    if (item.getSupplierId() != null)
+                        existing.setSupplierId(item.getSupplierId());
+                    if (item.getReorderThreshold() != null)
+                        existing.setReorderThreshold(item.getReorderThreshold());
+                    if (item.getSupplierLeadTimeDays() != null)
+                        existing.setSupplierLeadTimeDays(item.getSupplierLeadTimeDays());
+
+                    inventoryRepository.save(existing);
+                },
+                () -> inventoryRepository.save(item));
     }
 
     @Transactional
@@ -50,7 +51,6 @@ public class InventoryService {
         item.setStockLevel(item.getStockLevel() - quantity);
         inventoryRepository.save(item);
 
-        // --- NEW ADDITION: LLD 4.3.1 Auto-Reorder Logic ---
         if (item.getReorderThreshold() != null && item.getStockLevel() <= item.getReorderThreshold()) {
             triggerAutoReorder(item);
         }
@@ -59,13 +59,11 @@ public class InventoryService {
     private void triggerAutoReorder(InventoryItem item) {
         log.warn("🚨 AUTO-REORDER ALERT: Stock for Product [{}] dropped to {}. (Threshold: {})",
                 item.getProductId(), item.getStockLevel(), item.getReorderThreshold());
-                
-        int leadTime = item.getSupplierLeadTimeDays() != null ? item.getSupplierLeadTimeDays() : 7; // Default to 7 days if unknown
-        
+
+        int leadTime = item.getSupplierLeadTimeDays() != null ? item.getSupplierLeadTimeDays() : 7;
+
         log.info("📦 Automatically creating reorder ticket for Supplier [{}]. Estimated Lead Time: {} days.",
                 item.getSupplierId(), leadTime);
-                
-        // NOTE for presentation: In a full distributed environment, we would push an event to Kafka here. 
-        // For current scope, this automated logging fulfills the LLD requirement perfectly.
+
     }
 }
