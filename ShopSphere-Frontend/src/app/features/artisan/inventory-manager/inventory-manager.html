@@ -1,0 +1,35 @@
+<div class="inventory-container">
+  <div class="header">
+    <h2>📦 Artisan Inventory Management</h2>
+  </div>
+
+  <table class="inventory-table">
+    <thead>
+      <tr>
+        <th>Product ID</th>
+        <th>Supplier ID</th>
+        <th>Stock Level</th>
+        <th>Reorder Threshold</th>
+        <th>Lead Time (Days)</th>
+      </tr>
+    </thead>
+    
+    <tbody>
+      @for (item of inventoryList; track item.productId) {
+        <tr>
+          <td><b>{{ item.productId }}</b></td>
+          <td>{{ item.supplierId }}</td>
+          <td>
+            <span class="badge" 
+                  [class.in-stock]="item.stockLevel > item.reorderThreshold" 
+                  [class.out-stock]="item.stockLevel <= item.reorderThreshold">
+              {{ item.stockLevel }}
+            </span>
+          </td>
+          <td>{{ item.reorderThreshold }}</td>
+          <td>{{ item.supplierLeadTimeDays }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,46 @@
+.inventory-container {
+  padding: 40px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.header {
+  margin-bottom: 30px;
+  color: #333;
+}
+
+.inventory-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.inventory-table th, .inventory-table td {
+  padding: 15px 20px;
+  text-align: left;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.inventory-table th {
+  background-color: #f8f9fa;
+  color: #555;
+  font-weight: 600;
+}
+
+.inventory-table tr:hover {
+  background-color: #fcfcfc;
+}
+
+/* Status Badge Colors */
+.badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.in-stock { background-color: #d4edda; color: #155724; }
+.low-stock { background-color: #fff3cd; color: #856404; }
+.out-stock { background-color: #f8d7da; color: #721c24; }

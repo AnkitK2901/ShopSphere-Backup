@@ -1,0 +1,32 @@
+<div class="form-container">
+  <h2>➕ Add Inventory Items</h2>
+  
+  <form [formGroup]="inventoryForm" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label>Product ID</label>
+      <input type="text" formControlName="productId" placeholder="e.g., PRD-001">
+    </div>
+
+    <div class="form-group">
+      <label>Stock Level</label>
+      <input type="number" formControlName="stockLevel">
+    </div>
+
+    <div class="form-group">
+      <label>Supplier ID</label>
+      <input type="text" formControlName="supplierId" placeholder="e.g., SUP-001">
+    </div>
+
+    <div class="form-group">
+      <label>Reorder Threshold</label>
+      <input type="number" formControlName="reorderThreshold">
+    </div>
+
+    <div class="form-group">
+      <label>Supplier Lead Time (Days)</label>
+      <input type="number" formControlName="supplierLeadTimeDays">
+    </div>
+
+    <button type="submit" [disabled]="inventoryForm.invalid" class="submit-btn">Save to Database</button>
+  </form>
+</div>
