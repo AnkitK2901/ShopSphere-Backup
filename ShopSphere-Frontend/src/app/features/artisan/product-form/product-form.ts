@@ -19,7 +19,6 @@ export class ProductForm implements OnInit {
   ) {}
 
   ngOnInit() {
-    // These perfectly match InventoryItem.java!
     this.inventoryForm = this.fb.group({
       productId: ['', Validators.required],
       stockLevel: [0, [Validators.required, Validators.min(0)]],
@@ -37,7 +36,7 @@ export class ProductForm implements OnInit {
           this.router.navigate(['/artisan/inventory']); 
         },
         error: (err) => {
-          alert('Failed to connect to backend! Make sure Spring Boot is running on port 8080.');
+          alert('Failed to connect to backend! Make sure Spring Boot is running on port 9090.');
         }
       });
     }

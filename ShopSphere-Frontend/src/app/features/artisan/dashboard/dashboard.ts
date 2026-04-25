@@ -18,7 +18,6 @@ export class Dashboard implements OnInit {
   ngOnInit() {
     this.artisanService.getInventory().subscribe((items: InventoryItem[]) => {
       this.totalProducts = items.length;
-      // Adds up all the stock levels from the database
       this.totalItemsInStock = items.reduce((sum, item) => sum + item.stockLevel, 0);
     });
   }

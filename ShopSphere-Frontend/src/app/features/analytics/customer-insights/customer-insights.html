@@ -1,0 +1,39 @@
+<div class="customer-insights">
+  <h2>Customer Insights</h2>
+
+  <div class="search-bar">
+    <input type="number" placeholder="Enter Customer ID"
+           [(ngModel)]="customerId"
+           (keydown)="onKeyDown($event)" />
+    <button class="btn primary" (click)="search()">Search</button>
+  </div>
+
+  <div class="alert error" *ngIf="errorMsg">{{ errorMsg }}</div>
+  <p *ngIf="loading">Loading...</p>
+
+  <div *ngIf="searched && !loading && reports.length === 0 && !errorMsg">
+    <p>No reports found for Customer ID {{ customerId }}.</p>
+  </div>
+
+  <div *ngFor="let r of reports" class="report-card">
+    <h3>Report #{{ r.reportId }}</h3>
+    <div class="card-grid">
+      <div class="card-section">
+        <h4>Behavior Metrics</h4>
+        <p><strong>Total Orders:</strong> {{ r.behaviorMetrics?.totalOrders }}</p>
+        <p><strong>Repeat Purchases:</strong> {{ r.behaviorMetrics?.repeatPurchaseCount }}</p>
+        <p><strong>Abandoned Carts:</strong> {{ r.behaviorMetrics?.abandonedCartCount }}</p>
+        <p><strong>Favourite Product:</strong> {{ r.behaviorMetrics?.favouriteProduct }}</p>
+        <p><strong>Avg Order Value:</strong> {{ r.behaviorMetrics?.averageOrderValue | number:'1.2-2' }}</p>
+      </div>
+      <div class="card-section">
+        <h4>Campaign Response</h4>
+        <p><strong>Campaign:</strong> {{ r.campaignResponse?.campaignName }}</p>
+        <p><strong>Loyalty Points:</strong> {{ r.campaignResponse?.loyaltyPoints }}</p>
+        <p><strong>Status:</strong> {{ r.campaignResponse?.responseStatus }}</p>
+        <p><strong>Reminder Sent:</strong> {{ r.campaignResponse?.abandonedCartReminderSent ? 'Yes' : 'No' }}</p>
+      </div>
+    </div>
+    <p class="timestamp">Created: {{ r.createdAt | date:'medium' }}</p>
+  </div>
+</div>
