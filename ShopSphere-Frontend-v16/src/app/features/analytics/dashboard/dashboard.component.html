@@ -1,0 +1,113 @@
+<div class="analytics-dashboard">
+  <h2>Analytics Dashboard</h2>
+
+  <div class="alert success" *ngIf="successMsg">{{ successMsg }}</div>
+  <div class="alert error" *ngIf="errorMsg">{{ errorMsg }}</div>
+
+  <div class="actions-bar">
+    <button class="btn primary" (click)="openCreateForm()">+ Create Report</button>
+
+    <div class="campaign-trigger">
+      <input type="number" placeholder="Customer ID" [(ngModel)]="campaignCustomerId" />
+      <button class="btn warning" (click)="triggerCampaign()">Trigger Abandoned Cart Campaign</button>
+    </div>
+  </div>
+
+  <p *ngIf="loading">Loading reports...</p>
+
+  <div class="table-wrapper" *ngIf="!loading && reports.length > 0">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Customer</th>
+          <th>Total Orders</th>
+          <th>Repeat Purchases</th>
+          <th>Abandoned Carts</th>
+          <th>Favourite Product</th>
+          <th>Avg Order Value</th>
+          <th>Campaign</th>
+          <th>Loyalty Pts</th>
+          <th>Status</th>
+          <th>Reminder Sent</th>
+          <th>Created</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of reports">
+          <td>{{ r.reportId }}</td>
+          <td>{{ r.customerId }}</td>
+          <td>{{ r.behaviorMetrics?.totalOrders }}</td>
+          <td>{{ r.behaviorMetrics?.repeatPurchaseCount }}</td>
+          <td>{{ r.behaviorMetrics?.abandonedCartCount }}</td>
+          <td>{{ r.behaviorMetrics?.favouriteProduct }}</td>
+          <td>{{ r.behaviorMetrics?.averageOrderValue | number:'1.2-2' }}</td>
+          <td>{{ r.campaignResponse?.campaignName }}</td>
+          <td>{{ r.campaignResponse?.loyaltyPoints }}</td>
+          <td>
+            <span class="badge" [ngClass]="r.campaignResponse?.responseStatus?.toLowerCase() || ''">
+              {{ r.campaignResponse?.responseStatus }}
+            </span>
+          </td>
+          <td>{{ r.campaignResponse?.abandonedCartReminderSent ? 'Yes' : 'No' }}</td>
+          <td>{{ r.createdAt | date:'short' }}</td>
+          <td>
+            <button class="btn small" (click)="openEditForm(r)">Edit</button>
+            <button class="btn small danger" (click)="deleteReport(r.reportId!)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p *ngIf="!loading && reports.length === 0">No reports found.</p>
+
+  <div class="modal-overlay" *ngIf="showForm">
+    <div class="modal">
+      <h3>{{ editingReportId ? 'Edit Report' : 'Create Report' }}</h3>
+
+      <label>Customer ID
+        <input type="number" [(ngModel)]="formData.customerId" name="customerId" />
+      </label>
+
+      <label>Abandoned Cart Count
+        <input type="number" [(ngModel)]="formData.abandonedCartCount" name="abandonedCartCount" />
+      </label>
+
+      <label>Favourite Product
+        <input type="text" [(ngModel)]="formData.favouriteProduct" name="favouriteProduct" />
+      </label>
+
+      <label>Campaign Name
+        <input type="text" [(ngModel)]="formData.campaignName" name="campaignName" />
+      </label>
+
+      <label>Loyalty Points
+        <input type="number" [(ngModel)]="formData.loyaltyPoints" name="loyaltyPoints" />
+      </label>
+
+      <label>Response Status
+        <select [(ngModel)]="formData.responseStatus" name="responseStatus">
+          <option value="SENT">SENT</option>
+          <option value="OPENED">OPENED</option>
+          <option value="CLICKED">CLICKED</option>
+          <option value="CONVERTED">CONVERTED</option>
+          <option value="IGNORED">IGNORED</option>
+        </select>
+      </label>
+
+      <label class="checkbox-label">
+        <input type="checkbox" [(ngModel)]="formData.abandonedCartReminderSent" name="reminderSent" />
+        Abandoned Cart Reminder Sent
+      </label>
+
+      <div class="modal-actions">
+        <button class="btn primary" (click)="submitForm()">
+          {{ editingReportId ? 'Update' : 'Create' }}
+        </button>
+        <button class="btn" (click)="cancelForm()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>

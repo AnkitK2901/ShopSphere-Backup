@@ -1,0 +1,42 @@
+<div class="glass-panel">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h2 style="margin: 0;">📦 Inventory Management</h2>
+    <button class="btn" routerLink="/artisan/products/new">+ Add Product</button>
+  </div>
+
+  <div *ngIf="isLoading" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+    Loading inventory data from server...
+  </div>
+
+  <table class="inventory-table" *ngIf="!isLoading">
+    <thead>
+      <tr>
+        <th>Product ID</th>
+        <th>Supplier ID</th>
+        <th>Stock Level</th>
+        <th>Reorder Threshold</th>
+        <th>Lead Time (Days)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of inventoryList">
+        <td><b>{{ item.productId }}</b></td>
+        <td>{{ item.supplierId }}</td>
+        <td>
+          <span class="stock-badge" 
+                [ngClass]="{'in-stock': item.stockLevel > item.reorderThreshold, 'low-stock': item.stockLevel <= item.reorderThreshold}">
+            {{ item.stockLevel }}
+          </span>
+        </td>
+        <td>{{ item.reorderThreshold }}</td>
+        <td>{{ item.supplierLeadTimeDays }}</td>
+      </tr>
+      
+      <tr *ngIf="inventoryList.length === 0">
+        <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">
+          No inventory items found. Add a new product to get started.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
