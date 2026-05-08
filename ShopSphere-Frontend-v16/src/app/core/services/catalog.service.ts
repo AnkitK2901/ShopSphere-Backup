@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class CatalogService {
   // Routes through the API Gateway
-  private apiUrl = 'http://localhost:9090/catalog';
+  private apiUrl = 'http://localhost:9090/catalog/products';
 
   constructor(private http: HttpClient) {}
 

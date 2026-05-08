@@ -4,7 +4,7 @@ import { CatalogService } from '../../../core/services/catalog.service';
 @Component({
   selector: 'app-catalog',
   templateUrl: './catalog.component.html',
-  styleUrls: ['./catalog.component.css'] // Isolated CSS!
+  styleUrls: ['./catalog.component.css'], // Isolated CSS!
 })
 export class CatalogComponent implements OnInit {
   products: any[] = [];
@@ -30,15 +30,23 @@ export class CatalogComponent implements OnInit {
     if (!this.hasMoreProducts) return;
 
     this.isLoading = true;
-    this.catalogService.getProducts(this.currentPage, this.pageSize, this.searchQuery)
+    this.catalogService
+      .getProducts(this.currentPage, this.pageSize, this.searchQuery)
       .subscribe({
         next: (response: any) => {
-          // Extracts the array from Spring Boot's Page<T> object
-          const newProducts = response.content || response; 
-          this.products = [...this.products, ...newProducts];
-          
-          // If we got fewer products back than we asked for, we hit the end of the database
-          if (newProducts.length < this.pageSize) {
+          const newProducts = response.content || response;
+
+          // Optional: Sanitize or provide defaults if backend fields are missing
+          const sanitizedProducts = newProducts.map((p: any) => ({
+            ...p,
+            description: p.description || 'No description provided.',
+            // Ensure we have a valid ID for routing even if name varies
+            id: p.productId || p.id,
+          }));
+``
+          this.products = [...this.products, ...sanitizedProducts];
+
+          if (sanitizedProducts.length < this.pageSize) {
             this.hasMoreProducts = false;
           }
           this.isLoading = false;
@@ -46,7 +54,7 @@ export class CatalogComponent implements OnInit {
         error: (err) => {
           console.error('Error fetching products', err);
           this.isLoading = false;
-        }
+        },
       });
   }
 
