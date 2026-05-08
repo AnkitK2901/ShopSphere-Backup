@@ -1,0 +1,82 @@
+.logistics-wrapper {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.header-nav {
+    margin-bottom: 20px;
+}
+
+.back-link {
+    color: #0056b3;
+    text-decoration: none;
+    font-weight: bold;
+    margin-bottom: 10px;
+    display: inline-block;
+}
+
+.packing-card {
+    background: #ffffff;
+    padding: 30px;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+}
+
+.order-summary {
+    background: #f9f9f9;
+    padding: 15px;
+    border-left: 4px solid #fd7e14;
+    margin-bottom: 25px;
+}
+
+.instruction {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.checklist {
+    margin-bottom: 30px;
+}
+
+.check-item {
+    padding: 15px;
+    border-bottom: 1px solid #eeeeee;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.check-item input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.check-item label {
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.variant {
+    color: #888;
+    font-size: 14px;
+}
+
+.action-btn {
+    width: 100%;
+    padding: 15px;
+    background: #fd7e14;
+    color: white;
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.action-btn:disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+}

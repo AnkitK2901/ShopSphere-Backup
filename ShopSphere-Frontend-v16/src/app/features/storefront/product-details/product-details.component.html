@@ -1,0 +1,51 @@
+<div class="details-wrapper">
+  
+  <div class="navigation-bar">
+    <a routerLink="/" class="back-link">&larr; Back to Collection</a>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-state">Loading product details...</div>
+  <div *ngIf="errorMessage" class="error-state">{{ errorMessage }}</div>
+
+  <div *ngIf="product && !isLoading" class="product-layout">
+    
+    <div class="image-column">
+      <div class="large-image-placeholder">
+        <span>Product Image Presentation</span>
+      </div>
+    </div>
+
+    <div class="info-column">
+      <h1 class="product-title">{{ product.name }}</h1>
+      <p class="product-price">${{ finalPrice | number:'1.2-2' }}</p>
+      
+      <div class="divider"></div>
+      
+      <p class="product-description">{{ product.description }}</p>
+
+      <div class="options-section" *ngIf="customOptions.length > 0">
+        <h3>Select Variation</h3>
+        <div class="options-grid">
+          <button 
+            *ngFor="let opt of customOptions" 
+            (click)="onOptionSelect(opt)"
+            class="option-btn"
+            [class.selected-option]="selectedOption === opt">
+            {{ opt.optionName }} 
+            <span *ngIf="opt.priceModifier > 0">(+${{ opt.priceModifier }})</span>
+          </button>
+        </div>
+      </div>
+
+      <button class="add-cart-btn" (click)="addToCart()">
+        Add to Cart
+      </button>
+
+      <div class="shipping-info">
+        <p>✓ Handcrafted & ethically sourced.</p>
+        <p>✓ Standard shipping within 3-5 business days.</p>
+      </div>
+    </div>
+
+  </div>
+</div>

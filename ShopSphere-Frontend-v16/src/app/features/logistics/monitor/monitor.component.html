@@ -1,0 +1,32 @@
+<div class="monitor-wrapper">
+  <div class="header-nav">
+    <a routerLink="/logistics/queue" class="back-link">&larr; Back to Queue</a>
+    <h2>Warehouse Analytics Monitor</h2>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <h3>Action Required</h3>
+      <div class="stat-number alert">{{ stats.pending }}</div>
+      <p>Orders awaiting packing</p>
+    </div>
+
+    <div class="stat-card">
+      <h3>Ready for Courier</h3>
+      <div class="stat-number warning">{{ stats.packed }}</div>
+      <p>Boxes awaiting labels</p>
+    </div>
+
+    <div class="stat-card">
+      <h3>Successfully Dispatched</h3>
+      <div class="stat-number success">{{ stats.shipped }}</div>
+      <p>Completed shipments</p>
+    </div>
+    
+    <div class="stat-card highlight">
+      <h3>Revenue Processed</h3>
+      <div class="stat-number">${{ stats.totalRevenue | number:'1.0-0' }}</div>
+      <p>Value of shipped goods</p>
+    </div>
+  </div>
+</div>

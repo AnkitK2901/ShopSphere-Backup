@@ -12,12 +12,13 @@
   width: 100%;
   border-collapse: collapse;
   background-color: white;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   overflow: hidden;
 }
 
-.inventory-table th, .inventory-table td {
+.inventory-table th,
+.inventory-table td {
   padding: 15px 20px;
   text-align: left;
   border-bottom: 1px solid #eaeaea;
@@ -40,6 +41,17 @@
   font-weight: 600;
 }
 
-.in-stock { background-color: #d4edda; color: #155724; }
-.low-stock { background-color: #fff3cd; color: #856404; }
-.out-stock { background-color: #f8d7da; color: #721c24; }
+.in-stock {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.low-stock {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.out-stock {
+  background-color: #f8d7da;
+  color: #721c24;
+}

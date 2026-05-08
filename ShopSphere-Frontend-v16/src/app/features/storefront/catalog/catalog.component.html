@@ -1,0 +1,43 @@
+<div class="catalog-wrapper">
+  
+  <div class="catalog-header">
+    <h1>Artisan Collection</h1>
+    <p>Discover unique, handcrafted items directly from the creators.</p>
+    
+    <div class="search-bar">
+      <input type="text" [(ngModel)]="searchQuery" placeholder="Search for products...">
+      <button (click)="onSearch()">Search</button>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading && products.length === 0" class="status-message">
+    Loading products...
+  </div>
+  <div *ngIf="products.length === 0 && !isLoading" class="status-message">
+    No products found matching your search.
+  </div>
+
+  <div class="product-grid">
+    <div *ngFor="let product of products" class="product-card">
+      <div class="product-image">
+        <span>No Image Available</span>
+      </div>
+      
+      <div class="product-info">
+        <h3>{{ product.name }}</h3>
+        <p class="description">{{ product.description }}</p>
+        <div class="card-footer">
+          <span class="price">${{ product.basePrice | number:'1.2-2' }}</span>
+          <a [routerLink]="['/product', product.id]" class="view-btn">View Details</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="load-more-section" *ngIf="hasMoreProducts && products.length > 0">
+    <button class="load-btn" (click)="loadMore()" [disabled]="isLoading">
+      {{ isLoading ? 'Loading...' : 'Load More Products' }}
+    </button>
+  </div>
+
+</div>

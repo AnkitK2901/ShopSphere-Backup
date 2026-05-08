@@ -1,75 +1,124 @@
-.glass-navbar {
-  background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--glass-border);
-  padding: 1rem 2rem;
+/* Isolated Navbar CSS */
+.basic-nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  position: sticky;
-  top: 0;
+  background-color: #ffffff;
+  padding: 15px 5%;
+  border-bottom: 1px solid #eaeaea;
+  position: relative;
   z-index: 100;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.logo h2 {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text-main);
-  letter-spacing: 0.5px;
-}
-
-.badge {
-  font-size: 0.75rem;
-  background: var(--accent-color);
-  color: #0f172a;
-  padding: 3px 8px;
-  border-radius: 12px;
-  vertical-align: middle;
-  text-transform: uppercase;
+.logo a {
+  font-size: 24px;
+  font-weight: bold;
+  color: #111111;
+  text-decoration: none;
   letter-spacing: 1px;
 }
 
-.nav-links {
+.nav-actions {
   display: flex;
-  gap: 1rem;
+  align-items: center;
+  gap: 25px;
+}
+
+/* Icon Buttons */
+.icon-btn {
+  background: none;
+  border: none;
+  color: #333333;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 5px;
+  transition: color 0.2s;
+}
+
+.icon-btn:hover {
+  color: #0056b3;
+}
+
+/* Cart Badge */
+.cart-icon {
+  position: relative;
+  text-decoration: none;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -5px;
+  right: -8px;
+  background-color: #e74c3c;
+  color: white;
+  font-size: 11px;
+  font-weight: bold;
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
   align-items: center;
 }
 
-.divider {
-  width: 1px;
-  height: 24px;
-  background-color: var(--glass-border);
-  margin: 0 0.5rem;
+/* Dropdown Logic */
+.dropdown-container {
+  position: relative;
 }
 
-.nav-links a {
-  color: var(--text-muted);
+.dropdown-menu {
+  position: absolute;
+  top: 140%;
+  right: 0;
+  background-color: #ffffff;
+  min-width: 200px;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.dropdown-header {
+  padding: 12px 15px;
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #888888;
+  background-color: #f9f9f9;
+  border-bottom: 1px solid #eeeeee;
+  font-weight: bold;
+}
+
+.dropdown-menu a {
+  padding: 12px 15px;
+  color: #333333;
   text-decoration: none;
-  font-weight: 500;
-  padding: 8px 16px;
-  border-radius: 6px;
-  transition: all 0.2s ease;
+  font-size: 14px;
+  border-bottom: 1px solid #eeeeee;
 }
 
-.nav-links a:hover {
-  color: var(--text-main);
-  background: rgba(255, 255, 255, 0.05);
+.dropdown-menu a:hover {
+  background-color: #f4f4f4;
+  color: #0056b3;
 }
 
-/* Angular automatically applies the 'active' class when the route matches */
-.nav-links a.active {
-  color: var(--accent-color);
-  background: rgba(56, 189, 248, 0.1);
-  border-bottom: 2px solid var(--accent-color);
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
+.divider {
+  height: 1px;
+  background-color: #eeeeee;
+}
+
+.logout-link {
+  padding: 12px 15px;
+  background: none;
+  border: none;
+  color: #dc3545;
+  text-align: left;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.logout-link:hover {
+  background-color: #fff5f5;
 }

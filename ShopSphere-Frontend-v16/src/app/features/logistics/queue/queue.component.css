@@ -1,0 +1,168 @@
+/* Isolated Logistics Queue CSS */
+
+.dashboard-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+
+/* Header Area */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #ffffff;
+  padding: 20px 25px;
+  border-radius: 4px;
+  border: 1px solid #cccccc;
+  margin-bottom: 25px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.header-titles h2 {
+  margin: 0 0 5px 0;
+  color: #333333;
+  font-size: 24px;
+}
+
+.header-titles p {
+  margin: 0;
+  color: #666666;
+  font-size: 14px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.refresh-btn {
+  background-color: #ffffff;
+  border: 1px solid #333333;
+  color: #333333;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.refresh-btn:hover {
+  background-color: #f4f4f4;
+}
+
+.monitor-link {
+  color: #0056b3;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.monitor-link:hover {
+  text-decoration: underline;
+}
+
+/* Banners */
+.info-banner, .error-banner {
+  padding: 20px;
+  border-radius: 4px;
+  text-align: center;
+  margin-bottom: 25px;
+  font-weight: bold;
+}
+
+.info-banner {
+  background-color: #e9ecef;
+  color: #495057;
+  border: 1px solid #ced4da;
+}
+
+.info-banner.success {
+  background-color: #d4edda;
+  color: #155724;
+  border-color: #c3e6cb;
+}
+
+.error-banner {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* Data Table */
+.table-container {
+  background-color: #ffffff;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+  overflow-x: auto; /* Adds scroll on small screens */
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th, .data-table td {
+  padding: 15px 20px;
+  text-align: left;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.data-table th {
+  background-color: #f8f9fa;
+  color: #495057;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.data-table tr:hover {
+  background-color: #fdfdfd;
+}
+
+.item-list {
+  margin: 0;
+  padding-left: 20px;
+  color: #555555;
+  font-size: 14px;
+}
+
+/* Dynamic Status Badges */
+.status-badge {
+  padding: 5px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.pending { background-color: #fff3cd; color: #856404; }
+.confirmed { background-color: #cce5ff; color: #004085; }
+.packed { background-color: #e2e3e5; color: #383d41; }
+.shipped { background-color: #d1ecf1; color: #0c5460; }
+.delivered { background-color: #d4edda; color: #155724; }
+
+/* Action Buttons */
+.action-cell {
+  width: 150px; /* Keeps the column from jumping around */
+}
+
+.action-btn {
+  width: 100%;
+  padding: 8px;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.confirm { background-color: #0056b3; }
+.confirm:hover { background-color: #004494; }
+
+.pack { background-color: #fd7e14; } /* Orange */
+.pack:hover { background-color: #e86e04; }
+
+.dispatch { background-color: #28a745; } /* Green */
+.dispatch:hover { background-color: #218838; }

@@ -1,0 +1,30 @@
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <h2 class="auth-title">Welcome Back</h2>
+    <p class="auth-subtitle">Sign in to your ShopSphere account.</p>
+
+    <div *ngIf="errorMessage" class="error-banner">
+      {{ errorMessage }}
+    </div>
+    
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
+      <div class="input-group">
+        <label>Email Address</label>
+        <input type="email" formControlName="email" placeholder="john@example.com">
+      </div>
+
+      <div class="input-group">
+        <label>Password</label>
+        <input type="password" formControlName="password" placeholder="Enter your password">
+      </div>
+
+      <button type="submit" class="submit-btn" [disabled]="loginForm.invalid || isLoading">
+        {{ isLoading ? 'Authenticating...' : 'Sign In' }}
+      </button>
+    </form>
+    
+    <div class="auth-footer">
+      <p>Don't have an account? <a routerLink="/register">Register here</a></p>
+    </div>
+  </div>
+</div>

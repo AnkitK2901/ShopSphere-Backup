@@ -1,5 +1,43 @@
-body {
+/* Basic Browser Reset */
+* {
+  box-sizing: border-box;
   margin: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f4f7f6; 
+  padding: 0;
+}
+
+/* Standard web-safe fonts only */
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #f4f4f4; /* Basic light gray */
+  color: #333333; /* Dark gray text */
+  line-height: 1.5;
+}
+
+/* Basic inputs and dropdowns to save time on other pages */
+input, select {
+  padding: 8px;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* Basic global button style */
+button {
+  padding: 10px 15px;
+  background-color: #0056b3; /* Basic blue */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+button:hover {
+  background-color: #004494; /* Darker blue on hover */
+}
+
+button:disabled {
+  background-color: #cccccc;
+  color: #666666;
+  cursor: not-allowed;
 }

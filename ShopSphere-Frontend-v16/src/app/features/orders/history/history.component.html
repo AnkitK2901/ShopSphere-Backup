@@ -1,0 +1,63 @@
+<div class="history-wrapper">
+  
+  <div class="history-header">
+    <h2>My Orders</h2>
+    <p>Track your recent purchases and shipments.</p>
+  </div>
+
+  <div *ngIf="isLoading" class="status-box">
+    Loading your order history...
+  </div>
+
+  <div *ngIf="!isLoading && orders.length === 0" class="status-box empty-state">
+    <h3>You haven't placed any orders yet.</h3>
+    <a routerLink="/" class="shop-btn">Start Shopping</a>
+  </div>
+
+  <div class="orders-list" *ngIf="orders.length > 0">
+    
+    <div *ngFor="let order of orders" class="order-card">
+      
+      <div class="order-header">
+        <div class="order-info">
+          <span class="order-id">Order #{{ order.id }}</span>
+          <span class="order-date">Date: {{ order.orderDate || 'Recently Placed' }}</span> 
+        </div>
+        <div class="order-total">
+          Total: <strong>${{ order.totalAmount | number:'1.2-2' }}</strong>
+        </div>
+      </div>
+
+      <div class="tracker-section">
+        <p class="status-text">
+          Current Status: <strong [style.color]="getProgressColor(order.status)">{{ order.status || 'PENDING' }}</strong>
+        </p>
+        
+        <div class="progress-track">
+          <div class="progress-fill" 
+               [style.width]="getProgressWidth(order.status)"
+               [style.background-color]="getProgressColor(order.status)">
+          </div>
+        </div>
+        
+        <div class="tracker-labels">
+          <span>Confirmed</span>
+          <span>Packed</span>
+          <span>Shipped</span>
+          <span>Delivered</span>
+        </div>
+      </div>
+
+      <div class="order-items">
+        <h4>Items in this shipment:</h4>
+        <ul>
+          <li *ngFor="let item of order.items">
+            {{ item.quantity }}x {{ item.name }} <span class="item-variant">({{ item.optionName }})</span>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+
+  </div>
+</div>

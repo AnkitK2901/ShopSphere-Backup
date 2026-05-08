@@ -1,0 +1,43 @@
+<div class="cart-wrapper">
+  <h2>Your Shopping Cart</h2>
+
+  <div *ngIf="cartItems.length === 0" class="empty-state">
+    <p>Your cart is currently empty.</p>
+    <a routerLink="/" class="continue-btn">Continue Shopping</a>
+  </div>
+
+  <div *ngIf="cartItems.length > 0" class="cart-content">
+    
+    <table class="cart-table">
+      <thead>
+        <tr>
+          <th>Product Details</th>
+          <th>Variation</th>
+          <th>Price</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of cartItems; let i = index">
+          <td class="item-name">{{ item.name }}</td>
+          <td>{{ item.optionName }}</td>
+          <td class="item-price">${{ item.price | number:'1.2-2' }}</td>
+          <td>
+            <button class="remove-btn" (click)="removeItem(i)">Remove</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="cart-summary">
+      <div class="summary-row">
+        <span>Subtotal</span>
+        <span class="total-price">${{ totalPrice | number:'1.2-2' }}</span>
+      </div>
+      <p class="tax-note">Shipping and taxes calculated at checkout.</p>
+      
+      <a routerLink="/checkout" class="checkout-btn">Proceed to Checkout</a>
+    </div>
+
+  </div>
+</div>

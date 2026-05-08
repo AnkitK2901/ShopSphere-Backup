@@ -1,0 +1,39 @@
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <h2 class="auth-title">Create an Account</h2>
+    <p class="auth-subtitle">Join the ShopSphere community today.</p>
+    
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form">
+      <div class="input-group">
+        <label>Full Name</label>
+        <input type="text" formControlName="name" placeholder="John Doe">
+      </div>
+
+      <div class="input-group">
+        <label>Email Address</label>
+        <input type="email" formControlName="email" placeholder="john@example.com">
+      </div>
+
+      <div class="input-group">
+        <label>Password</label>
+        <input type="password" formControlName="password" placeholder="At least 6 characters">
+      </div>
+
+      <div class="input-group">
+        <label>Account Type</label>
+        <select formControlName="role">
+          <option value="ROLE_CUSTOMER">Shopper (Standard)</option>
+          <option value="ROLE_ARTISAN">Artisan (Seller)</option>
+          </select>
+      </div>
+
+      <button type="submit" class="submit-btn" [disabled]="registerForm.invalid || isLoading">
+        {{ isLoading ? 'Processing...' : 'Register' }}
+      </button>
+    </form>
+    
+    <div class="auth-footer">
+      <p>Already have an account? <a routerLink="/login">Sign in here</a></p>
+    </div>
+  </div>
+</div>

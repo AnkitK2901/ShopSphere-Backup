@@ -1,0 +1,82 @@
+<div class="dashboard-wrapper">
+  
+  <div class="dashboard-header">
+    <div class="header-titles">
+      <h2>Fulfillment Queue</h2>
+      <p>Manage incoming orders and warehouse workflow.</p>
+    </div>
+    
+    <div class="header-actions">
+      <button class="refresh-btn" (click)="fetchQueue()">Refresh Queue</button>
+      <a routerLink="/logistics/monitor" class="monitor-link">View Warehouse Analytics</a>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-banner">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="isLoading" class="info-banner">
+    Loading live queue...
+  </div>
+
+  <div *ngIf="!isLoading && activeOrders.length === 0" class="info-banner success">
+    Queue is empty! All orders have been processed.
+  </div>
+
+  <div class="table-container" *ngIf="activeOrders.length > 0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>Items</th>
+          <th>Total Value</th>
+          <th>Current Status</th>
+          <th>Action Required</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let order of activeOrders">
+          <td><strong>#{{ order.id }}</strong></td>
+          
+          <td>
+            <ul class="item-list">
+              <li *ngFor="let item of order.items">
+                {{ item.quantity }}x {{ item.name }}
+              </li>
+            </ul>
+          </td>
+          
+          <td>${{ order.totalAmount | number:'1.2-2' }}</td>
+          
+          <td>
+            <span class="status-badge" [ngClass]="order.status?.toLowerCase() || 'pending'">
+              {{ order.status || 'PENDING' }}
+            </span>
+          </td>
+          
+          <td class="action-cell">
+            <button *ngIf="order.status === 'PENDING'" 
+                    class="action-btn confirm" 
+                    (click)="updateStatus(order.id, 'CONFIRMED')">
+              Acknowledge
+            </button>
+            
+            <button *ngIf="order.status === 'CONFIRMED'" 
+                    class="action-btn pack" 
+                    (click)="goToPacking(order.id)">
+              Start Packing
+            </button>
+            
+            <button *ngIf="order.status === 'PACKED'" 
+                    class="action-btn dispatch" 
+                    (click)="goToDispatch(order.id)">
+              Create Label
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>

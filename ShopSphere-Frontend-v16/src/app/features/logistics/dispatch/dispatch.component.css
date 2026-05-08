@@ -1,0 +1,70 @@
+/* Borrows the layout structure from Packing CSS */
+.logistics-wrapper {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.header-nav {
+    margin-bottom: 20px;
+}
+
+.back-link {
+    color: #0056b3;
+    text-decoration: none;
+    font-weight: bold;
+    margin-bottom: 10px;
+    display: inline-block;
+}
+
+.packing-card {
+    background: #ffffff;
+    padding: 30px;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+}
+
+.instruction {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+    font-size: 13px;
+    text-transform: uppercase;
+    color: #444;
+}
+
+.input-group input,
+.input-group select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 15px;
+}
+
+.action-btn {
+    width: 100%;
+    padding: 15px;
+    background: #28a745;
+    color: white;
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.action-btn:disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+}

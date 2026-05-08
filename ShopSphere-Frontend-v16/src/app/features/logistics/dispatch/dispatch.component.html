@@ -1,0 +1,31 @@
+<div class="logistics-wrapper">
+  <div class="header-nav">
+    <a routerLink="/logistics/queue" class="back-link">&larr; Back to Queue</a>
+    <h2>Dispatch Order #{{ orderId }}</h2>
+  </div>
+
+  <div class="packing-card">
+    <h3>Generate Shipping Label</h3>
+    <p class="instruction">Assign a courier and tracking number to finalize shipment.</p>
+
+    <form [formGroup]="dispatchForm" (ngSubmit)="dispatchOrder()">
+      <div class="input-group">
+        <label>Select Courier</label>
+        <select formControlName="courier">
+          <option value="FedEx">FedEx Express</option>
+          <option value="UPS">UPS Ground</option>
+          <option value="USPS">USPS Priority</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label>Tracking Number</label>
+        <input type="text" formControlName="trackingNumber" placeholder="Enter tracking ID">
+      </div>
+
+      <button type="submit" class="action-btn success" [disabled]="dispatchForm.invalid">
+        Print Label & Mark as Shipped
+      </button>
+    </form>
+  </div>
+</div>

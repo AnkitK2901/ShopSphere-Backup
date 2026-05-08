@@ -1,0 +1,165 @@
+/* Isolated Order History CSS */
+.history-wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.history-header {
+  margin-bottom: 30px;
+  border-bottom: 2px solid #eeeeee;
+  padding-bottom: 15px;
+}
+
+.history-header h2 {
+  font-size: 28px;
+  color: #333333;
+  margin-bottom: 5px;
+}
+
+.history-header p {
+  color: #666666;
+  font-size: 14px;
+}
+
+/* Status Boxes (Empty/Loading) */
+.status-box {
+  text-align: center;
+  padding: 60px 20px;
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  color: #555555;
+  font-size: 16px;
+}
+
+.empty-state h3 {
+  margin-bottom: 20px;
+  color: #333333;
+}
+
+.shop-btn {
+  display: inline-block;
+  background-color: #0056b3;
+  color: white;
+  padding: 12px 25px;
+  text-decoration: none;
+  font-weight: bold;
+  border-radius: 4px;
+}
+
+.shop-btn:hover {
+  background-color: #004494;
+}
+
+/* Order Cards */
+.order-card {
+  background-color: #ffffff;
+  border: 1px solid #cccccc;
+  border-radius: 6px;
+  margin-bottom: 30px;
+  overflow: hidden;
+}
+
+.order-header {
+  background-color: #f4f4f4;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #cccccc;
+}
+
+.order-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.order-id {
+  font-weight: bold;
+  font-size: 16px;
+  color: #333333;
+}
+
+.order-date {
+  font-size: 12px;
+  color: #666666;
+}
+
+.order-total {
+  font-size: 16px;
+  color: #333333;
+}
+
+/* 🚀 The Visual Tracker CSS */
+.tracker-section {
+  padding: 25px 30px;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.status-text {
+  font-size: 14px;
+  color: #555555;
+  margin-bottom: 15px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.progress-track {
+  width: 100%;
+  height: 10px; /* The thickness of the bar */
+  background-color: #e0e0e0; /* Gray background */
+  border-radius: 5px;
+  overflow: hidden; /* Keeps the inner fill inside the rounded corners */
+  margin-bottom: 10px;
+}
+
+.progress-fill {
+  height: 100%;
+  /* Notice: The width and color are injected dynamically by Angular! */
+  transition: width 0.8s ease-in-out, background-color 0.5s ease;
+}
+
+.tracker-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #888888;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+/* Order Items */
+.order-items {
+  padding: 20px 30px;
+  background-color: #fafafa;
+}
+
+.order-items h4 {
+  font-size: 14px;
+  color: #333333;
+  margin-bottom: 10px;
+}
+
+.order-items ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.order-items li {
+  font-size: 14px;
+  color: #555555;
+  padding: 5px 0;
+  border-bottom: 1px dashed #dddddd;
+}
+
+.order-items li:last-child {
+  border-bottom: none;
+}
+
+.item-variant {
+  color: #888888;
+  font-size: 12px;
+  margin-left: 5px;
+}

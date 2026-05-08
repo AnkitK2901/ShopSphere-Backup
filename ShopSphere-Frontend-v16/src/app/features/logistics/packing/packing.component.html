@@ -1,0 +1,32 @@
+<div class="logistics-wrapper">
+  <div class="header-nav">
+    <a routerLink="/logistics/queue" class="back-link">&larr; Back to Queue</a>
+    <h2>Packing Order #{{ orderId }}</h2>
+  </div>
+
+  <div *ngIf="order" class="packing-card">
+    <div class="order-summary">
+      <p><strong>Customer:</strong> {{ order.shippingDetails?.fullName || 'Valued Customer' }}</p>
+      <p><strong>Destination:</strong> {{ order.shippingDetails?.city || 'N/A' }}</p>
+    </div>
+
+    <h3>Item Verification Checklist</h3>
+    <p class="instruction">Check off each item as it is placed into the shipping box.</p>
+
+    <div class="checklist">
+      <div class="check-item" *ngFor="let item of order.items; let i = index">
+        <input type="checkbox" [id]="'item' + i" (change)="toggleItemPacked($event)">
+        <label [for]="'item' + i">
+          <strong>{{ item.quantity }}x</strong> {{ item.name }} 
+          <span class="variant">({{ item.optionName }})</span>
+        </label>
+      </div>
+    </div>
+
+    <button class="action-btn" 
+            [disabled]="packedItemsCount !== order.items.length"
+            (click)="completePacking()">
+      Confirm All Items Packed
+    </button>
+  </div>
+</div>

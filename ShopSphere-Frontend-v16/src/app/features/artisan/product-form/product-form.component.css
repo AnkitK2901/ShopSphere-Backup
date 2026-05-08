@@ -34,7 +34,7 @@
 }
 
 /* Invalid form state visuals */
-input.ng-invalid.ng-touched, 
+input.ng-invalid.ng-touched,
 textarea.ng-invalid.ng-touched {
   border-color: var(--danger);
 }
