@@ -6,8 +6,9 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class CatalogService {
-  // Routes through the API Gateway
-  private apiUrl = 'http://localhost:9090/catalog/products';
+  
+  // FIX: Match the API Gateway's exact expected path prefix
+  private apiUrl = 'http://localhost:9090/api';
 
   constructor(private http: HttpClient) {}
 
@@ -17,15 +18,18 @@ export class CatalogService {
     if (search) {
       params = params.set('keyword', search);
     }
+    // Will correctly call: http://localhost:9090/api/products
     return this.http.get(`${this.apiUrl}/products`, { params });
   }
 
-  getProductById(id: string): Observable<any> {
+  getProductById(id: string | number): Observable<any> {
+    // Will correctly call: http://localhost:9090/api/products/{id}
     return this.http.get(`${this.apiUrl}/products/${id}`);
   }
 
   // Fetch the custom variations (Color, Size, Material)
-  getCustomOptions(productId: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/custom-options/product/${productId}`);
+  getCustomOptions(): Observable<any> {
+    // Will correctly call: http://localhost:9090/api/options (Matches your CustomOptionController)
+    return this.http.get(`${this.apiUrl}/options`);
   }
 }

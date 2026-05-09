@@ -43,7 +43,7 @@ export class ProductDetailsComponent implements OnInit {
         this.finalPrice = prod.basePrice; // Set initial price
         
         // 2. Once we have the product, fetch its custom sizes/colors
-        this.catalogService.getCustomOptions(id).subscribe({
+        this.catalogService.getCustomOptions().subscribe({
           next: (options) => {
             this.customOptions = options;
             this.isLoading = false;

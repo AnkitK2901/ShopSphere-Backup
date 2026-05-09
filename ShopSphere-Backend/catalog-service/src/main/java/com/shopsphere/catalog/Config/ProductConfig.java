@@ -24,11 +24,11 @@ public class ProductConfig implements WebMvcConfigurer {
     }
 
     // This ensures the "Execute" button in Swagger doesn't get blocked by the browser
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")
-                .allowedOrigins("*")
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("*");
-    }
+    // @Override
+    // public void addCorsMappings(CorsRegistry registry) {
+    //     registry.addMapping("/**")
+    //             .allowedOrigins("*")
+    //             .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+    //             .allowedHeaders("*");
+    // }
 }

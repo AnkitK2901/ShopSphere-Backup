@@ -1,25 +1,34 @@
 package com.shopsphere.catalog.Entity;
 
 import jakarta.persistence.*;
-import java.util.LinkedHashSet;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.Set;
 
 @Entity
-@Table(name = "product")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Product {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long productId;
 
     private String name;
+
+    // Safely added description
+    @Column(length = 1000)
+    private String description;
+
     private Double basePrice;
+
+    @Column(length = 500)
     private String previewImage;
 
-    // --- NEW ADDITION: Soft delete flag ---
-    private boolean isActive = true;
-
-    @Transient
-    private Double totalPrice = 0.0;
+    private boolean isActive;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -27,34 +36,16 @@ public class Product {
             joinColumns = @JoinColumn(name = "product_id"),
             inverseJoinColumns = @JoinColumn(name = "option_id")
     )
-    private Set<CustomOption> customOptions = new LinkedHashSet<>();
+    private Set<CustomOption> customOptions; // RESTORED TO SET
 
-    @PostLoad @PrePersist @PreUpdate
-    public void calculateTotalPrice() {
-        double adjustments = (customOptions == null) ? 0.0 :
-                customOptions.stream()
-                        .filter(o -> o.getPriceAdjustment() != 0) 
-                        .mapToDouble(CustomOption::getPriceAdjustment).sum();
-
-        this.totalPrice = (this.basePrice != null ? this.basePrice : 0.0) + adjustments;
+    // RESTORED YOUR ORIGINAL METHOD
+    public Double getTotalPrice() {
+        if (customOptions == null || customOptions.isEmpty()) {
+            return basePrice != null ? basePrice : 0.0;
+        }
+        double optionsTotal = customOptions.stream()
+                .mapToDouble(CustomOption::getPriceAdjustment)
+                .sum();
+        return basePrice + optionsTotal;
     }
-
-    // Getters and Setters
-    public Long getProductId() { return productId; }
-    public void setProductId(Long productId) { this.productId = productId; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    public Double getBasePrice() { return basePrice; }
-    public void setBasePrice(Double basePrice) { this.basePrice = basePrice; }
-    public String getPreviewImage() { return previewImage; }
-    public void setPreviewImage(String previewImage) { this.previewImage = previewImage; }
-    public Double getTotalPrice() { return totalPrice; }
-    public Set<CustomOption> getCustomOptions() { return customOptions; }
-    public void setCustomOptions(Set<CustomOption> customOptions) { this.customOptions = customOptions; }
-    
-    // --- NEW GETTERS/SETTERS ---
-    public boolean isActive() { return isActive; }
-    public void setActive(boolean active) { isActive = active; }
-
-    public Product() {}
 }
