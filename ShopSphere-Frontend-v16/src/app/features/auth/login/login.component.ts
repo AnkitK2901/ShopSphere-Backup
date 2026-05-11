@@ -6,7 +6,7 @@ import { AuthService } from '../../../core/services/auth.service';
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css'] // Isolated CSS!
+  styleUrls: ['./login.component.css'] 
 })
 export class LoginComponent {
   loginForm: FormGroup;
@@ -29,12 +29,18 @@ export class LoginComponent {
       this.isLoading = true;
       this.errorMessage = '';
       
-      this.authService.login(this.loginForm.value).subscribe({
+      // FIX: Spring Boot expects "username" and "password". 
+      // We map the form's email input to the 'username' key.
+      const payload = {
+        username: this.loginForm.value.email,
+        password: this.loginForm.value.password
+      };
+      
+      this.authService.login(payload).subscribe({
         next: () => {
           const role = this.authService.getUserRole();
           this.isLoading = false;
           
-          // The "Elevator" Routing Logic
           if (role === 'ROLE_ADMIN') {
             this.router.navigate(['/analytics/dashboard']);
           } else if (role === 'ROLE_ARTISAN') {
@@ -42,7 +48,7 @@ export class LoginComponent {
           } else if (role === 'ROLE_LOGISTICS') {
             this.router.navigate(['/logistics/queue']);
           } else {
-            this.router.navigate(['/']); // Customers go to Catalog
+            this.router.navigate(['/']); 
           }
         },
         error: (err) => {

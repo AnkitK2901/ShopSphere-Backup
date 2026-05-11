@@ -1,32 +1,42 @@
-<div class="monitor-wrapper">
-  <div class="header-nav">
-    <a routerLink="/logistics/queue" class="back-link">&larr; Back to Queue</a>
-    <h2>Warehouse Analytics Monitor</h2>
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <h1>Global Logistics Monitor</h1>
+    <p>View all shipments across the entire ShopSphere network.</p>
   </div>
 
-  <div class="stats-grid">
-    <div class="stat-card">
-      <h3>Action Required</h3>
-      <div class="stat-number alert">{{ stats.pending }}</div>
-      <p>Orders awaiting packing</p>
-    </div>
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+  </div>
 
-    <div class="stat-card">
-      <h3>Ready for Courier</h3>
-      <div class="stat-number warning">{{ stats.packed }}</div>
-      <p>Boxes awaiting labels</p>
-    </div>
-
-    <div class="stat-card">
-      <h3>Successfully Dispatched</h3>
-      <div class="stat-number success">{{ stats.shipped }}</div>
-      <p>Completed shipments</p>
-    </div>
-    
-    <div class="stat-card highlight">
-      <h3>Revenue Processed</h3>
-      <div class="stat-number">${{ stats.totalRevenue | number:'1.0-0' }}</div>
-      <p>Value of shipped goods</p>
-    </div>
+  <div class="table-container" *ngIf="!isLoading">
+    <table class="modern-table">
+      <thead>
+        <tr>
+          <th>Tracking ID</th>
+          <th>Order Ref</th>
+          <th>Carrier</th>
+          <th>Status</th>
+          <th>Last Updated</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let shipment of allShipments">
+          <td>
+            <a *ngIf="shipment.trackingUrl" [href]="shipment.trackingUrl" target="_blank" style="color: #3182ce; font-weight: bold;">
+              {{ shipment.trackingNumber }}
+            </a>
+            <span *ngIf="!shipment.trackingUrl" class="text-muted">Awaiting Dispatch</span>
+          </td>
+          <td>#{{ shipment.orderId }}</td>
+          <td>{{ shipment.carrier || 'Pending' }}</td>
+          <td>
+            <span class="status-badge" [ngClass]="shipment.shipmentStatus?.toLowerCase()">
+              {{ shipment.shipmentStatus }}
+            </span>
+          </td>
+          <td>{{ (shipment.updatedAt | date:'short') || 'Just now' }}</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </div>

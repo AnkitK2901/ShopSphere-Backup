@@ -1,19 +1,19 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { OrderService } from '../../../core/services/order.service';
+import { LogisticsService } from '../../../core/services/logistics.service'; // FIX: Swapped out OrderService
 
 @Component({
   selector: 'app-queue',
   templateUrl: './queue.component.html',
-  styleUrls: ['./queue.component.css'] // Isolated CSS!
+  styleUrls: ['./queue.component.css']
 })
 export class QueueComponent implements OnInit {
-  activeOrders: any[] = [];
+  activeShipments: any[] = [];
   isLoading: boolean = true;
   errorMessage: string = '';
 
   constructor(
-    private orderService: OrderService,
+    private logisticsService: LogisticsService,
     private router: Router
   ) {}
 
@@ -22,16 +22,17 @@ export class QueueComponent implements OnInit {
   }
 
   fetchQueue(): void {
-    // Assuming you have an endpoint for ALL orders (admin/logistics view)
-    // If you only have getMyOrders(), you might need to adjust this depending on your backend
-    this.orderService.getMyOrders().subscribe({
-      next: (orders) => {
-        // Filter out completed orders to create the "Queue"
-        this.activeOrders = orders.filter((o: any) => 
-          o.status === 'PENDING' || o.status === 'CONFIRMED' || o.status === 'PACKED'
-        );
-        // Sort oldest first (First In, First Out)
-        this.activeOrders.sort((a: any, b: any) => a.id - b.id);
+    // FIX: Calling the global shipment queue instead of personal orders!
+    this.logisticsService.getAllShipments().subscribe({
+      next: (shipments) => {
+        if (!shipments) {
+          this.activeShipments = [];
+        } else {
+          // Filter to show only active logistics tasks
+          this.activeShipments = shipments.filter((s: any) => 
+            s.shipmentStatus !== 'DELIVERED'
+          );
+        }
         this.isLoading = false;
       },
       error: (err) => {
@@ -42,12 +43,11 @@ export class QueueComponent implements OnInit {
     });
   }
 
-  // Quick action to update status
-  updateStatus(orderId: number, newStatus: string): void {
-    this.orderService.updateOrderStatus(orderId, newStatus).subscribe({
+  updateStatus(orderId: string, newStatus: string): void {
+    this.logisticsService.updateStatus(orderId, newStatus).subscribe({
       next: () => {
-        alert(`Order #${orderId} updated to ${newStatus}`);
-        this.fetchQueue(); // Refresh the list
+        alert(`Shipment for Order #${orderId} updated to ${newStatus}`);
+        this.fetchQueue(); 
       },
       error: (err) => {
         alert('Failed to update status.');
@@ -56,12 +56,11 @@ export class QueueComponent implements OnInit {
     });
   }
 
-  // Navigate to specific worker screens
-  goToPacking(orderId: number): void {
+  goToPacking(orderId: string): void {
     this.router.navigate(['/logistics/pack', orderId]);
   }
 
-  goToDispatch(orderId: number): void {
+  goToDispatch(orderId: string): void {
     this.router.navigate(['/logistics/dispatch', orderId]);
   }
 }

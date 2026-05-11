@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { OrderService } from '../../../core/services/order.service';
+import { LogisticsService } from '../../../core/services/logistics.service';
 
 @Component({
   selector: 'app-dispatch',
@@ -9,30 +8,45 @@ import { OrderService } from '../../../core/services/order.service';
   styleUrls: ['./dispatch.component.css']
 })
 export class DispatchComponent implements OnInit {
-  orderId: number = 0;
-  dispatchForm!: FormGroup;
+  shipment: any = null;
+  isLoading: boolean = true;
+  selectedCarrier: string = 'Delhivery'; // Default mock carrier
 
   constructor(
     private route: ActivatedRoute,
-    private fb: FormBuilder,
-    private orderService: OrderService,
+    private logisticsService: LogisticsService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
-    this.orderId = Number(this.route.snapshot.paramMap.get('id'));
-    this.dispatchForm = this.fb.group({
-      courier: ['FedEx', Validators.required],
-      trackingNumber: ['', [Validators.required, Validators.minLength(8)]]
-    });
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      this.logisticsService.getShipmentById(id).subscribe({
+        next: (data) => {
+          this.shipment = data;
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error(err);
+          alert('Failed to load shipment details.');
+          this.router.navigate(['/logistics/queue']);
+        }
+      });
+    }
   }
 
-  dispatchOrder(): void {
-    if (this.dispatchForm.valid) {
-      // In a real app, you would send the tracking number to the backend here too
-      this.orderService.updateOrderStatus(this.orderId, 'SHIPPED').subscribe(() => {
-        alert('Shipping Label Generated! Order Dispatched.');
-        this.router.navigate(['/logistics/queue']);
+  dispatchShipment(): void {
+    if (this.shipment) {
+      // FIX: Triggers the SHIPPED status, which alerts the downstream Carrier clients in Spring Boot
+      this.logisticsService.updateStatus(this.shipment.orderId, 'SHIPPED').subscribe({
+        next: () => {
+          alert(`Package dispatched via ${this.selectedCarrier}! Tracking generated.`);
+          this.router.navigate(['/logistics/queue']);
+        },
+        error: (err) => {
+          console.error(err);
+          alert('Failed to dispatch package.');
+        }
       });
     }
   }

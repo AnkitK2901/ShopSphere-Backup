@@ -3,18 +3,23 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
+import { CartService } from './cart.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:9090/auth';
+  // FIX: Added /api/ prefix to match API Gateway routing exactly
+  private apiUrl = 'http://localhost:9090/api/auth';
   
-  // This helps our Navbar know if the user is logged in instantly
   private loggedInSubject = new BehaviorSubject<boolean>(this.hasToken());
   public isLoggedIn$ = this.loggedInSubject.asObservable();
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(
+    private http: HttpClient, 
+    private router: Router,
+    private cartService: CartService // Injected to handle cross-contamination
+  ) {}
 
   login(credentials: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/login`, credentials).pipe(
@@ -32,7 +37,9 @@ export class AuthService {
   }
 
   logout(): void {
+    // FIX: Secure Purge. Destroy token AND clear the ghost cart so the next user doesn't see it.
     localStorage.removeItem('jwt_token');
+    this.cartService.clearCart(); 
     this.loggedInSubject.next(false);
     this.router.navigate(['/login']);
   }
@@ -45,7 +52,6 @@ export class AuthService {
     const token = localStorage.getItem('jwt_token');
     if (!token) return '';
     try {
-      // Decode the JWT payload (the middle part of the token)
       const payload = JSON.parse(atob(token.split('.')[1]));
       return payload.role || '';
     } catch (e) {

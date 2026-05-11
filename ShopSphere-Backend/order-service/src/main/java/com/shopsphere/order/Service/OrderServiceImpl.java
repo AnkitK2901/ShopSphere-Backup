@@ -87,28 +87,28 @@ public class OrderServiceImpl implements OrderService {
         orders.setCustomerId(user.getId());
         orders.setPriceAtPurchase(unitPrice);
         orders.setTotalAmount(unitPrice * orderRequest.getQuantity());
-        orders.setStatus(OrderStatus.PENDING_PAYMENT); // Fixed LLD Requirement
+        orders.setStatus(OrderStatus.PENDING_PAYMENT);
         orders.setQuantity(orderRequest.getQuantity());
         orders.setCustomizationDetails(formattedOptions);
 
-        OrderEntity savedOrder = orderRepository.save(orders);
-
-        // NOTE: Stock deduction is moved to confirmPayment to avoid distributed transaction loss
-        return mapToResponse(savedOrder);
+        return mapToResponse(orderRepository.save(orders));
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class) // FIX: Explicit rollback
     public OrderResponse confirmPayment(Long orderId) {
         OrderEntity order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order Id not found"));
 
         ValidTransaction(order.getStatus(), OrderStatus.CONFIRMED);
 
-        // Synchronous Saga-Lite: If inventory fails, the transaction rolls back 
-        // and the order safely remains in PENDING_PAYMENT.
-        StockRequest stockRequest = new StockRequest(String.valueOf(order.getProductId()), order.getQuantity());
-        inventoryClient.deductStock(stockRequest);
+        // FIX: Synchronous Saga-Lite
+        try {
+            StockRequest stockRequest = new StockRequest(String.valueOf(order.getProductId()), order.getQuantity());
+            inventoryClient.deductStock(stockRequest);
+        } catch (Exception e) {
+            throw new IllegalStateException("Inventory deduction failed. Payment confirmation aborted.", e);
+        }
 
         order.setStatus(OrderStatus.CONFIRMED);
         order.setUpdatedAt(LocalDateTime.now());
@@ -117,7 +117,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class) // FIX: Explicit rollback
     public OrderResponse updateStatus(Long orderId, OrderStatus newStatus) {
         OrderEntity order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order Id not found"));
@@ -126,19 +126,16 @@ public class OrderServiceImpl implements OrderService {
 
         if (newStatus == OrderStatus.SHIPPED) {
             try {
-                logisticsClient.createShipment(String.valueOf(orderId));
+                logisticsClient.createShipment(orderId);
             } catch (Exception e) {
-                // If logistics is down, we throw an exception to roll back the transaction.
-                // This prevents the DB from showing SHIPPED when no shipment exists.
+                // FIX: Triggers explicit database rollback
                 throw new IllegalStateException("Logistics failure: Could not create shipment. Order status rollback applied.", e);
             }
         }
 
         order.setStatus(newStatus);
         order.setUpdatedAt(LocalDateTime.now());
-        OrderEntity savedOrder = orderRepository.save(order);
-
-        return mapToResponse(savedOrder);
+        return mapToResponse(orderRepository.save(order));
     }
 
     @Override
@@ -199,7 +196,7 @@ public class OrderServiceImpl implements OrderService {
 
         if (orderEntity.getStatus() == OrderStatus.SHIPPED || orderEntity.getStatus() == OrderStatus.DELIVERED) {
             try {
-                ShipmentResponse shipment = logisticsClient.getByOrderId(String.valueOf(orderEntity.getOrderId()));
+                ShipmentResponse shipment = logisticsClient.getByOrderId(orderEntity.getOrderId());
                 if (shipment != null) {
                     res.setTrackingUrl(shipment.getTrackingUrl());
                     res.setCarrier(shipment.getCarrier());

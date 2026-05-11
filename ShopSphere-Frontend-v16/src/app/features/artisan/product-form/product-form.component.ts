@@ -24,7 +24,8 @@ export class ProductFormComponent {
       stockLevel: ['', [Validators.required, Validators.min(0)]],
       reorderThreshold: ['', [Validators.required, Validators.min(0)]],
       supplierId: ['', Validators.required],
-      supplierLeadTimeDays: ['', [Validators.required, Validators.min(1)]]
+      supplierLeadTimeDays: ['', [Validators.required, Validators.min(1)]],
+      previewImageUrl: [''] // Added placeholder for text-based image URL
     });
   }
 
@@ -32,8 +33,19 @@ export class ProductFormComponent {
     if (this.productForm.valid) {
       this.isSubmitting = true;
       
-      // FIX: Changed from addProduct to addInventory to match your v21 service
-      this.artisanService.addInventory(this.productForm.value).subscribe({
+      // FIX: Clean JSON payload sent instead of FormData
+      const inventoryPayload = {
+        name: this.productForm.value.name,
+        description: this.productForm.value.description,
+        basePrice: this.productForm.value.price,
+        stockLevel: this.productForm.value.stockLevel,
+        reorderThreshold: this.productForm.value.reorderThreshold,
+        supplierId: this.productForm.value.supplierId,
+        supplierLeadTimeDays: this.productForm.value.supplierLeadTimeDays,
+        previewImage: this.productForm.value.previewImageUrl 
+      };
+
+      this.artisanService.addInventory(inventoryPayload).subscribe({
         next: (response: any) => {
           console.log('Product added successfully', response);
           this.isSubmitting = false;

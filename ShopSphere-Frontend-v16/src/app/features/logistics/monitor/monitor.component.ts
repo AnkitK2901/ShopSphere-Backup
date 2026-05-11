@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { OrderService } from '../../../core/services/order.service';
+import { LogisticsService } from '../../../core/services/logistics.service';
 
 @Component({
   selector: 'app-monitor',
@@ -7,25 +7,22 @@ import { OrderService } from '../../../core/services/order.service';
   styleUrls: ['./monitor.component.css']
 })
 export class MonitorComponent implements OnInit {
-  stats = {
-    pending: 0,
-    packed: 0,
-    shipped: 0,
-    totalRevenue: 0
-  };
+  allShipments: any[] = [];
+  isLoading: boolean = true;
 
-  constructor(private orderService: OrderService) {}
+  constructor(private logisticsService: LogisticsService) {}
 
   ngOnInit(): void {
-    this.orderService.getMyOrders().subscribe(orders => {
-      orders.forEach((o: any) => {
-        if (o.status === 'PENDING' || o.status === 'CONFIRMED') this.stats.pending++;
-        if (o.status === 'PACKED') this.stats.packed++;
-        if (o.status === 'SHIPPED' || o.status === 'DELIVERED') {
-          this.stats.shipped++;
-          this.stats.totalRevenue += o.totalAmount;
-        }
-      });
+    this.logisticsService.getAllShipments().subscribe({
+      next: (data) => {
+        // Sort newest first
+        this.allShipments = data ? data.sort((a: any, b: any) => b.id - a.id) : [];
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Failed to load global monitor', err);
+        this.isLoading = false;
+      }
     });
   }
 }

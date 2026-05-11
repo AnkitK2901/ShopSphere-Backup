@@ -1,20 +1,43 @@
 <div class="dashboard-container">
-  <h1>Artisan Workspace Dashboard</h1>
-  <p>Welcome back! Here is an overview of your store.</p>
+  <div class="dashboard-header">
+    <h1>Executive Analytics Dashboard</h1>
+    <p>Real-time insights across your microservice ecosystem.</p>
+  </div>
 
   <div class="stats-grid">
     <div class="stat-card">
-      <h3>Total Unique Products</h3>
-      <p class="big-number">{{ totalProducts }}</p> 
+      <div class="stat-icon revenue-icon">💰</div>
+      <div class="stat-details">
+        <h3>Total Revenue</h3>
+        <p class="stat-number">$124,500</p>
+      </div>
     </div>
+    
     <div class="stat-card">
-      <h3>Total Items In Stock</h3>
-      <p class="big-number">{{ totalItemsInStock }}</p> 
+      <div class="stat-icon order-icon">📦</div>
+      <div class="stat-details">
+        <h3>Active Orders</h3>
+        <p class="stat-number">1,204</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon inventory-icon">📊</div>
+      <div class="stat-details">
+        <h3>Low Stock Alerts</h3>
+        <p class="stat-number alert-text">14</p>
+      </div>
     </div>
   </div>
 
-  <div class="quick-actions">
-    <a routerLink="/artisan/inventory" class="btn primary">View Inventory</a>
-    <a routerLink="/artisan/products/new" class="btn secondary">Add New Inventory</a>
+  <div class="action-grid">
+    <div class="action-card" routerLink="/analytics/revenue">
+      <h3>Revenue Report</h3>
+      <p>View detailed breakdown of sales by product category.</p>
+    </div>
+    <div class="action-card" routerLink="/analytics/customers">
+      <h3>Customer Insights</h3>
+      <p>Analyze user engagement and platform retention.</p>
+    </div>
   </div>
 </div>

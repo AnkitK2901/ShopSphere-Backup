@@ -1,45 +1,28 @@
-<div class="catalog-wrapper">
+<div class="catalog-container" style="max-width: 1200px; margin: 40px auto; padding: 0 20px;">
   
-  <div class="catalog-header">
-    <h1>Artisan Collection</h1>
-    <p>Discover unique, handcrafted items directly from the creators.</p>
+  <div class="catalog-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 15px; border-bottom: 1px solid #e2e8f0;">
+    <h1 style="margin: 0; font-size: 2rem; color: #2d3748;">Shop Catalog</h1>
     
-    <div class="search-bar">
-      <input type="text" [(ngModel)]="searchQuery" placeholder="Search for products...">
-      <button (click)="onSearch()">Search</button>
+    <div class="search-bar" style="display: flex; gap: 10px;">
+      <input type="text" #searchInput (keyup.enter)="onSearch(searchInput.value)" placeholder="Search products..." style="padding: 10px 15px; border-radius: 6px; border: 1px solid #cbd5e0; width: 250px;">
+      <button (click)="onSearch(searchInput.value)" style="padding: 10px 20px; background: #3182ce; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">Search</button>
     </div>
   </div>
 
-  <div *ngIf="isLoading && products.length === 0" class="status-message">
-    Loading products...
-  </div>
-  <div *ngIf="products.length === 0 && !isLoading" class="status-message">
-    No products found matching your search.
-  </div>
-
-  <div class="product-grid">
-  <div *ngFor="let product of products" class="product-card">
-    <div class="product-image">
-      <img *ngIf="product.previewImage" [src]="product.previewImage" [alt]="product.name" style="width: 100%; height: 100%; object-fit: cover;">
-      <span *ngIf="!product.previewImage">No Image Available</span>
-    </div>
-    
-    <div class="product-info">
-      <h3>{{ product.name }}</h3>
-      <p class="description">{{ product.description }}</p>
-      <div class="card-footer">
-        <span class="price">${{ product.basePrice | number:'1.2-2' }}</span>
-        
-        <a [routerLink]="['/product', product.productId]" class="view-btn">View Details</a>
+  <div class="product-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 30px;">
+    <div class="product-card" *ngFor="let product of products" [routerLink]="['/product', product.id || product.productId]" style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s;">
+      <img [src]="product.previewImage || 'https://via.placeholder.com/300?text=No+Image'" alt="Product" style="width: 100%; aspect-ratio: 1; object-fit: cover;">
+      <div class="card-content" style="padding: 20px;">
+        <h3 style="margin: 0 0 10px 0; font-size: 1.1rem; color: #2d3748;">{{ product.name }}</h3>
+        <p style="margin: 0; color: #e53e3e; font-weight: bold; font-size: 1.2rem;">${{ product.basePrice | number:'1.2-2' }}</p>
       </div>
     </div>
   </div>
-</div>
 
-  <div class="load-more-section" *ngIf="hasMoreProducts && products.length > 0">
-    <button class="load-btn" (click)="loadMore()" [disabled]="isLoading">
-      {{ isLoading ? 'Loading...' : 'Load More Products' }}
-    </button>
+  <div *ngIf="isLoading" style="text-align: center; padding: 40px; color: #718096;">Loading products...</div>
+  <div *ngIf="!isLoading && products.length === 0" style="text-align: center; padding: 40px; color: #718096;">No products found matching your search.</div>
+
+  <div *ngIf="hasMoreProducts && products.length > 0 && !isLoading" style="text-align: center; margin-top: 40px;">
+    <button (click)="loadMore()" style="padding: 12px 30px; background: #edf2f7; color: #4a5568; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Load More</button>
   </div>
-
 </div>

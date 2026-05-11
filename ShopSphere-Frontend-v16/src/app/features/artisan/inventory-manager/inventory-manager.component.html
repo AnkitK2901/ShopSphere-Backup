@@ -1,42 +1,53 @@
-<div class="glass-panel">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-    <h2 style="margin: 0;">📦 Inventory Management</h2>
-    <button class="btn" routerLink="/artisan/products/new">+ Add Product</button>
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <h1>Inventory Management</h1>
+    <p>Monitor your active products and stock levels.</p>
   </div>
 
-  <div *ngIf="isLoading" style="text-align: center; padding: 2rem; color: var(--text-muted);">
-    Loading inventory data from server...
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading inventory...</p>
   </div>
 
-  <table class="inventory-table" *ngIf="!isLoading">
-    <thead>
-      <tr>
-        <th>Product ID</th>
-        <th>Supplier ID</th>
-        <th>Stock Level</th>
-        <th>Reorder Threshold</th>
-        <th>Lead Time (Days)</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let item of inventoryList">
-        <td><b>{{ item.productId }}</b></td>
-        <td>{{ item.supplierId }}</td>
-        <td>
-          <span class="stock-badge" 
-                [ngClass]="{'in-stock': item.stockLevel > item.reorderThreshold, 'low-stock': item.stockLevel <= item.reorderThreshold}">
-            {{ item.stockLevel }}
-          </span>
-        </td>
-        <td>{{ item.reorderThreshold }}</td>
-        <td>{{ item.supplierLeadTimeDays }}</td>
-      </tr>
-      
-      <tr *ngIf="inventoryList.length === 0">
-        <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">
-          No inventory items found. Add a new product to get started.
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <div *ngIf="!isLoading && inventoryList.length === 0" class="info-banner success">
+    <h3>No Products Found</h3>
+    <p>You haven't listed any products yet. Head to the dashboard to create your first listing!</p>
+  </div>
+
+  <div class="table-container" *ngIf="inventoryList.length > 0">
+    <table class="modern-table">
+      <thead>
+        <tr>
+          <th>Product Image</th>
+          <th>Product Name</th>
+          <th>Base Price</th>
+          <th>Current Stock</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of inventoryList">
+          <td>
+            <img [src]="item.previewImage || 'https://via.placeholder.com/50'" alt="Product" style="width: 50px; height: 50px; border-radius: 6px; object-fit: cover;">
+          </td>
+          <td><strong>{{ item.name }}</strong><br><span style="font-size: 0.85rem; color: #718096;">ID: {{ item.productId }}</span></td>
+          <td>${{ item.basePrice | number:'1.2-2' }}</td>
+          <td>
+            <span [style.color]="item.stockLevel < item.reorderThreshold ? '#e53e3e' : '#2d3748'" style="font-weight: bold;">
+              {{ item.stockLevel }} units
+            </span>
+          </td>
+          <td>
+            <span class="status-badge" [ngClass]="item.stockLevel > 0 ? 'shipped' : 'pending'">
+              {{ item.stockLevel > 0 ? 'In Stock' : 'Out of Stock' }}
+            </span>
+          </td>
+          <td class="action-cell">
+            <button class="btn-small">Edit</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>

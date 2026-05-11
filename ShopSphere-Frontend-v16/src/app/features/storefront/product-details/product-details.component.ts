@@ -6,75 +6,82 @@ import { CartService } from '../../../core/services/cart.service';
 @Component({
   selector: 'app-product-details',
   templateUrl: './product-details.component.html',
-  styleUrls: ['./product-details.component.css'] // Isolated CSS!
+  styleUrls: ['./product-details.component.css']
 })
 export class ProductDetailsComponent implements OnInit {
   product: any = null;
+  isLoading: boolean = true;
+  selectedQuantity: number = 1;
+  
+  // UI Variables restored for the HTML template
+  errorMessage: string = '';
+  finalPrice: number = 0;
   customOptions: any[] = [];
   selectedOption: any = null;
-  
-  // State variables
-  finalPrice: number = 0;
-  isLoading: boolean = true;
-  errorMessage: string = '';
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
     private catalogService: CatalogService,
-    private cartService: CartService // Connects to Fazil's Cart!
+    private cartService: CartService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
-    // 1. Read the Product ID from the URL (e.g., /product/123)
-    const productId = this.route.snapshot.paramMap.get('id');
-    if (productId) {
-      this.fetchProductDetails(productId);
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      this.fetchProductDetails(id);
     } else {
-      this.errorMessage = "Product ID is missing.";
-      this.isLoading = false;
+      this.router.navigate(['/catalog']);
     }
   }
 
   fetchProductDetails(id: string): void {
+    this.isLoading = true;
+    this.errorMessage = '';
+    
     this.catalogService.getProductById(id).subscribe({
-      next: (prod) => {
-        this.product = prod;
-        this.finalPrice = prod.basePrice; // Set initial price
-        
-        // 2. Once we have the product, fetch its custom sizes/colors
-        this.catalogService.getCustomOptions().subscribe({
-          next: (options) => {
-            this.customOptions = options;
-            this.isLoading = false;
-          },
-          error: () => this.isLoading = false // It's okay if it has no options
-        });
+      next: (data) => {
+        this.product = data;
+        this.finalPrice = data.basePrice; // Set initial price
+        this.customOptions = data.customOptions || []; // Load options
+        this.isLoading = false;
       },
       error: (err) => {
-        console.error(err);
-        this.errorMessage = "Could not load product details.";
+        console.error('Failed to load product', err);
+        this.errorMessage = 'Could not load product details. Please try again later.';
         this.isLoading = false;
       }
     });
   }
 
-  // 3. The Interactive Builder Logic
-  onOptionSelect(option: any): void {
-    this.selectedOption = option;
-    // Update the price dynamically based on the selection
-    this.finalPrice = this.product.basePrice + (option.priceModifier || 0);
+  // Restored: Handles user clicking on a Size/Color/Material
+  onOptionSelect(opt: any): void {
+    this.selectedOption = opt;
+    // Dynamically update the price displayed on the screen
+    this.finalPrice = this.product.basePrice + (opt.priceAdjustment || 0);
   }
 
-  // 4. Send to Cart
-  addToCart(): void {
-    if (this.customOptions.length > 0 && !this.selectedOption) {
-      alert("Please select an option (like Size or Color) before adding to cart.");
-      return;
+  increaseQuantity(): void {
+    this.selectedQuantity++;
+  }
+
+  decreaseQuantity(): void {
+    if (this.selectedQuantity > 1) {
+      this.selectedQuantity--;
     }
-    
-    // Save to the memory state and redirect the user
-    this.cartService.addToCart(this.product, this.selectedOption, this.finalPrice);
-    this.router.navigate(['/cart']); 
+  }
+
+  addToCart(): void {
+    if (this.product) {
+      // Package the item with the correct dynamic price and option
+      const cartItem = {
+        ...this.product,
+        basePrice: this.finalPrice, 
+        selectedOption: this.selectedOption
+      };
+      
+      this.cartService.addToCart(cartItem, this.selectedQuantity);
+      alert(`${this.product.name} added to cart!`);
+    }
   }
 }

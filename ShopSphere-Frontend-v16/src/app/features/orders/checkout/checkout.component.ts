@@ -3,11 +3,13 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CartService } from '../../../core/services/cart.service';
 import { OrderService } from '../../../core/services/order.service';
+import { forkJoin, of } from 'rxjs';
+import { switchMap, catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-checkout',
   templateUrl: './checkout.component.html',
-  styleUrls: ['./checkout.component.css'] // Isolated CSS!
+  styleUrls: ['./checkout.component.css']
 })
 export class CheckoutComponent implements OnInit {
   checkoutForm!: FormGroup;
@@ -23,25 +25,20 @@ export class CheckoutComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // 1. Grab cart data
     this.cartService.cartItems$.subscribe(items => {
       this.cartItems = items;
       this.cartTotal = this.cartService.getCartTotal();
     });
 
-    // 2. Security Check: Don't let them checkout an empty cart!
     if (this.cartItems.length === 0) {
       this.router.navigate(['/cart']);
     }
 
-    // 3. Initialize the Form
     this.checkoutForm = this.fb.group({
       fullName: ['', Validators.required],
       shippingAddress: ['', Validators.required],
       city: ['', Validators.required],
       zipCode: ['', [Validators.required, Validators.pattern('^[0-9]{5,6}$')]],
-      
-      // Mock Payment Details
       cardNumber: ['', [Validators.required, Validators.pattern('^[0-9]{16}$')]],
       expiry: ['', Validators.required],
       cvv: ['', [Validators.required, Validators.pattern('^[0-9]{3}$')]]
@@ -52,28 +49,34 @@ export class CheckoutComponent implements OnInit {
     if (this.checkoutForm.valid) {
       this.isProcessing = true;
       
-      // Construct the payload for Spring Boot
-      const orderPayload = {
-        items: this.cartItems,
-        shippingDetails: this.checkoutForm.value,
-        totalAmount: this.cartTotal
-      };
+      const orderObservables = this.cartItems.map(item => {
+        // FIX: The Data-Mismatch Failsafe. Ensures the ID is never null.
+        const safeProductId = item.productId || item.id; 
 
-      this.orderService.placeOrder(orderPayload).subscribe({
-        next: (response) => {
-          // Success! Clear the cart and send to history
+        return this.orderService.placeOrder({
+          productId: String(safeProductId),
+          quantity: item.quantity || 1,
+          paymentMode: "CREDIT_CARD" 
+        }).pipe(
+          switchMap((response: any) => {
+            return this.orderService.confirmPayment(response.orderId);
+          })
+        );
+      });
+
+      forkJoin(orderObservables).subscribe({
+        next: () => {
           this.cartService.clearCart();
-          alert('Order placed successfully! Redirecting to your dashboard...');
+          alert('Payment Successful! Orders confirmed and sent to logistics. Redirecting...');
           this.router.navigate(['/orders/history']);
         },
         error: (err) => {
-          console.error(err);
-          alert('Failed to process order. Please try again.');
+          console.error('Order Placement Failed:', err);
+          alert('Failed to process payment. Ensure your backend Microservices are running.');
           this.isProcessing = false;
         }
       });
     } else {
-      // Force validation messages to show if they click submit early
       this.checkoutForm.markAllAsTouched();
     }
   }

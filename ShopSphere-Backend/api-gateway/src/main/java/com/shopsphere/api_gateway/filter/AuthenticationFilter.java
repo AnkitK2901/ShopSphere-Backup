@@ -28,12 +28,17 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
+            
+            // FIX 1: Let the CorsWebFilter handle the preflight OPTIONS request natively
+            if (exchange.getRequest().getMethod().matches("OPTIONS")) {
+                return chain.filter(exchange);
+            }
+
             if (!exchange.getRequest().getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
                 exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                 return exchange.getResponse().setComplete();
             }
 
-            // Keep the original header string intact
             String originalAuthHeader = exchange.getRequest().getHeaders().get(HttpHeaders.AUTHORIZATION).get(0);
             String token = originalAuthHeader;
 
@@ -54,14 +59,17 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                         .getBody();
 
                 String username = claims.getSubject();
-                // NEW: Extract the role from the JWT token
                 String role = claims.get("role", String.class);
 
-                // Forward BOTH the username, the role, and the original Authorization header
+                // FIX 2: Strip any incoming spoofed headers before setting the real ones
                 ServerWebExchange modifiedExchange = exchange.mutate()
                         .request(exchange.getRequest().mutate()
+                                .headers(httpHeaders -> {
+                                    httpHeaders.remove("X-Logged-In-User");
+                                    httpHeaders.remove("X-User-Role");
+                                })
                                 .header("X-Logged-In-User", username)
-                                .header("X-User-Role", role != null ? role : "UNKNOWN") // Pass to downstream services
+                                .header("X-User-Role", role != null ? role : "UNKNOWN")
                                 .header(HttpHeaders.AUTHORIZATION, originalAuthHeader) 
                                 .build())
                         .build();

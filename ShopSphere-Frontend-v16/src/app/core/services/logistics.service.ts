@@ -6,32 +6,23 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class LogisticsService {
-  private apiUrl = 'http://localhost:9090/logistics';
+  // FIX: Pointing strictly to the API Gateway route
+  private apiUrl = 'http://localhost:9090/api/shipments';
 
   constructor(private http: HttpClient) {}
 
-  // Fetch orders based on their current status
-  getShipmentsByStatus(status: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/shipments?status=${status}`);
-  }
-
-  // Fetch all shipments for the Global Monitor
   getAllShipments(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/shipments/all`);
+    // Matches Backend: @GetMapping ""
+    return this.http.get(`${this.apiUrl}`);
   }
 
-  // Get a single shipment for packing details
-  getShipmentById(id: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/shipments/${id}`);
+  getShipmentById(orderId: string): Observable<any> {
+    // Matches Backend: @GetMapping("/order/{orderId}")
+    return this.http.get(`${this.apiUrl}/order/${orderId}`);
   }
 
-  // Update status (e.g., CONFIRMED -> PACKED)
-  updateStatus(id: string, newStatus: string): Observable<any> {
-    return this.http.put(`${this.apiUrl}/shipments/${id}/status`, { status: newStatus });
-  }
-
-  // Assign courier and dispatch
-  dispatchShipment(id: string, dispatchData: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/shipments/${id}/dispatch`, dispatchData);
+  updateStatus(orderId: string, newStatus: string): Observable<any> {
+    // Matches Backend: @PatchMapping("/order/{orderId}/{status}")
+    return this.http.patch(`${this.apiUrl}/order/${orderId}/${newStatus}`, {});
   }
 }

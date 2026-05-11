@@ -7,27 +7,26 @@ import { AuthService } from './auth.service';
   providedIn: 'root'
 })
 export class OrderService {
-  private apiUrl = 'http://localhost:9090/order';
+  private apiUrl = 'http://localhost:9090/api/orders';
 
   constructor(private http: HttpClient, private authService: AuthService) {}
 
   placeOrder(orderData: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}`, orderData);
+    return this.http.post(`${this.apiUrl}/place`, orderData);
   }
 
-  // Decodes the JWT token to get the user's email/ID, then fetches their specific orders
-  getMyOrders(): Observable<any> {
-    // Note: Assuming your JWT payload uses 'sub' for the user identifier
-    const token = localStorage.getItem('jwt_token') || '';
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    const userId = payload.sub; 
-    
-    return this.http.get(`${this.apiUrl}/user/${userId}`);
+  confirmPayment(orderId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${orderId}/confirm-payment`, {});
   }
-  // Add this inside OrderService class
+
+  // FIX: Completely secured. The API Gateway applies the JWT token,
+  // and the Backend controller figures out who the user is.
+  getMyOrders(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/my-history`);
+  }
+
   updateOrderStatus(orderId: number, status: string): Observable<any> {
-    const payload = { status: status };
-    // Adjust the URL if your Spring Boot endpoint is different
-    return this.http.put(`${this.apiUrl}/${orderId}/status`, payload); 
+    const payload = { newStatus: status }; 
+    return this.http.patch(`${this.apiUrl}/${orderId}/status`, payload); 
   }
 }

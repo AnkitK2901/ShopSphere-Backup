@@ -1,31 +1,25 @@
-<div class="logistics-wrapper">
-  <div class="header-nav">
-    <a routerLink="/logistics/queue" class="back-link">&larr; Back to Queue</a>
-    <h2>Dispatch Order #{{ orderId }}</h2>
-  </div>
-
-  <div class="packing-card">
-    <h3>Generate Shipping Label</h3>
-    <p class="instruction">Assign a courier and tracking number to finalize shipment.</p>
-
-    <form [formGroup]="dispatchForm" (ngSubmit)="dispatchOrder()">
-      <div class="input-group">
-        <label>Select Courier</label>
-        <select formControlName="courier">
-          <option value="FedEx">FedEx Express</option>
-          <option value="UPS">UPS Ground</option>
-          <option value="USPS">USPS Priority</option>
-        </select>
+<div class="dashboard-container" *ngIf="!isLoading && shipment">
+  <div class="form-card">
+    <div class="form-header" style="background: #2f855a;">
+      <h2>Dispatch: Order #{{ shipment.orderId }}</h2>
+      <p>Assign carrier and generate tracking.</p>
+    </div>
+    <div class="modern-form">
+      <div class="form-row">
+        <div class="form-group full-width">
+          <label>Select Carrier</label>
+          <select [(ngModel)]="selectedCarrier" style="padding: 12px; border-radius: 8px; border: 1px solid #cbd5e0;">
+            <option value="Delhivery">Delhivery Express</option>
+            <option value="Shiprocket">Shiprocket Prime</option>
+            <option value="FedEx">FedEx International</option>
+          </select>
+        </div>
       </div>
 
-      <div class="input-group">
-        <label>Tracking Number</label>
-        <input type="text" formControlName="trackingNumber" placeholder="Enter tracking ID">
+      <div class="form-actions" style="margin-top: 30px;">
+        <button class="btn-secondary" routerLink="/logistics/queue">Cancel</button>
+        <button class="btn-primary" (click)="dispatchShipment()" style="background: #2f855a;">Handover to Carrier</button>
       </div>
-
-      <button type="submit" class="action-btn success" [disabled]="dispatchForm.invalid">
-        Print Label & Mark as Shipped
-      </button>
-    </form>
+    </div>
   </div>
 </div>

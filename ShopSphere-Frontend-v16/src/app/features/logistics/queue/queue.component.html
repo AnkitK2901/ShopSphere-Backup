@@ -1,82 +1,58 @@
-<div class="dashboard-wrapper">
-  
+<div class="dashboard-container">
   <div class="dashboard-header">
-    <div class="header-titles">
-      <h2>Fulfillment Queue</h2>
-      <p>Manage incoming orders and warehouse workflow.</p>
-    </div>
-    
-    <div class="header-actions">
-      <button class="refresh-btn" (click)="fetchQueue()">Refresh Queue</button>
-      <a routerLink="/logistics/monitor" class="monitor-link">View Warehouse Analytics</a>
-    </div>
+    <h1>Global Fulfillment Queue</h1>
+    <p>Manage and dispatch pending shipments to customers.</p>
   </div>
 
   <div *ngIf="errorMessage" class="error-banner">
     {{ errorMessage }}
   </div>
 
-  <div *ngIf="isLoading" class="info-banner">
-    Loading live queue...
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading queue data...</p>
   </div>
 
-  <div *ngIf="!isLoading && activeOrders.length === 0" class="info-banner success">
-    Queue is empty! All orders have been processed.
+  <div *ngIf="!isLoading && activeShipments.length === 0" class="info-banner success">
+    <h3>All caught up!</h3>
+    <p>There are no pending shipments in the global queue.</p>
   </div>
 
-  <div class="table-container" *ngIf="activeOrders.length > 0">
-    <table class="data-table">
+  <div class="table-container" *ngIf="activeShipments.length > 0">
+    <table class="modern-table">
       <thead>
         <tr>
+          <th>Shipment ID</th>
           <th>Order ID</th>
-          <th>Items</th>
-          <th>Total Value</th>
-          <th>Current Status</th>
-          <th>Action Required</th>
+          <th>Carrier</th>
+          <th>Tracking Number</th>
+          <th>Status</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let order of activeOrders">
-          <td><strong>#{{ order.id }}</strong></td>
-          
+        <tr *ngFor="let shipment of activeShipments">
+          <td><strong>#{{ shipment.id }}</strong></td>
+          <td>{{ shipment.orderId }}</td>
+          <td>{{ shipment.carrier || 'Unassigned' }}</td>
           <td>
-            <ul class="item-list">
-              <li *ngFor="let item of order.items">
-                {{ item.quantity }}x {{ item.name }}
-              </li>
-            </ul>
+            <a *ngIf="shipment.trackingUrl" [href]="shipment.trackingUrl" target="_blank">
+              {{ shipment.trackingNumber }}
+            </a>
+            <span *ngIf="!shipment.trackingUrl" class="text-muted">Pending</span>
           </td>
-          
-          <td>${{ order.totalAmount | number:'1.2-2' }}</td>
-          
           <td>
-            <span class="status-badge" [ngClass]="order.status?.toLowerCase() || 'pending'">
-              {{ order.status || 'PENDING' }}
+            <span class="status-badge" [ngClass]="shipment.shipmentStatus?.toLowerCase()">
+              {{ shipment.shipmentStatus }}
             </span>
           </td>
-          
           <td class="action-cell">
-            <button *ngIf="order.status === 'PENDING'" 
-                    class="action-btn confirm" 
-                    (click)="updateStatus(order.id, 'CONFIRMED')">
-              Acknowledge
-            </button>
-            
-            <button *ngIf="order.status === 'CONFIRMED'" 
-                    class="action-btn pack" 
-                    (click)="goToPacking(order.id)">
-              Start Packing
-            </button>
-            
-            <button *ngIf="order.status === 'PACKED'" 
-                    class="action-btn dispatch" 
-                    (click)="goToDispatch(order.id)">
-              Create Label
-            </button>
+            <button class="btn-small" (click)="goToPacking(shipment.orderId)" *ngIf="shipment.shipmentStatus === 'CONFIRMED'">Pack</button>
+            <button class="btn-small primary" (click)="goToDispatch(shipment.orderId)" *ngIf="shipment.shipmentStatus === 'PACKED'">Dispatch</button>
+            <span *ngIf="shipment.shipmentStatus === 'SHIPPED'" class="text-success">In Transit</span>
           </td>
         </tr>
       </tbody>
     </table>
   </div>
-
 </div>

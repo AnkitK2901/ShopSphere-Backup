@@ -19,7 +19,8 @@ export class CartComponent implements OnInit {
     });
   }
 
-  removeItem(index: number): void {
-    this.cartService.removeFromCart(index);
+  // FIX: Passing the actual Product ID instead of the row index!
+  removeItem(productId: any): void {
+    this.cartService.removeFromCart(productId);
   }
 }

@@ -1,32 +1,20 @@
-<div class="logistics-wrapper">
-  <div class="header-nav">
-    <a routerLink="/logistics/queue" class="back-link">&larr; Back to Queue</a>
-    <h2>Packing Order #{{ orderId }}</h2>
-  </div>
-
-  <div *ngIf="order" class="packing-card">
-    <div class="order-summary">
-      <p><strong>Customer:</strong> {{ order.shippingDetails?.fullName || 'Valued Customer' }}</p>
-      <p><strong>Destination:</strong> {{ order.shippingDetails?.city || 'N/A' }}</p>
+<div class="dashboard-container" *ngIf="!isLoading && shipment">
+  <div class="form-card">
+    <div class="form-header" style="background: #2b6cb0;">
+      <h2>Packing Slip: Order #{{ shipment.orderId }}</h2>
+      <p>Verify all items before sealing the package.</p>
     </div>
+    <div class="modern-form">
+      <div class="info-banner" style="background: #ebf8ff; padding: 20px; border-radius: 8px;">
+        <h3 style="margin-top: 0; color: #2b6cb0;">Shipping To:</h3>
+        <p><strong>Customer ID:</strong> {{ shipment.customerId || 'Secure Customer Data' }}</p>
+        <p><strong>Current Status:</strong> {{ shipment.shipmentStatus }}</p>
+      </div>
 
-    <h3>Item Verification Checklist</h3>
-    <p class="instruction">Check off each item as it is placed into the shipping box.</p>
-
-    <div class="checklist">
-      <div class="check-item" *ngFor="let item of order.items; let i = index">
-        <input type="checkbox" [id]="'item' + i" (change)="toggleItemPacked($event)">
-        <label [for]="'item' + i">
-          <strong>{{ item.quantity }}x</strong> {{ item.name }} 
-          <span class="variant">({{ item.optionName }})</span>
-        </label>
+      <div class="form-actions" style="margin-top: 30px;">
+        <button class="btn-secondary" routerLink="/logistics/queue">Back to Queue</button>
+        <button class="btn-primary" (click)="markAsPacked()" style="background: #2b6cb0;">Verify & Mark Packed</button>
       </div>
     </div>
-
-    <button class="action-btn" 
-            [disabled]="packedItemsCount !== order.items.length"
-            (click)="completePacking()">
-      Confirm All Items Packed
-    </button>
   </div>
 </div>

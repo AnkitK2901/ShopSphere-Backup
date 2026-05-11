@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { OrderService } from '../../../core/services/order.service';
+import { LogisticsService } from '../../../core/services/logistics.service';
 
 @Component({
   selector: 'app-packing',
@@ -8,36 +8,45 @@ import { OrderService } from '../../../core/services/order.service';
   styleUrls: ['./packing.component.css']
 })
 export class PackingComponent implements OnInit {
-  orderId: number = 0;
-  order: any = null;
-  packedItemsCount: number = 0;
+  shipment: any = null;
+  isLoading: boolean = true;
 
   constructor(
     private route: ActivatedRoute,
-    private orderService: OrderService,
+    private logisticsService: LogisticsService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
-    this.orderId = Number(this.route.snapshot.paramMap.get('id'));
-    // Fetch the specific order (Mocking the fetch by getting all and filtering for now)
-    this.orderService.getMyOrders().subscribe(orders => {
-      this.order = orders.find((o: any) => o.id === this.orderId);
-    });
-  }
-
-  toggleItemPacked(event: any): void {
-    if (event.target.checked) {
-      this.packedItemsCount++;
-    } else {
-      this.packedItemsCount--;
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      this.logisticsService.getShipmentById(id).subscribe({
+        next: (data) => {
+          this.shipment = data;
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error(err);
+          alert('Failed to load shipment details.');
+          this.router.navigate(['/logistics/queue']);
+        }
+      });
     }
   }
 
-  completePacking(): void {
-    this.orderService.updateOrderStatus(this.orderId, 'PACKED').subscribe(() => {
-      alert('Order marked as PACKED successfully.');
-      this.router.navigate(['/logistics/queue']);
-    });
+  markAsPacked(): void {
+    if (this.shipment) {
+      // FIX: Using the newly secured updateStatus method
+      this.logisticsService.updateStatus(this.shipment.orderId, 'PACKED').subscribe({
+        next: () => {
+          alert('Shipment marked as PACKED. Ready for dispatch.');
+          this.router.navigate(['/logistics/queue']);
+        },
+        error: (err) => {
+          console.error(err);
+          alert('Failed to update status.');
+        }
+      });
+    }
   }
 }

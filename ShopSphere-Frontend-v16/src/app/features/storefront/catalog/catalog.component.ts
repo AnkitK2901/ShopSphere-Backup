@@ -4,12 +4,12 @@ import { CatalogService } from '../../../core/services/catalog.service';
 @Component({
   selector: 'app-catalog',
   templateUrl: './catalog.component.html',
-  styleUrls: ['./catalog.component.css'], // Isolated CSS!
+  styleUrls: ['./catalog.component.css'] 
 })
 export class CatalogComponent implements OnInit {
   products: any[] = [];
   currentPage: number = 0;
-  pageSize: number = 8;
+  pageSize: number = 20; // Increased so frontend search works better
   searchQuery: string = '';
   isLoading: boolean = false;
   hasMoreProducts: boolean = true;
@@ -26,27 +26,27 @@ export class CatalogComponent implements OnInit {
       this.products = [];
       this.hasMoreProducts = true;
     }
-
     if (!this.hasMoreProducts) return;
 
     this.isLoading = true;
-    this.catalogService
-      .getProducts(this.currentPage, this.pageSize, this.searchQuery)
+    this.catalogService.getProducts(this.currentPage, this.pageSize, this.searchQuery)
       .subscribe({
         next: (response: any) => {
-          const newProducts = response.content || response;
+          let newProducts = response.content || response; 
+          
+          // FIX: Bulletproof Frontend Search Fallback
+          // If the backend returned everything, we force filter it here.
+          if (this.searchQuery && this.searchQuery.trim() !== '') {
+            const lowerQuery = this.searchQuery.toLowerCase();
+            newProducts = newProducts.filter((p: any) => 
+              p.name?.toLowerCase().includes(lowerQuery) || 
+              p.description?.toLowerCase().includes(lowerQuery)
+            );
+          }
 
-          // Optional: Sanitize or provide defaults if backend fields are missing
-          const sanitizedProducts = newProducts.map((p: any) => ({
-            ...p,
-            description: p.description || 'No description provided.',
-            // Ensure we have a valid ID for routing even if name varies
-            id: p.productId || p.id,
-          }));
-``
-          this.products = [...this.products, ...sanitizedProducts];
-
-          if (sanitizedProducts.length < this.pageSize) {
+          this.products = [...this.products, ...newProducts];
+          
+          if (response.last === true || (response.content || response).length < this.pageSize) {
             this.hasMoreProducts = false;
           }
           this.isLoading = false;
@@ -54,12 +54,13 @@ export class CatalogComponent implements OnInit {
         error: (err) => {
           console.error('Error fetching products', err);
           this.isLoading = false;
-        },
+        }
       });
   }
 
-  onSearch(): void {
-    this.loadProducts(true); // Resets the grid and searches from page 0
+  onSearch(query: string): void {
+    this.searchQuery = query;
+    this.loadProducts(true); 
   }
 
   loadMore(): void {

@@ -1,51 +1,45 @@
-<div class="details-wrapper">
+<div class="container" *ngIf="!isLoading && product">
   
-  <div class="navigation-bar">
-    <a routerLink="/" class="back-link">&larr; Back to Collection</a>
-  </div>
-
-  <div *ngIf="isLoading" class="loading-state">Loading product details...</div>
   <div *ngIf="errorMessage" class="error-state">{{ errorMessage }}</div>
 
-  <div *ngIf="product && !isLoading" class="product-layout">
-    
-    <div class="image-column">
-      <div class="large-image-placeholder">
-        <span>Product Image Presentation</span>
-      </div>
+  <div class="product-details-grid">
+    <div class="image-section">
+      <img [src]="product.previewImage || 'https://via.placeholder.com/500?text=No+Image+Available'" [alt]="product.name" class="main-image" />
     </div>
 
-    <div class="info-column">
+    <div class="info-section">
       <h1 class="product-title">{{ product.name }}</h1>
-      <p class="product-price">${{ finalPrice | number:'1.2-2' }}</p>
-      
-      <div class="divider"></div>
-      
       <p class="product-description">{{ product.description }}</p>
+      <p class="product-price">${{ finalPrice | number:'1.2-2' }}</p>
 
       <div class="options-section" *ngIf="customOptions.length > 0">
-        <h3>Select Variation</h3>
+        <h3>Select an Option:</h3>
         <div class="options-grid">
           <button 
             *ngFor="let opt of customOptions" 
-            (click)="onOptionSelect(opt)"
-            class="option-btn"
-            [class.selected-option]="selectedOption === opt">
-            {{ opt.optionName }} 
-            <span *ngIf="opt.priceModifier > 0">(+${{ opt.priceModifier }})</span>
+            class="option-box"
+            [class.selected-option]="selectedOption === opt"
+            (click)="onOptionSelect(opt)">
+            <span class="opt-type">{{ opt.type }}</span>
+            <span class="opt-value">{{ opt.value }}</span>
+            <span class="opt-price" *ngIf="opt.priceAdjustment > 0">+${{ opt.priceAdjustment }}</span>
           </button>
         </div>
       </div>
 
-      <button class="add-cart-btn" (click)="addToCart()">
-        Add to Cart
-      </button>
-
-      <div class="shipping-info">
-        <p>✓ Handcrafted & ethically sourced.</p>
-        <p>✓ Standard shipping within 3-5 business days.</p>
+      <div class="cart-actions">
+        <div class="quantity-selector">
+          <button (click)="decreaseQuantity()">-</button>
+          <span>{{ selectedQuantity }}</span>
+          <button (click)="increaseQuantity()">+</button>
+        </div>
+        <button class="btn-primary add-cart-btn" (click)="addToCart()">Add to Cart</button>
       </div>
     </div>
-
   </div>
+</div>
+
+<div *ngIf="isLoading" class="loading-state">
+  <div class="spinner"></div>
+  <p>Loading Product...</p>
 </div>

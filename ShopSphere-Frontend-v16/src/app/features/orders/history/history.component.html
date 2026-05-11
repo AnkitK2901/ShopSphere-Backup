@@ -1,13 +1,10 @@
 <div class="history-wrapper">
-  
   <div class="history-header">
     <h2>My Orders</h2>
     <p>Track your recent purchases and shipments.</p>
   </div>
 
-  <div *ngIf="isLoading" class="status-box">
-    Loading your order history...
-  </div>
+  <div *ngIf="isLoading" class="status-box">Loading your order history...</div>
 
   <div *ngIf="!isLoading && orders.length === 0" class="status-box empty-state">
     <h3>You haven't placed any orders yet.</h3>
@@ -15,28 +12,27 @@
   </div>
 
   <div class="orders-list" *ngIf="orders.length > 0">
-    
     <div *ngFor="let order of orders" class="order-card">
       
       <div class="order-header">
         <div class="order-info">
-          <span class="order-id">Order #{{ order.id }}</span>
-          <span class="order-date">Date: {{ order.orderDate || 'Recently Placed' }}</span> 
+          <span class="order-id">Order #{{ order.orderId }}</span>
+          <span class="order-date">Date: {{ (order.createdAt | date:'medium') || 'Recently Placed' }}</span> 
         </div>
         <div class="order-total">
-          Total: <strong>${{ order.totalAmount | number:'1.2-2' }}</strong>
+          Total: <strong>${{ order.totalOrderAmount | number:'1.2-2' }}</strong>
         </div>
       </div>
 
       <div class="tracker-section">
         <p class="status-text">
-          Current Status: <strong [style.color]="getProgressColor(order.status)">{{ order.status || 'PENDING' }}</strong>
+          Current Status: <strong [style.color]="getProgressColor(order.orderStatus)">{{ order.orderStatus || 'PENDING_PAYMENT' }}</strong>
         </p>
         
         <div class="progress-track">
           <div class="progress-fill" 
-               [style.width]="getProgressWidth(order.status)"
-               [style.background-color]="getProgressColor(order.status)">
+               [style.width]="getProgressWidth(order.orderStatus)"
+               [style.background-color]="getProgressColor(order.orderStatus)">
           </div>
         </div>
         
@@ -48,16 +44,25 @@
         </div>
       </div>
 
-      <div class="order-items">
-        <h4>Items in this shipment:</h4>
-        <ul>
-          <li *ngFor="let item of order.items">
-            {{ item.quantity }}x {{ item.name }} <span class="item-variant">({{ item.optionName }})</span>
-          </li>
-        </ul>
+      <div *ngIf="order.trackingUrl" class="tracking-info" style="margin-top:15px; padding:10px; background:#ebf8ff; border-radius:6px; color:#2b6cb0;">
+        <strong>Carrier:</strong> {{ order.carrier }} | 
+        <a [href]="order.trackingUrl" target="_blank" style="color:#3182ce; text-decoration:underline;">Track Package</a>
       </div>
 
-    </div>
+      <div class="order-items">
+        <h4>Items in this shipment:</h4>
+        
+        <div class="product-preview" style="display: flex; gap: 15px; align-items: center; margin-top: 10px;">
+          <img *ngIf="order.productImage" [src]="order.productImage" alt="Product" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0;">
+          <div>
+            <h4 style="margin: 0; font-size: 1.1rem; color: #2d3748;">{{ order.productName || 'Loading product details...' }}</h4>
+            <ul style="margin: 5px 0 0 0; padding-left: 20px; color: #718096; font-size: 0.9rem;" *ngIf="order.customizationDetails?.length > 0">
+              <li *ngFor="let detail of order.customizationDetails">{{ detail }}</li>
+            </ul>
+          </div>
+        </div>
 
+      </div>
+    </div>
   </div>
 </div>

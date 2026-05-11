@@ -18,12 +18,17 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let item of cartItems; let i = index">
-          <td class="item-name">{{ item.name }}</td>
-          <td>{{ item.optionName }}</td>
-          <td class="item-price">${{ item.price | number:'1.2-2' }}</td>
+        <tr *ngFor="let item of cartItems">
+          <td class="item-name">
+            <div style="display: flex; align-items: center; gap: 15px;">
+              <img *ngIf="item.previewImage" [src]="item.previewImage" style="width: 50px; height: 50px; border-radius: 6px; object-fit: cover;">
+              <span>{{ item.name }}</span>
+            </div>
+          </td>
+          <td>{{ item.selectedOption?.value || 'Standard' }}</td>
+          <td class="item-price">{{ item.quantity }}x ${{ item.basePrice | number:'1.2-2' }}</td>
           <td>
-            <button class="remove-btn" (click)="removeItem(i)">Remove</button>
+            <button class="remove-btn" (click)="removeItem(item.productId)">Remove</button>
           </td>
         </tr>
       </tbody>
@@ -35,7 +40,6 @@
         <span class="total-price">${{ totalPrice | number:'1.2-2' }}</span>
       </div>
       <p class="tax-note">Shipping and taxes calculated at checkout.</p>
-      
       <a routerLink="/checkout" class="checkout-btn">Proceed to Checkout</a>
     </div>
 

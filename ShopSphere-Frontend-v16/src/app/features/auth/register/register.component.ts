@@ -6,7 +6,7 @@ import { AuthService } from '../../../core/services/auth.service';
 @Component({
   selector: 'app-register',
   templateUrl: './register.component.html',
-  styleUrls: ['./register.component.css'] // Isolated CSS!
+  styleUrls: ['./register.component.css']
 })
 export class RegisterComponent implements OnInit {
   registerForm!: FormGroup;
@@ -19,7 +19,6 @@ export class RegisterComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Exact match to your backend User.java entity
     this.registerForm = this.fb.group({
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
@@ -31,13 +30,22 @@ export class RegisterComponent implements OnInit {
   onSubmit(): void {
     if (this.registerForm.valid) {
       this.isLoading = true;
-      this.authService.register(this.registerForm.value).subscribe({
+      
+      // FIX: Duplicate the email into the username field so Spring Boot 
+      // doesn't crash on null username validations.
+      const payload = {
+        ...this.registerForm.value,
+        username: this.registerForm.value.email 
+      };
+
+      this.authService.register(payload).subscribe({
         next: () => {
           alert('Registration successful! Please login.');
           this.router.navigate(['/login']);
         },
         error: (err) => {
           console.error(err);
+          // Now, if this throws, it is genuinely because the email is taken!
           alert('Registration failed. Email might already be in use.');
           this.isLoading = false;
         }
