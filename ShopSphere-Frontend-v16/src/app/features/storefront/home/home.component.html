@@ -1,14 +1,21 @@
-<div class="hero-section">
-  <div class="hero-content">
-    <span class="hero-badge">New Arrivals 2026</span>
-    <h1 class="hero-title">Discover Unique Artisan Goods.</h1>
-    <p class="hero-subtitle">ShopSphere connects you directly with independent creators, offering secure checkout and lightning-fast global logistics.</p>
-    <div class="hero-actions">
-      <button class="btn-primary-large" routerLink="/catalog">Shop the Catalog</button>
-      <button class="btn-secondary-large" routerLink="/register">Become a Seller</button>
+<div class="home-wrapper">
+  <div class="marquee-container">
+    <div class="marquee-text">
+      🔥 SUMMER MEGA SALE! GET UP TO 50% OFF ARTISAN GOODS! FREE GLOBAL SHIPPING ON ORDERS OVER ₹499! 🔥 SUMMER MEGA SALE! GET UP TO 50% OFF!
     </div>
   </div>
-  <div class="hero-image-container">
-    <img src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=2070&auto=format&fit=crop" alt="ShopSphere Artisan Goods" class="hero-image">
+
+  <div class="hero-content">
+    <h1 class="hero-title">Discover the World's Best Artisan Products.</h1>
+    <p class="hero-subtitle">ShopSphere connects you directly with independent creators, offering secure checkout and lightning-fast global logistics.</p>
+    
+    <div class="hero-actions">
+      <button class="btn-shop" routerLink="/catalog">Explore Catalog</button>
+      
+      <ng-container *ngIf="!(isLoggedIn$ | async)">
+        <button class="btn-auth" routerLink="/register">Become a Seller</button>
+        <button class="btn-auth outline" routerLink="/login">Sign In</button>
+      </ng-container>
+    </div>
   </div>
 </div>

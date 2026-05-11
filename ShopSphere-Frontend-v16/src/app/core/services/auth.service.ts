@@ -9,7 +9,6 @@ import { CartService } from './cart.service';
   providedIn: 'root'
 })
 export class AuthService {
-  // FIX: Added /api/ prefix to match API Gateway routing exactly
   private apiUrl = 'http://localhost:9090/api/auth';
   
   private loggedInSubject = new BehaviorSubject<boolean>(this.hasToken());
@@ -18,7 +17,7 @@ export class AuthService {
   constructor(
     private http: HttpClient, 
     private router: Router,
-    private cartService: CartService // Injected to handle cross-contamination
+    private cartService: CartService 
   ) {}
 
   login(credentials: any): Observable<any> {
@@ -33,11 +32,11 @@ export class AuthService {
   }
 
   register(user: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register`, user);
+    // FIX: Tell Angular to expect a plain text response so it doesn't crash parsing JSON!
+    return this.http.post(`${this.apiUrl}/register`, user, { responseType: 'text' });
   }
 
   logout(): void {
-    // FIX: Secure Purge. Destroy token AND clear the ghost cart so the next user doesn't see it.
     localStorage.removeItem('jwt_token');
     this.cartService.clearCart(); 
     this.loggedInSubject.next(false);

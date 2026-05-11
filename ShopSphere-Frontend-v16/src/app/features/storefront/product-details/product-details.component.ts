@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CatalogService } from '../../../core/services/catalog.service';
 import { CartService } from '../../../core/services/cart.service';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-product-details',
@@ -13,7 +14,6 @@ export class ProductDetailsComponent implements OnInit {
   isLoading: boolean = true;
   selectedQuantity: number = 1;
   
-  // UI Variables restored for the HTML template
   errorMessage: string = '';
   finalPrice: number = 0;
   customOptions: any[] = [];
@@ -23,6 +23,7 @@ export class ProductDetailsComponent implements OnInit {
     private route: ActivatedRoute,
     private catalogService: CatalogService,
     private cartService: CartService,
+    private toastService: ToastService,
     private router: Router
   ) {}
 
@@ -42,8 +43,8 @@ export class ProductDetailsComponent implements OnInit {
     this.catalogService.getProductById(id).subscribe({
       next: (data) => {
         this.product = data;
-        this.finalPrice = data.basePrice; // Set initial price
-        this.customOptions = data.customOptions || []; // Load options
+        this.finalPrice = data.basePrice;
+        this.customOptions = data.customOptions || [];
         this.isLoading = false;
       },
       error: (err) => {
@@ -54,10 +55,8 @@ export class ProductDetailsComponent implements OnInit {
     });
   }
 
-  // Restored: Handles user clicking on a Size/Color/Material
   onOptionSelect(opt: any): void {
     this.selectedOption = opt;
-    // Dynamically update the price displayed on the screen
     this.finalPrice = this.product.basePrice + (opt.priceAdjustment || 0);
   }
 
@@ -73,7 +72,6 @@ export class ProductDetailsComponent implements OnInit {
 
   addToCart(): void {
     if (this.product) {
-      // Package the item with the correct dynamic price and option
       const cartItem = {
         ...this.product,
         basePrice: this.finalPrice, 
@@ -81,7 +79,9 @@ export class ProductDetailsComponent implements OnInit {
       };
       
       this.cartService.addToCart(cartItem, this.selectedQuantity);
-      alert(`${this.product.name} added to cart!`);
+      
+      // FIX: Triggers the new sliding Toast Notification instead of blocking the screen!
+      this.toastService.showSuccess(`Added ${this.selectedQuantity}x ${this.product.name} to your cart.`);
     }
   }
 }

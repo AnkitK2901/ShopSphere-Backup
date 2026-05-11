@@ -5,7 +5,7 @@ import { CartService } from '../../../core/services/cart.service';
 import { OrderService } from '../../../core/services/order.service';
 import { forkJoin, of } from 'rxjs';
 import { switchMap, catchError } from 'rxjs/operators';
-
+import { ToastService } from '../../../core/services/toast.service';
 @Component({
   selector: 'app-checkout',
   templateUrl: './checkout.component.html',
@@ -21,7 +21,8 @@ export class CheckoutComponent implements OnInit {
     private fb: FormBuilder,
     private cartService: CartService,
     private orderService: OrderService,
-    private router: Router
+    private router: Router,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -67,12 +68,12 @@ export class CheckoutComponent implements OnInit {
       forkJoin(orderObservables).subscribe({
         next: () => {
           this.cartService.clearCart();
-          alert('Payment Successful! Orders confirmed and sent to logistics. Redirecting...');
+          this.toastService.showSuccess('Payment Successful! Orders confirmed and sent to logistics. Redirecting...');
           this.router.navigate(['/orders/history']);
         },
         error: (err) => {
           console.error('Order Placement Failed:', err);
-          alert('Failed to process payment. Ensure your backend Microservices are running.');
+          this.toastService.showError('Failed to process payment. Ensure your backend Microservices are running.');
           this.isProcessing = false;
         }
       });

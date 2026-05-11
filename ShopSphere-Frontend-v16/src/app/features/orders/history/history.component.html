@@ -20,7 +20,7 @@
           <span class="order-date">Date: {{ (order.createdAt | date:'medium') || 'Recently Placed' }}</span> 
         </div>
         <div class="order-total">
-          Total: <strong>${{ order.totalOrderAmount | number:'1.2-2' }}</strong>
+          Total: <strong>₹{{ order.totalOrderAmount | number:'1.2-2' }}</strong>
         </div>
       </div>
 

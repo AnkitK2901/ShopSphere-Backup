@@ -32,7 +32,7 @@
             <img [src]="item.previewImage || 'https://via.placeholder.com/50'" alt="Product" style="width: 50px; height: 50px; border-radius: 6px; object-fit: cover;">
           </td>
           <td><strong>{{ item.name }}</strong><br><span style="font-size: 0.85rem; color: #718096;">ID: {{ item.productId }}</span></td>
-          <td>${{ item.basePrice | number:'1.2-2' }}</td>
+          <td>₹{{ item.basePrice | number:'1.2-2' }}</td>
           <td>
             <span [style.color]="item.stockLevel < item.reorderThreshold ? '#e53e3e' : '#2d3748'" style="font-weight: bold;">
               {{ item.stockLevel }} units

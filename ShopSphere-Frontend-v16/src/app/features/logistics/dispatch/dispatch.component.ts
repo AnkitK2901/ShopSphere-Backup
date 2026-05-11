@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LogisticsService } from '../../../core/services/logistics.service';
-
+import { ToastService } from '../../../core/services/toast.service';
 @Component({
   selector: 'app-dispatch',
   templateUrl: './dispatch.component.html',
@@ -15,7 +15,8 @@ export class DispatchComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private logisticsService: LogisticsService,
-    private router: Router
+    private router: Router,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -28,7 +29,7 @@ export class DispatchComponent implements OnInit {
         },
         error: (err) => {
           console.error(err);
-          alert('Failed to load shipment details.');
+          this.toastService.showError('Failed to load shipment details.');
           this.router.navigate(['/logistics/queue']);
         }
       });
@@ -40,12 +41,12 @@ export class DispatchComponent implements OnInit {
       // FIX: Triggers the SHIPPED status, which alerts the downstream Carrier clients in Spring Boot
       this.logisticsService.updateStatus(this.shipment.orderId, 'SHIPPED').subscribe({
         next: () => {
-          alert(`Package dispatched via ${this.selectedCarrier}! Tracking generated.`);
+          this.toastService.showSuccess(`Package dispatched via ${this.selectedCarrier}! Tracking generated.`);
           this.router.navigate(['/logistics/queue']);
         },
         error: (err) => {
           console.error(err);
-          alert('Failed to dispatch package.');
+          this.toastService.showError('Failed to dispatch package.');
         }
       });
     }

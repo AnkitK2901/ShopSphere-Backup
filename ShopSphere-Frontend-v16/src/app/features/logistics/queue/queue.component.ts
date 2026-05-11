@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { LogisticsService } from '../../../core/services/logistics.service'; // FIX: Swapped out OrderService
-
+import { ToastService } from '../../../core/services/toast.service';
 @Component({
   selector: 'app-queue',
   templateUrl: './queue.component.html',
@@ -14,7 +14,8 @@ export class QueueComponent implements OnInit {
 
   constructor(
     private logisticsService: LogisticsService,
-    private router: Router
+    private router: Router,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -46,11 +47,11 @@ export class QueueComponent implements OnInit {
   updateStatus(orderId: string, newStatus: string): void {
     this.logisticsService.updateStatus(orderId, newStatus).subscribe({
       next: () => {
-        alert(`Shipment for Order #${orderId} updated to ${newStatus}`);
+        this.toastService.showSuccess(`Shipment for Order #${orderId} updated to ${newStatus}`);
         this.fetchQueue(); 
       },
       error: (err) => {
-        alert('Failed to update status.');
+        this.toastService.showError('Failed to update status.');
         console.error(err);
       }
     });

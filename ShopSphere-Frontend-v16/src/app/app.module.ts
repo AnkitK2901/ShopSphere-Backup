@@ -27,6 +27,7 @@ import { PackingComponent } from './features/logistics/packing/packing.component
 import { DispatchComponent } from './features/logistics/dispatch/dispatch.component';
 import { MonitorComponent } from './features/logistics/monitor/monitor.component';
 import { CommonModule } from '@angular/common';
+import { ProfileComponent } from './features/auth/profile/profile.component';
 
 @NgModule({
   declarations: [
@@ -50,6 +51,7 @@ import { CommonModule } from '@angular/common';
     PackingComponent,
     DispatchComponent,
     MonitorComponent,
+    ProfileComponent,
   ],
   imports: [
     BrowserModule,

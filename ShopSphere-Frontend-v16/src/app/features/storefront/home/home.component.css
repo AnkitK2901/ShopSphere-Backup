@@ -1,120 +1,91 @@
-.hero-section {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    max-width: 1300px;
-    margin: 60px auto;
-    padding: 0 40px;
-    gap: 60px;
-    min-height: 70vh;
+.home-wrapper { 
+  min-height: calc(100vh - 70px); 
+  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop') center/cover no-repeat; 
+  display: flex; 
+  flex-direction: column; 
 }
 
-.hero-content {
-    flex: 1;
-    max-width: 600px;
+.marquee-container { 
+  background: #e53e3e; 
+  color: white; 
+  padding: 10px 0; 
+  overflow: hidden; 
+  white-space: nowrap; 
+  font-weight: bold; 
+  letter-spacing: 2px; 
 }
 
-.hero-badge {
-    display: inline-block;
-    padding: 8px 16px;
-    background: #ebf8ff;
-    color: #2b6cb0;
-    font-weight: 700;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    margin-bottom: 20px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
+.marquee-text { 
+  display: inline-block; 
+  animation: marquee 20s linear infinite; 
 }
 
-.hero-title {
-    font-size: 4rem;
-    font-weight: 800;
-    color: #1a202c;
-    line-height: 1.1;
-    margin-bottom: 25px;
+@keyframes marquee { 
+  0% { transform: translateX(100vw); } 
+  100% { transform: translateX(-100%); } 
 }
 
-.hero-subtitle {
-    font-size: 1.25rem;
-    color: #4a5568;
-    line-height: 1.6;
-    margin-bottom: 40px;
+.hero-content { 
+  flex: 1; 
+  display: flex; 
+  flex-direction: column; 
+  justify-content: center; 
+  align-items: center; 
+  text-align: center; 
+  padding: 0 20px; 
+  color: white; 
 }
 
-.hero-actions {
-    display: flex;
-    gap: 20px;
+.hero-title { 
+  font-size: 4.5rem; 
+  font-weight: 800; 
+  max-width: 900px; 
+  line-height: 1.1; 
+  margin-bottom: 20px; 
+  text-shadow: 0 4px 15px rgba(0,0,0,0.5); 
 }
 
-.btn-primary-large {
-    padding: 18px 35px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    background: #2d3748;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
+.hero-subtitle { 
+  font-size: 1.3rem; 
+  max-width: 700px; 
+  line-height: 1.6; 
+  margin-bottom: 40px; 
+  color: #e2e8f0; 
 }
 
-.btn-primary-large:hover {
-    background: #1a202c;
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+.hero-actions { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+
+.btn-shop { 
+  padding: 15px 40px; 
+  font-size: 1.2rem; 
+  font-weight: bold; 
+  background: #3182ce; 
+  color: white; 
+  border: none; 
+  border-radius: 8px; 
+  cursor: pointer; 
+  transition: 0.3s; 
 }
 
-.btn-secondary-large {
-    padding: 18px 35px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    background: white;
-    color: #2d3748;
-    border: 2px solid #e2e8f0;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
+.btn-shop:hover { background: #2b6cb0; transform: translateY(-2px); }
+
+.btn-auth { 
+  padding: 15px 30px; 
+  font-size: 1.1rem; 
+  font-weight: bold; 
+  background: white; 
+  color: #1a202c; 
+  border: none; 
+  border-radius: 8px; 
+  cursor: pointer; 
+  transition: 0.3s; 
 }
 
-.btn-secondary-large:hover {
-    border-color: #cbd5e0;
-    background: #f7fafc;
-}
+.btn-auth.outline { background: transparent; border: 2px solid white; color: white; }
+.btn-auth:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
 
-.hero-image-container {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    position: relative;
-}
-
-.hero-image {
-    width: 100%;
-    max-width: 600px;
-    height: auto;
-    border-radius: 20px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    object-fit: cover;
-    aspect-ratio: 4/3;
-}
-
-/* Responsive Design */
-@media (max-width: 968px) {
-    .hero-section {
-        flex-direction: column;
-        text-align: center;
-        margin: 40px auto;
-        padding: 0 20px;
-    }
-
-    .hero-content {
-        align-items: center;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .hero-title {
-        font-size: 3rem;
-    }
+/* Mobile optimization */
+@media (max-width: 768px) {
+  .hero-title { font-size: 3rem; }
+  .hero-actions { flex-direction: column; width: 100%; max-width: 300px; }
 }

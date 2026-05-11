@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-
+import { ToastService } from '../../../core/services/toast.service';
 @Component({
   selector: 'app-register',
   templateUrl: './register.component.html',
@@ -15,7 +15,8 @@ export class RegisterComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -40,13 +41,13 @@ export class RegisterComponent implements OnInit {
 
       this.authService.register(payload).subscribe({
         next: () => {
-          alert('Registration successful! Please login.');
+          this.toastService.showSuccess('Registration successful! Please login.');
           this.router.navigate(['/login']);
         },
         error: (err) => {
           console.error(err);
           // Now, if this throws, it is genuinely because the email is taken!
-          alert('Registration failed. Email might already be in use.');
+          this.toastService.showError('Registration failed. Email might already be in use.');
           this.isLoading = false;
         }
       });

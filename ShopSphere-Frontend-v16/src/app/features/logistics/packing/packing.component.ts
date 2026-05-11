@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LogisticsService } from '../../../core/services/logistics.service';
-
+import { ToastService } from '../../../core/services/toast.service';
 @Component({
   selector: 'app-packing',
   templateUrl: './packing.component.html',
@@ -14,7 +14,8 @@ export class PackingComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private logisticsService: LogisticsService,
-    private router: Router
+    private router: Router,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -27,7 +28,7 @@ export class PackingComponent implements OnInit {
         },
         error: (err) => {
           console.error(err);
-          alert('Failed to load shipment details.');
+          this.toastService.showError('Failed to load shipment details.');
           this.router.navigate(['/logistics/queue']);
         }
       });
@@ -39,12 +40,12 @@ export class PackingComponent implements OnInit {
       // FIX: Using the newly secured updateStatus method
       this.logisticsService.updateStatus(this.shipment.orderId, 'PACKED').subscribe({
         next: () => {
-          alert('Shipment marked as PACKED. Ready for dispatch.');
+          this.toastService.showSuccess('Shipment marked as PACKED. Ready for dispatch.');
           this.router.navigate(['/logistics/queue']);
         },
         error: (err) => {
           console.error(err);
-          alert('Failed to update status.');
+          this.toastService.showError('Failed to update status.');
         }
       });
     }

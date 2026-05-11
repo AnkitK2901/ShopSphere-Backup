@@ -1,42 +1,56 @@
 package com.shopsphere.auth_service.controller;
 
 import com.shopsphere.auth_service.model.User;
-import com.shopsphere.auth_service.service.AuthService;
+import com.shopsphere.auth_service.repository.UserRepository;
+import com.shopsphere.auth_service.util.JwtUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/auth/profile")
 public class UserController {
 
-    private final AuthService authService;
+    private final UserRepository userRepository;
+    private final JwtUtil jwtUtil; // FIX: We inject JwtUtil to decode the token manually
 
-    public UserController(AuthService authService) {
-        this.authService = authService;
+    public UserController(UserRepository userRepository, JwtUtil jwtUtil) {
+        this.userRepository = userRepository;
+        this.jwtUtil = jwtUtil;
     }
 
-    // NEW — get by ID (called by analytics-service Feign)
-    @GetMapping("/id/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        User user = authService.getUserById(id);
-        return ResponseEntity.ok(user);
+    @GetMapping("/me")
+    public ResponseEntity<User> getMyProfile(@RequestHeader("Authorization") String authHeader) {
+        // FIX: Extract the username directly from the raw Bearer token
+        String token = authHeader.substring(7);
+        String username = jwtUtil.extractUsername(token);
+        
+        User user = userRepository.findByUsername(username);
+        if (user != null) {
+            user.setPassword(null); // Protect the password hash
+            return ResponseEntity.ok(user);
+        }
+        return ResponseEntity.notFound().build();
     }
 
-    @GetMapping("/{userName}")
-    public ResponseEntity<User> getUserByUsername(@PathVariable String userName) {
-        User user = authService.getUserByUsername(userName);
-        return ResponseEntity.ok(user);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<User> updateUserById(@PathVariable Long id, @RequestBody User userDetails) {
-        User user = authService.updateUserById(id, userDetails);
-        return ResponseEntity.ok(user);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
-        authService.deleteUser(id);
-        return ResponseEntity.ok("User Deleted Successfully");
+    @PutMapping("/update")
+    public ResponseEntity<User> updateMyProfile(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody User updatedDetails) {
+            
+        // FIX: Extract the username directly from the raw Bearer token
+        String token = authHeader.substring(7);
+        String username = jwtUtil.extractUsername(token);
+        
+        User user = userRepository.findByUsername(username);
+        if (user != null) {
+            user.setName(updatedDetails.getName());
+            user.setAddress(updatedDetails.getAddress());
+            user.setGender(updatedDetails.getGender());
+            
+            User saved = userRepository.save(user);
+            saved.setPassword(null); 
+            return ResponseEntity.ok(saved);
+        }
+        return ResponseEntity.notFound().build();
     }
 }

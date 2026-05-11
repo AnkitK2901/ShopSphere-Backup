@@ -1,5 +1,14 @@
 <app-navbar></app-navbar>
 
-<div class="main-layout">
+<div class="main-content">
   <router-outlet></router-outlet>
+</div>
+
+<div class="toast-container">
+  <div *ngFor="let toast of toasts; let i = index" 
+       class="toast-message" 
+       [ngClass]="toast.type"
+       (click)="removeToast(i)">
+    {{ toast.message }}
+  </div>
 </div>

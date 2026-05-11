@@ -14,7 +14,7 @@
       <img [src]="product.previewImage || 'https://via.placeholder.com/300?text=No+Image'" alt="Product" style="width: 100%; aspect-ratio: 1; object-fit: cover;">
       <div class="card-content" style="padding: 20px;">
         <h3 style="margin: 0 0 10px 0; font-size: 1.1rem; color: #2d3748;">{{ product.name }}</h3>
-        <p style="margin: 0; color: #e53e3e; font-weight: bold; font-size: 1.2rem;">${{ product.basePrice | number:'1.2-2' }}</p>
+        <p style="margin: 0; color: #e53e3e; font-weight: bold; font-size: 1.2rem;">₹{{ product.basePrice | number:'1.2-2' }}</p>
       </div>
     </div>
   </div>

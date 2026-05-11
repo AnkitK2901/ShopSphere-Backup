@@ -52,7 +52,7 @@
                   <strong>{{ item.quantity }}x {{ item.name }}</strong>
                   <span class="item-variant">{{ item.selectedOption?.value || 'Standard' }}</span>
                 </div>
-                <div class="item-price">${{ (item.basePrice * item.quantity) | number:'1.2-2' }}</div>
+                <div class="item-price">₹{{ (item.basePrice * item.quantity) | number:'1.2-2' }}</div>
               </div>
             </div>
 
@@ -60,7 +60,7 @@
 
             <div class="summary-total">
               <span>Total</span>
-              <span class="total-amount">${{ cartTotal | number:'1.2-2' }}</span>
+              <span class="total-amount">₹{{ cartTotal | number:'1.2-2' }}</span>
             </div>
           </div>
         </div>
