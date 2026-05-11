@@ -72,6 +72,27 @@ public class InventoryService {
 
         log.info("📦 Automatically creating reorder ticket for Supplier [{}]. Estimated Lead Time: {} days.",
                 item.getSupplierId(), leadTime);
+    }
 
+    // ==============================================================
+    // SURGICAL FIXES: Added specifically for Ghost Inventory & SAGA
+    // ==============================================================
+    @Transactional
+    public void initializeStock(String productId, int stockLevel) {
+        InventoryItem item = new InventoryItem();
+        item.setProductId(productId);
+        item.setStockLevel(stockLevel);
+        item.setReorderThreshold(10); // Safe default
+        inventoryRepository.save(item);
+        log.info("Initialized stock for Product [{}] with {} units.", productId, stockLevel);
+    }
+
+    @Transactional
+    public void refundStock(String productId, int quantity) {
+        InventoryItem item = inventoryRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + productId));
+        item.setStockLevel(item.getStockLevel() + quantity);
+        inventoryRepository.save(item);
+        log.info("SAGA ROLLBACK: Refunded {} units for Product [{}].", quantity, productId);
     }
 }

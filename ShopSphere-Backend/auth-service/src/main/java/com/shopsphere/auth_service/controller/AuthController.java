@@ -2,6 +2,7 @@ package com.shopsphere.auth_service.controller;
 
 import com.shopsphere.auth_service.dto.AuthResponse;
 import com.shopsphere.auth_service.dto.LoginRequest;
+import com.shopsphere.auth_service.dto.RegisterResponse;
 import com.shopsphere.auth_service.model.User;
 import com.shopsphere.auth_service.service.AuthService;
 import org.springframework.http.ResponseEntity;
@@ -18,20 +19,23 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@RequestBody User user) {
-        authService.registerUser(user);
-        return ResponseEntity.ok("Registration Successful");
+    public ResponseEntity<RegisterResponse> registerUser(@RequestBody User user) {
+        User savedUser = authService.registerUser(user);
+        RegisterResponse response = new RegisterResponse(
+                "Registration Successful! Welcome to ShopSphere, " + savedUser.getUsername() + "!",
+                savedUser.getId(),
+                savedUser.getUsername(),
+                savedUser.getEmail(),
+                savedUser.getRole(),
+                savedUser.getName()
+        );
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> loginUser(@RequestBody LoginRequest loginRequest) {
-        // 1. Generate the token
         String token = authService.loginUser(loginRequest);
-        
-        // 2. Fetch the user details dynamically
         User user = authService.getUserByUsername(loginRequest.getUsername());
-        
-        // 3. Return both the token AND the dynamic ID!
         return ResponseEntity.ok(new AuthResponse(token, user.getId()));
     }
 }

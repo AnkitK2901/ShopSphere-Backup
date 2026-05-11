@@ -1,44 +1,19 @@
 package com.shopsphere.order.DTO;
 
+import java.util.List;
+
 public class OrderRequest {
 
     private String userName;
-
-    private String productId;
-
-    private int quantity;
-
     private String paymentMode;
+    
+    // THE FIX: Accept the entire cart at once
+    private List<OrderItemRequest> items;
 
-    public String getProductId() {
-        return productId;
-    }
-
-    public void setProductId(String productId) {
-        this.productId = productId;
-    }
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
-
-    public String getPaymentMode() {
-        return paymentMode;
-    }
-
-    public void setPaymentMode(String paymentMode) {
-        this.paymentMode = paymentMode;
-    }
+    public String getUserName() { return userName; }
+    public void setUserName(String userName) { this.userName = userName; }
+    public String getPaymentMode() { return paymentMode; }
+    public void setPaymentMode(String paymentMode) { this.paymentMode = paymentMode; }
+    public List<OrderItemRequest> getItems() { return items; }
+    public void setItems(List<OrderItemRequest> items) { this.items = items; }
 }

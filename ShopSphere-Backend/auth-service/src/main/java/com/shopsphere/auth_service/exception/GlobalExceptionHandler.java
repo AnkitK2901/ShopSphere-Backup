@@ -4,21 +4,26 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-@RestControllerAdvice // This makes it a global interceptor for all errors!
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<String> handleUserExists(UserAlreadyExistsException ex) {
-        return ResponseEntity.status(400).body(ex.getMessage()); // 400 Bad Request
+        return ResponseEntity.status(400).body(ex.getMessage());
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
     public ResponseEntity<String> handleInvalidCredentials(InvalidCredentialsException ex) {
-        return ResponseEntity.status(401).body(ex.getMessage()); // 401 Unauthorized
+        return ResponseEntity.status(401).body(ex.getMessage());
     }
 
     @ExceptionHandler(InvalidEmailFormatException.class)
     public ResponseEntity<String> handleInvalidEmail(InvalidEmailFormatException ex) {
+        return ResponseEntity.status(400).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> handleIllegalArgument(IllegalArgumentException ex) {
         return ResponseEntity.status(400).body(ex.getMessage());
     }
 

@@ -3,9 +3,8 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CartService } from '../../../core/services/cart.service';
 import { OrderService } from '../../../core/services/order.service';
-import { forkJoin, of } from 'rxjs';
-import { switchMap, catchError } from 'rxjs/operators';
 import { ToastService } from '../../../core/services/toast.service';
+
 @Component({
   selector: 'app-checkout',
   templateUrl: './checkout.component.html',
@@ -50,26 +49,31 @@ export class CheckoutComponent implements OnInit {
     if (this.checkoutForm.valid) {
       this.isProcessing = true;
       
-      const orderObservables = this.cartItems.map(item => {
-        // FIX: The Data-Mismatch Failsafe. Ensures the ID is never null.
-        const safeProductId = item.productId || item.id; 
+      // THE FIX: Map the entire cart into a single List array
+      const mappedItems = this.cartItems.map(item => ({
+        productId: String(item.productId || item.id),
+        quantity: item.quantity || 1
+      }));
 
-        return this.orderService.placeOrder({
-          productId: String(safeProductId),
-          quantity: item.quantity || 1,
-          paymentMode: "CREDIT_CARD" 
-        }).pipe(
-          switchMap((response: any) => {
-            return this.orderService.confirmPayment(response.orderId);
-          })
-        );
-      });
-
-      forkJoin(orderObservables).subscribe({
-        next: () => {
-          this.cartService.clearCart();
-          this.toastService.showSuccess('Payment Successful! Orders confirmed and sent to logistics. Redirecting...');
-          this.router.navigate(['/orders/history']);
+      // THE FIX: Send ONE request containing the entire cart
+      this.orderService.placeOrder({
+        items: mappedItems,
+        paymentMode: "CREDIT_CARD" 
+      }).subscribe({
+        next: (response: any) => {
+          // Immediately confirm the single Order ID
+          this.orderService.confirmPayment(response.orderId).subscribe({
+            next: () => {
+              this.cartService.clearCart();
+              this.toastService.showSuccess('Payment Successful! Order confirmed and sent to logistics. Redirecting...');
+              this.router.navigate(['/orders/history']);
+            },
+            error: (err) => {
+              console.error('Confirmation Failed:', err);
+              this.toastService.showError('Payment confirmed, but logistics sync failed.');
+              this.isProcessing = false;
+            }
+          });
         },
         error: (err) => {
           console.error('Order Placement Failed:', err);

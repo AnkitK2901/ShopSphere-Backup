@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { LogisticsService } from '../../../core/services/logistics.service'; // FIX: Swapped out OrderService
+import { LogisticsService } from '../../../core/services/logistics.service'; 
 import { ToastService } from '../../../core/services/toast.service';
+
 @Component({
   selector: 'app-queue',
   templateUrl: './queue.component.html',
@@ -23,15 +24,14 @@ export class QueueComponent implements OnInit {
   }
 
   fetchQueue(): void {
-    // FIX: Calling the global shipment queue instead of personal orders!
     this.logisticsService.getAllShipments().subscribe({
       next: (shipments) => {
         if (!shipments) {
           this.activeShipments = [];
         } else {
-          // Filter to show only active logistics tasks
+          // SURGICAL FIX: Force Uppercase Check to prevent missing items
           this.activeShipments = shipments.filter((s: any) => 
-            s.shipmentStatus !== 'DELIVERED'
+            s.shipmentStatus?.toUpperCase() !== 'DELIVERED'
           );
         }
         this.isLoading = false;

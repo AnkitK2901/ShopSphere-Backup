@@ -23,42 +23,58 @@ public class AuthService {
         this.jwtUtil = jwtUtil;
     }
 
-    public void registerUser(User user) {
+    public User registerUser(User user) {
+        if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
+            throw new IllegalArgumentException("Error: Username cannot be empty!");
+        }
+        if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
+            throw new IllegalArgumentException("Error: Password cannot be empty!");
+        }
+        if (user.getPassword().length() < 6) {
+            throw new IllegalArgumentException("Error: Password must be at least 6 characters!");
+        }
+
         String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
         if (user.getEmail() == null || !user.getEmail().matches(emailRegex)) {
             throw new InvalidEmailFormatException("Error: Please provide a valid email address!");
         }
+
         if (userRepository.existsByUsername(user.getUsername())) {
             throw new UserAlreadyExistsException("Error: Username is already taken!");
         }
+
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new UserAlreadyExistsException("Error: Email is already registered!");
         }
 
-        // --- SMART ROLE FIX ---
         if (user.getRole() == null || user.getRole().trim().isEmpty()) {
-            user.setRole("ROLE_BUYER");
+            user.setRole("ROLE_CUSTOMER"); // Standardized to your app logic
         } else if (!user.getRole().startsWith("ROLE_")) {
-            // Automatically converts "SELLER" to "ROLE_SELLER"
             user.setRole("ROLE_" + user.getRole().toUpperCase());
         }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
+        return userRepository.save(user);
     }
 
     public String loginUser(LoginRequest loginRequest) {
+        if (loginRequest.getUsername() == null || loginRequest.getUsername().trim().isEmpty()) {
+            throw new InvalidCredentialsException("Error: Username cannot be empty!");
+        }
+        if (loginRequest.getPassword() == null || loginRequest.getPassword().trim().isEmpty()) {
+            throw new InvalidCredentialsException("Error: Password cannot be empty!");
+        }
+
         User existingUser = userRepository.findByUsername(loginRequest.getUsername());
         if (existingUser == null || !passwordEncoder.matches(loginRequest.getPassword(), existingUser.getPassword())) {
             throw new InvalidCredentialsException("Invalid user credentials");
         }
-        // UPDATED: Pass both username and role to generateToken
+
         return jwtUtil.generateToken(existingUser.getUsername(), existingUser.getRole());
     }
 
     public User getUserById(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+        return userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found with id: " + id));
     }
 
     public User getUserByUsername(String userName) {
@@ -70,14 +86,12 @@ public class AuthService {
     }
 
     public User updateUserById(Long id, User userDetails) {
-        User existingUser = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User ID not found " + id));
+        User existingUser = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User ID not found " + id));
         existingUser.setName(userDetails.getName());
         existingUser.setAddress(userDetails.getAddress());
         existingUser.setGender(userDetails.getGender());
-        // Optionally update role here if needed, but normally restricted to Admin
 
-        if (userDetails.getPassword() != null) {
+        if (userDetails.getPassword() != null && !userDetails.getPassword().isEmpty()) {
             existingUser.setPassword(passwordEncoder.encode(userDetails.getPassword()));
         }
         return userRepository.save(existingUser);

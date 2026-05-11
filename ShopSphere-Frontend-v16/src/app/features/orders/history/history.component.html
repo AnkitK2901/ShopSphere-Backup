@@ -52,15 +52,18 @@
       <div class="order-items">
         <h4>Items in this shipment:</h4>
         
-        <div class="product-preview" style="display: flex; gap: 15px; align-items: center; margin-top: 10px;">
-          <img *ngIf="order.productImage" [src]="order.productImage" alt="Product" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0;">
+        <div *ngFor="let item of order.items" class="product-preview" style="display: flex; gap: 15px; align-items: center; margin-top: 10px; padding-bottom: 10px; border-bottom: 1px solid #edf2f7;">
+          <img *ngIf="item.productImage" [src]="item.productImage" alt="Product" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0;">
+          <div *ngIf="!item.productImage" style="width: 60px; height: 60px; background: #e2e8f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #a0aec0; font-size: 0.8rem;">No Img</div>
           <div>
-            <h4 style="margin: 0; font-size: 1.1rem; color: #2d3748;">{{ order.productName || 'Loading product details...' }}</h4>
-            <ul style="margin: 5px 0 0 0; padding-left: 20px; color: #718096; font-size: 0.9rem;" *ngIf="order.customizationDetails?.length > 0">
-              <li *ngFor="let detail of order.customizationDetails">{{ detail }}</li>
-            </ul>
+            <h4 style="margin: 0; font-size: 1.1rem; color: #2d3748;">{{ item.productName || 'Loading product details...' }}</h4>
+            <p style="margin: 5px 0 0 0; color: #718096; font-size: 0.9rem;">Qty: {{ item.quantity }} | Unit Price: ₹{{ item.price | number:'1.2-2' }}</p>
           </div>
         </div>
+
+        <ul style="margin: 10px 0 0 0; padding-left: 20px; color: #718096; font-size: 0.9rem;" *ngIf="order.customizationDetails?.length > 0">
+          <li *ngFor="let detail of order.customizationDetails">{{ detail }}</li>
+        </ul>
 
       </div>
     </div>

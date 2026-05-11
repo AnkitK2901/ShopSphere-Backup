@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { OrderService } from '../../../core/services/order.service';
 import { CatalogService } from '../../../core/services/catalog.service';
+import { forkJoin, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-history',
@@ -13,26 +15,33 @@ export class HistoryComponent implements OnInit {
 
   constructor(
     private orderService: OrderService,
-    private catalogService: CatalogService // FIX: Injecting catalog to get product names!
+    private catalogService: CatalogService 
   ) {}
 
   ngOnInit(): void {
     this.orderService.getMyOrders().subscribe({
       next: (data) => {
-        // Sort newest first based on the Spring Boot orderId
         const sortedOrders = data.sort((a: any, b: any) => b.orderId - a.orderId);
         
-        // FIX: Enrich the raw orders with real product names and images!
+        // THE UPGRADE: Loop over all items in the array and fetch images in parallel
         sortedOrders.forEach((order: any) => {
-          this.catalogService.getProductById(order.productId).subscribe({
-            next: (product) => {
-              order.productName = product.name;
-              order.productImage = product.previewImage;
-            },
-            error: () => {
-              order.productName = 'Product Details Unavailable';
-            }
-          });
+          if (order.items && order.items.length > 0) {
+            const itemRequests = order.items.map((item: any) => 
+              this.catalogService.getProductById(item.productId).pipe(
+                map((product: any) => {
+                  item.productName = product.name;
+                  item.productImage = product.previewImage;
+                  return item;
+                }),
+                catchError(() => {
+                  item.productName = 'Product Details Unavailable';
+                  item.productImage = null;
+                  return of(item);
+                })
+              )
+            );
+            forkJoin(itemRequests).subscribe(); 
+          }
         });
 
         this.orders = sortedOrders;
@@ -52,14 +61,17 @@ export class HistoryComponent implements OnInit {
       case 'PACKED': return '66%';
       case 'SHIPPED': return '85%';
       case 'DELIVERED': return '100%';
+      case 'CANCELLED': return '0%';
+      case 'RETURNED': return '0%';
       default: return '0%';
     }
   }
 
   getProgressColor(status: string): string {
-    if (status === 'DELIVERED') return '#27ae60'; 
-    if (status === 'PENDING_PAYMENT') return '#e74c3c'; // Red for unpaid
-    if (status === 'CONFIRMED') return '#f39c12'; // Orange for confirmed
-    return '#0056b3'; // Blue for in-progress
+    const safeStatus = status?.toUpperCase();
+    if (safeStatus === 'DELIVERED') return '#27ae60'; 
+    if (safeStatus === 'PENDING_PAYMENT' || safeStatus === 'CANCELLED') return '#e74c3c'; 
+    if (safeStatus === 'CONFIRMED') return '#f39c12'; 
+    return '#0056b3'; 
   }
 }

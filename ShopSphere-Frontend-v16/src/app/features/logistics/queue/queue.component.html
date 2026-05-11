@@ -47,9 +47,9 @@
             </span>
           </td>
           <td class="action-cell">
-            <button class="btn-small" (click)="goToPacking(shipment.orderId)" *ngIf="shipment.shipmentStatus === 'CONFIRMED'">Pack</button>
-            <button class="btn-small primary" (click)="goToDispatch(shipment.orderId)" *ngIf="shipment.shipmentStatus === 'PACKED'">Dispatch</button>
-            <span *ngIf="shipment.shipmentStatus === 'SHIPPED'" class="text-success">In Transit</span>
+            <button class="btn-small" (click)="goToPacking(shipment.orderId)" *ngIf="shipment.shipmentStatus?.toUpperCase() === 'CONFIRMED' || shipment.shipmentStatus?.toUpperCase() === 'PENDING'">Pack</button>
+            <button class="btn-small primary" (click)="goToDispatch(shipment.orderId)" *ngIf="shipment.shipmentStatus?.toUpperCase() === 'PACKED'">Dispatch</button>
+            <span *ngIf="shipment.shipmentStatus?.toUpperCase() === 'SHIPPED'" class="text-success">In Transit</span>
           </td>
         </tr>
       </tbody>

@@ -19,13 +19,14 @@ public class Product {
 
     private String name;
 
-    // Safely added description
-    @Column(length = 1000)
+    // SURGICAL FIX: Prevent DB Truncation 
+    @Column(columnDefinition = "LONGTEXT")
     private String description;
 
     private Double basePrice;
 
-    @Column(length = 500)
+    // SURGICAL FIX: Prevent DB Truncation 
+    @Column(columnDefinition = "LONGTEXT")
     private String previewImage;
 
     private boolean isActive;

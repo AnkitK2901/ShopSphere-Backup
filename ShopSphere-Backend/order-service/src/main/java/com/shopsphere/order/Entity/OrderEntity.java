@@ -13,18 +13,8 @@ public class OrderEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long orderId;
 
-    // FIX: Crucial business math cannot be null
-    @Column(nullable = false)
-    private int quantity;
-
-    @Column(nullable = false)
-    private String productId;
-
     @Column(nullable = false)
     private Long customerId;
-
-    @Column(nullable = false)
-    private Double priceAtPurchase;
     
     @Column(nullable = false)
     private Double totalAmount;
@@ -39,6 +29,12 @@ public class OrderEntity {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
+    // The Master-Detail Relationship
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "order_id")
+    private List<OrderItemEntity> items;
+
+    // FIX: Added customizationDetails back to the Entity
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "order_customizations", joinColumns = @JoinColumn(name = "order_id"))
     @Column(name = "custom_detail")
@@ -58,27 +54,25 @@ public class OrderEntity {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public OrderEntity(){}
+
     // Getters and Setters
     public Long getOrderId() { return orderId; }
     public void setOrderId(Long orderId) { this.orderId = orderId; }
-    public int getQuantity() { return quantity; }
-    public void setQuantity(int quantity) { this.quantity = quantity; }
     public Long getCustomerId() { return customerId; }
     public void setCustomerId(Long customerId) { this.customerId = customerId; }
-    public String getProductId() { return productId; }
-    public void setProductId(String productId) { this.productId = productId; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    public OrderStatus getStatus() { return status; }
-    public void setStatus(OrderStatus status) { this.status = status; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
-    public Double getPriceAtPurchase() { return priceAtPurchase; }
-    public void setPriceAtPurchase(Double priceAtPurchase) { this.priceAtPurchase = priceAtPurchase; }
     public Double getTotalAmount() { return totalAmount; }
     public void setTotalAmount(Double totalAmount) { this.totalAmount = totalAmount; }
+    public OrderStatus getStatus() { return status; }
+    public void setStatus(OrderStatus status) { this.status = status; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    public List<OrderItemEntity> getItems() { return items; }
+    public void setItems(List<OrderItemEntity> items) { this.items = items; }
+    
+    // FIX: Added getter and setter for the Service to use
     public List<String> getCustomizationDetails() { return customizationDetails; }
     public void setCustomizationDetails(List<String> customizationDetails) { this.customizationDetails = customizationDetails; }
-
-    public OrderEntity(){}
 }

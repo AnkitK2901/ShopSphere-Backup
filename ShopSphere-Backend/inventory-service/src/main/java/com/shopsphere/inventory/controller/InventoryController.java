@@ -63,4 +63,23 @@ public class InventoryController {
         List<InventoryItem> items = inventoryService.getAllInventory();
         return ResponseEntity.ok(items);
     }
+
+    // ==============================================================
+    // SURGICAL FIXES: Added specifically for Ghost Inventory & SAGA
+    // ==============================================================
+    @PostMapping("/initialize")
+    public ResponseEntity<Void> initializeStock(
+            @RequestParam("productId") String productId,
+            @RequestParam("stockLevel") int stockLevel) {
+        log.info("Received POST request to initialize stock for new Product: {}", productId);
+        inventoryService.initializeStock(productId, stockLevel);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/refund")
+    public ResponseEntity<String> refundStock(@Valid @RequestBody StockRequest request) {
+        log.info("Received POST request to refund stock for Product: {}", request.getProductId());
+        inventoryService.refundStock(request.getProductId(), request.getQuantity());
+        return ResponseEntity.ok("Successfully refunded " + request.getQuantity() + " items for product: " + request.getProductId());
+    }
 }
