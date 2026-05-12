@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
+
 @Component({
   selector: 'app-register',
   templateUrl: './register.component.html',
@@ -32,22 +33,21 @@ export class RegisterComponent implements OnInit {
     if (this.registerForm.valid) {
       this.isLoading = true;
       
-      // FIX: Duplicate the email into the username field so Spring Boot 
-      // doesn't crash on null username validations.
       const payload = {
         ...this.registerForm.value,
         username: this.registerForm.value.email 
       };
 
       this.authService.register(payload).subscribe({
-        next: () => {
-          this.toastService.showSuccess('Registration successful! Please login.');
+        next: (response: any) => {
+          // UPDATED: Now showing the specific message from the backend DTO
+          this.toastService.showSuccess(response.message || 'Registration successful!');
           this.router.navigate(['/login']);
         },
         error: (err) => {
           console.error(err);
-          // Now, if this throws, it is genuinely because the email is taken!
-          this.toastService.showError('Registration failed. Email might already be in use.');
+          // Backend now sends specific error strings (e.g., "Username is already taken")
+          this.toastService.showError(err.error || 'Registration failed. Email might already be in use.');
           this.isLoading = false;
         }
       });

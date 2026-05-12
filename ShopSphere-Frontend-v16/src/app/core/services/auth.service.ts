@@ -32,8 +32,8 @@ export class AuthService {
   }
 
   register(user: any): Observable<any> {
-    // FIX: Tell Angular to expect a plain text response so it doesn't crash parsing JSON!
-    return this.http.post(`${this.apiUrl}/register`, user, { responseType: 'text' });
+    // UPDATED: Now expecting a JSON object (RegisterResponse) from the backend
+    return this.http.post(`${this.apiUrl}/register`, user);
   }
 
   logout(): void {

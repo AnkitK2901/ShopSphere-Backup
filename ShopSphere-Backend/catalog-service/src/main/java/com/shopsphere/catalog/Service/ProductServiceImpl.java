@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -27,32 +28,35 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Product createProduct(ProductRequestDTO dto) {
-           logger.info("Creating product: {}", dto.getName());
-           Product product = new Product();
-           product.setName(dto.getName());
-           product.setBasePrice(dto.getBasePrice());
-           product.setPreviewImage(dto.getPreviewImage());
-           product.setActive(true);
+        logger.info("Creating product: {}", dto.getName());
+        Product product = new Product();
+        product.setName(dto.getName());
+        product.setBasePrice(dto.getBasePrice());
+        product.setPreviewImage(dto.getPreviewImage());
+        product.setActive(true);
 
-           if (dto.getSelectedOptionIds() != null && !dto.getSelectedOptionIds().isEmpty()) {
-               List<CustomOption> options = optionRepository.findAllById(dto.getSelectedOptionIds());
-               product.setCustomOptions(new LinkedHashSet<>(options));
-           }
-           return productRepository.save(product);
+        if (dto.getSelectedOptionIds() != null && !dto.getSelectedOptionIds().isEmpty()) {
+            List<CustomOption> options = optionRepository.findAllById(dto.getSelectedOptionIds());
+            product.setCustomOptions(new LinkedHashSet<>(options));
+        }
+        return productRepository.save(product);
     }
 
-   @Override
+    @Override
     public List<Product> getAllProducts() {
         logger.info("Fetching all ACTIVE products directly from DB");
-        return productRepository.findByIsActiveTrue();
+        // FIX: Added .stream().distinct() to remove Cartesian duplicates caused by
+        // EAGER fetching
+        return productRepository.findByIsActiveTrue().stream()
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     @Override
     public Product getProductById(Long id) {
         logger.info("Fetching product {} directly from DB", id);
         return productRepository.findByProductIdAndIsActiveTrue(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Active Product not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Active Product not found with id: " + id));
     }
 
     @Override

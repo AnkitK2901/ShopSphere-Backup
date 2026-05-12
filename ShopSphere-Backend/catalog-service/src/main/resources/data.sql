@@ -1,24 +1,66 @@
--- --- EXISTING OPTIONS ---
-INSERT IGNORE INTO custom_option (id, type, value, price_adjustment) VALUES (1, 'Color', 'Midnight Black', 0.0);
-INSERT IGNORE INTO custom_option (id, type, value, price_adjustment) VALUES (2, 'Color', 'Crimson Red', 150.0);
-INSERT IGNORE INTO custom_option (id, type, value, price_adjustment) VALUES (3, 'Color', 'Rose Gold', 450.0);
-INSERT IGNORE INTO custom_option (id, type, value, price_adjustment) VALUES (4, 'Size', 'Small (S)', 0.0);
-INSERT IGNORE INTO custom_option (id, type, value, price_adjustment) VALUES (5, 'Size', 'Large (L)', 250.0);
-INSERT IGNORE INTO custom_option (id, type, value, price_adjustment) VALUES (6, 'Size', 'Extra Large (XL)', 400.0);
-INSERT IGNORE INTO custom_option (id, type, value, price_adjustment) VALUES (7, 'Material', 'Standard Cotton', 0.0);
-INSERT IGNORE INTO custom_option (id, type, value, price_adjustment) VALUES (8, 'Material', 'Genuine Leather', 2500.0);
-INSERT IGNORE INTO custom_option (id, type, value, price_adjustment) VALUES (10, 'Service', 'Basic 1-Year Warranty', 0.0);
-INSERT IGNORE INTO custom_option (id, type, value, price_adjustment) VALUES (11, 'Service', 'Extended 3-Year Warranty', 1500.0);
+-- MASTER CUSTOM OPTIONS (Dropdowns for Sellers)
+INSERT IGNORE INTO custom_option (id, type, value, price_adjustment) VALUES 
+(1, 'Color', 'Midnight Black', 0.0), (2, 'Color', 'Crimson Red', 150.0), (3, 'Color', 'Rose Gold', 450.0),
+(4, 'Size', 'Small (S)', 0.0), (5, 'Size', 'Large (L)', 250.0), (6, 'Size', 'Extra Large (XL)', 400.0),
+(7, 'Material', 'Organic Cotton', 0.0), (8, 'Material', 'Genuine Leather', 2500.0), (9, 'Material', 'Recycled Polyester', 0.0),
+(10, 'Service', 'Basic 1-Year Warranty', 0.0), (11, 'Service', 'Extended 3-Year Warranty', 1500.0),
+(12, 'Scent', 'Lavender & Vanilla', 50.0), (13, 'Scent', 'Sandalwood', 75.0), (14, 'Scent', 'Unscented', 0.0),
+(15, 'Finish', 'Glossy', 0.0), (16, 'Finish', 'Matte Oak', 300.0), (17, 'Finish', 'Rustic Terracotta', 0.0);
 
--- --- EXPANDED PRODUCT LIST WITH DESCRIPTIONS ---
-INSERT IGNORE INTO product (product_id, name, description, base_price, preview_image, is_active) VALUES (1, 'Premium Hoodie', 'A warm, comfortable premium hoodie perfect for winter wear.', 1500.0, 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=500', 1);
-INSERT IGNORE INTO product (product_id, name, description, base_price, preview_image, is_active) VALUES (2, 'Luxury Wallet', 'Genuine leather luxury wallet with RFID protection.', 3000.0, 'https://images.unsplash.com/photo-1627123424574-724758594e93?w=500', 1);
-INSERT IGNORE INTO product (product_id, name, description, base_price, preview_image, is_active) VALUES (3, 'Organic Face Serum', 'Revitalizing organic skincare serum for daily glow.', 1200.0, 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=500', 1);
-INSERT IGNORE INTO product (product_id, name, description, base_price, preview_image, is_active) VALUES (4, 'Hand-Thrown Ceramic Vase', 'Minimalist ceramic vase, perfect for modern home decor.', 2200.0, 'https://images.unsplash.com/photo-1581783898377-1c85bf937427?w=500', 1);
-INSERT IGNORE INTO product (product_id, name, description, base_price, preview_image, is_active) VALUES (5, 'Vintage Leather Satchel', 'Durable leather satchel bag for daily office commute.', 4500.0, 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=500', 1);
+-- 50 ARTISAN PRODUCTS
+INSERT IGNORE INTO product (product_id, name, description, base_price, preview_image, is_active) VALUES 
+(1, 'Premium Hoodie', 'Heavyweight organic cotton hoodie with a modern fit.', 1500.0, 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=500', 1),
+(2, 'Luxury Wallet', 'Hand-stitched genuine leather wallet with RFID protection.', 3000.0, 'https://images.unsplash.com/photo-1627123424574-724758594e93?w=500', 1),
+(3, 'Organic Face Serum', 'Hydrating serum with Vitamin C and natural extracts.', 1200.0, 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=500', 1),
+(4, 'Ceramic Vase', 'Hand-thrown minimalist vase for modern homes.', 2200.0, 'https://images.unsplash.com/photo-1581783898377-1c85bf937427?w=500', 1),
+(5, 'Leather Satchel', 'Briefcase made from vegetable-tanned leather.', 4500.0, 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=500', 1),
+(6, 'Smart Bamboo Watch', 'Eco-friendly wooden watch with Swiss movement.', 5500.0, 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500', 1),
+(7, 'Soy Wax Candle', 'Hand-poured candle in a reusable glass jar.', 850.0, 'https://images.unsplash.com/photo-1603006905003-be475563bc59?w=500', 1),
+(8, 'Linen Table Runner', 'Hand-woven linen runner for elegant dining.', 1100.0, 'https://images.unsplash.com/photo-1620733323044-3986552a4854?w=500', 1),
+(9, 'Copper Water Bottle', 'Hammered copper bottle for Ayurvedic health.', 1300.0, 'https://images.unsplash.com/photo-1602143399827-bd9aa9573942?w=500', 1),
+(10, 'Woolen Scarf', 'Ultra-soft Merino wool scarf for winter.', 1800.0, 'https://images.unsplash.com/photo-1520903920243-00d872a2d1c9?w=500', 1),
+(11, 'Silk Necktie', 'Hand-painted silk tie with unique patterns.', 2100.0, 'https://images.unsplash.com/photo-1589756823851-41ae57ad33f0?w=500', 1),
+(12, 'Wooden Coasters', 'Set of 4 walnut wood coasters with resin inlay.', 750.0, 'https://images.unsplash.com/photo-1610450949065-1f280ca02970?w=500', 1),
+(13, 'Beaded Necklace', 'Ethically sourced semi-precious stone necklace.', 3200.0, 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=500', 1),
+(14, 'Denim Jacket', 'Custom distressed denim jacket with patches.', 2800.0, 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=500', 1),
+(15, 'Canvas Tote Bag', 'Durable organic canvas bag with internal pockets.', 600.0, 'https://images.unsplash.com/photo-1544816153-15da995b05c3?w=500', 1),
+(16, 'Terracotta Planter', 'Breathable clay pot for indoor succulents.', 950.0, 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=500', 1),
+(17, 'Sterling Silver Ring', 'Hand-forged textured silver band.', 2500.0, 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=500', 1),
+(18, 'Laptop Sleeve', 'Felt and leather sleeve for 14-inch laptops.', 1400.0, 'https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=500', 1),
+(19, 'Glass Jewelry Box', 'Brass-framed geometric glass storage box.', 1750.0, 'https://images.unsplash.com/photo-1582142306909-195724d339aa?w=500', 1),
+(20, 'Knit Baby Blanket', 'Soft hypoallergenic yarn blanket for infants.', 2300.0, 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=500', 1),
+(21, 'Essential Oil Set', 'Pure distilled oils (Lavender, Mint, Citrus).', 1900.0, 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=500', 1),
+(22, 'Bamboo Phone Stand', 'Adjustable desktop stand for all smartphones.', 450.0, 'https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=500', 1),
+(23, 'Macramé Wall Art', 'Bohemian style cotton cord wall hanging.', 1600.0, 'https://images.unsplash.com/photo-1528659097917-744004d49605?w=500', 1),
+(24, 'Leather Journal', 'Refillable notebook with deckle-edge paper.', 1250.0, 'https://images.unsplash.com/photo-1544816153-15da995b05c3?w=500', 1),
+(25, 'Handmade Soap Bar', 'Cold-process soap with activated charcoal.', 350.0, 'https://images.unsplash.com/photo-1600857062241-98e5dba7f214?w=500', 1),
+(26, 'Turquoise Earrings', 'Drop earrings with genuine stones.', 2900.0, 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500', 1),
+(27, 'Woven Bath Mat', 'Highly absorbent quick-dry cotton mat.', 800.0, 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=500', 1),
+(28, 'Ceramic Coffee Mug', 'Large 15oz mug with reactive glaze.', 650.0, 'https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=500', 1),
+(29, 'Brass Incense Burner', 'Solid brass burner with ash catcher.', 1100.0, 'https://images.unsplash.com/photo-1612548403247-aa287dfe9410?w=500', 1),
+(30, 'Recycled Glass Carafe', 'Hand-blown carafe for water or wine.', 2400.0, 'https://images.unsplash.com/photo-1516594709413-e73950407390?w=500', 1),
+(31, 'Hemp Backpack', 'Sustainable hemp fiber bag for travel.', 3500.0, 'https://images.unsplash.com/photo-1553062407-98eeb94c6a62?w=500', 1),
+(32, 'Rose Quartz Comb', 'Gua Sha hair comb for scalp massage.', 1500.0, 'https://images.unsplash.com/photo-1590439471364-192aa70c0b53?w=500', 1),
+(33, 'Marble Bookends', 'Heavy solid marble blocks for shelves.', 3800.0, 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=500', 1),
+(34, 'Woolen Fedora', 'Structured wool hat with silk lining.', 2700.0, 'https://images.unsplash.com/photo-1514327605112-b887c0e61c0a?w=500', 1),
+(35, 'Velvet Pillow Cover', 'Luxury velvet cover with hidden zipper.', 1200.0, 'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=500', 1),
+(36, 'Beeswax Food Wraps', 'Natural alternative to plastic wrap.', 550.0, 'https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=500', 1),
+(37, 'Cast Iron Pan', 'Pre-seasoned heavy duty artisan skillet.', 4200.0, 'https://images.unsplash.com/photo-1591261730799-ee4e6c2d16d7?w=500', 1),
+(38, 'Yoga Mat Carrier', 'Hand-dyed cotton strap with buckle.', 400.0, 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=500', 1),
+(39, 'Sandalwood Mala', '108-bead meditation necklace.', 900.0, 'https://images.unsplash.com/photo-1528659097917-744004d49605?w=500', 1),
+(40, 'Embroidered Apron', 'Chef-style heavy linen apron.', 1450.0, 'https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=500', 1),
+(41, 'Gold Leaf Earrings', 'Minimalist 14k gold-plated drops.', 2200.0, 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500', 1),
+(42, 'Concrete Desk Lamp', 'Industrial style lamp with Edison bulb.', 3100.0, 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=500', 1),
+(43, 'Travel Spice Kit', 'Small tins in a portable waxed roll.', 1650.0, 'https://images.unsplash.com/photo-1532336414038-cf19250c5757?w=500', 1),
+(44, 'Hand-Carved Spoon', 'Olive wood kitchen serving spoon.', 600.0, 'https://images.unsplash.com/photo-1594283142729-4504a4bae197?w=500', 1),
+(45, 'Patchouli Perfume', 'Concentrated oil-based roll-on scent.', 1350.0, 'https://images.unsplash.com/photo-1541643600914-78b084683601?w=500', 1),
+(46, 'Leather Key Organizer', 'Compact holder for up to 8 keys.', 850.0, 'https://images.unsplash.com/photo-1544816153-15da995b05c3?w=500', 1),
+(47, 'Seagrass Basket', 'Large collapsible storage basket.', 1950.0, 'https://images.unsplash.com/photo-1526434426615-1abe81efcb0b?w=500', 1),
+(48, 'Fountain Pen', 'Hand-turned exotic wood pen.', 4800.0, 'https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?w=500', 1),
+(49, 'Kombucha Starter Kit', 'Complete set including scoby and jar.', 2500.0, 'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=500', 1),
+(50, 'Quilted Oven Mitts', 'Set of 2 heat-resistant cotton mitts.', 700.0, 'https://images.unsplash.com/photo-1584622781564-1d9876a13d1e?w=500', 1);
 
--- --- LINKING PRODUCTS TO OPTIONS ---
-INSERT IGNORE INTO product_selected_options (product_id, option_id) VALUES (1, 2), (1, 5);
-INSERT IGNORE INTO product_selected_options (product_id, option_id) VALUES (2, 1), (2, 8);
-INSERT IGNORE INTO product_selected_options (product_id, option_id) VALUES (3, 10), (3, 11);
-INSERT IGNORE INTO product_selected_options (product_id, option_id) VALUES (5, 1), (5, 8), (5, 11);
+-- STITCHING PRODUCTS TO OPTIONS (Example Mapping)
+INSERT IGNORE INTO product_selected_options (product_id, option_id) VALUES 
+(1, 1), (1, 4), (1, 7), (2, 1), (2, 8), (3, 10), (4, 17), (5, 1), (5, 8), (6, 11),
+(7, 12), (7, 13), (10, 2), (10, 5), (14, 9), (14, 5), (16, 17), (18, 1), (18, 8);

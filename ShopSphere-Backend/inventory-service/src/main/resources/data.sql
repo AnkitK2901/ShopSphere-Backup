@@ -1,6 +1,14 @@
--- Use 'inventory' because Hibernate creates 'inventory'
-INSERT IGNORE INTO inventory (product_id, stock_level, reorder_threshold, supplier_id, supplier_lead_time_days) 
-VALUES ('1', 50, 10, 'SUPP-001', 3);
-
-INSERT IGNORE INTO inventory (product_id, stock_level, reorder_threshold, supplier_id, supplier_lead_time_days) 
-VALUES ('2', 30, 5, 'SUPP-002', 5);
+INSERT IGNORE INTO inventory (product_id, stock_level, reorder_threshold, supplier_id, supplier_lead_time_days) VALUES 
+('1', 50, 10, 'SUPP-001', 3), ('2', 30, 5, 'SUPP-002', 5), ('3', 100, 20, 'SUPP-003', 2), ('4', 15, 5, 'SUPP-004', 7),
+('5', 25, 5, 'SUPP-002', 4), ('6', 10, 2, 'SUPP-005', 10), ('7', 200, 30, 'SUPP-006', 3), ('8', 40, 10, 'SUPP-007', 5),
+('9', 60, 15, 'SUPP-008', 3), ('10', 45, 10, 'SUPP-001', 4), ('11', 35, 8, 'SUPP-007', 6), ('12', 120, 25, 'SUPP-005', 2),
+('13', 20, 5, 'SUPP-009', 15), ('14', 55, 10, 'SUPP-001', 5), ('15', 300, 50, 'SUPP-007', 3), ('16', 80, 15, 'SUPP-004', 4),
+('17', 15, 3, 'SUPP-009', 20), ('18', 65, 10, 'SUPP-010', 5), ('19', 40, 10, 'SUPP-010', 7), ('20', 30, 5, 'SUPP-001', 6),
+('21', 150, 30, 'SUPP-003', 3), ('22', 250, 40, 'SUPP-008', 2), ('23', 45, 10, 'SUPP-004', 5), ('24', 90, 20, 'SUPP-002', 4),
+('25', 500, 100, 'SUPP-003', 2), ('26', 12, 5, 'SUPP-009', 12), ('27', 70, 15, 'SUPP-007', 5), ('28', 180, 30, 'SUPP-004', 3),
+('29', 95, 20, 'SUPP-008', 4), ('30', 40, 10, 'SUPP-004', 8), ('31', 35, 10, 'SUPP-001', 5), ('32', 60, 15, 'SUPP-003', 4),
+('33', 18, 5, 'SUPP-011', 10), ('34', 25, 5, 'SUPP-001', 7), ('35', 110, 25, 'SUPP-007', 3), ('36', 400, 80, 'SUPP-006', 2),
+('37', 50, 10, 'SUPP-011', 5), ('38', 130, 20, 'SUPP-001', 3), ('39', 75, 15, 'SUPP-003', 5), ('40', 85, 20, 'SUPP-007', 4),
+('41', 30, 8, 'SUPP-009', 10), ('42', 22, 5, 'SUPP-011', 14), ('43', 60, 15, 'SUPP-006', 3), ('44', 140, 30, 'SUPP-005', 2),
+('45', 100, 20, 'SUPP-003', 3), ('46', 160, 35, 'SUPP-002', 2), ('47', 90, 20, 'SUPP-006', 4), ('48', 15, 5, 'SUPP-005', 15),
+('49', 40, 10, 'SUPP-006', 5), ('50', 115, 25, 'SUPP-007', 3);

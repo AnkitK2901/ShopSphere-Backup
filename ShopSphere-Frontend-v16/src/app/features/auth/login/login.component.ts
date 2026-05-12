@@ -19,7 +19,8 @@ export class LoginComponent {
     private router: Router
   ) {
     this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
+      // FIX: Removed Validators.email so you can type plain usernames like 'john_doe'
+      email: ['', [Validators.required]], 
       password: ['', Validators.required]
     });
   }
@@ -29,10 +30,8 @@ export class LoginComponent {
       this.isLoading = true;
       this.errorMessage = '';
       
-      // FIX: Spring Boot expects "username" and "password". 
-      // We map the form's email input to the 'username' key.
       const payload = {
-        username: this.loginForm.value.email,
+        username: this.loginForm.value.email, // This now takes either john_doe or an email
         password: this.loginForm.value.password
       };
       
@@ -53,8 +52,8 @@ export class LoginComponent {
         },
         error: (err) => {
           this.isLoading = false;
-          this.errorMessage = 'Invalid email or password. Please try again.';
-          console.error(err);
+          this.errorMessage = 'Invalid username/email or password. Please try again.';
+          console.error('Login Error:', err);
         }
       });
     }

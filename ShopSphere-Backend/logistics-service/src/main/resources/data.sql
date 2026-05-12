@@ -1,6 +1,5 @@
--- Use 'shipment' because Hibernate creates 'shipment'
-INSERT IGNORE INTO shipment (shipment_id, order_id, status, tracking_number, carrier) 
-VALUES ('1', '101', 'DELIVERED', 'TRACK123456', 'FedEx');
-
-INSERT IGNORE INTO shipment (shipment_id, order_id, status, tracking_number, carrier) 
-VALUES ('2', '102', 'IN_TRANSIT', 'TRACK789012', 'UPS');
+-- SHIPMENT TRACKING (Linked via order_id)
+INSERT IGNORE INTO shipment (shipment_id, order_id, status, tracking_number, carrier) VALUES 
+(1, '101', 'DELIVERED', 'SHOP-TRK-990112', 'FedEx'),
+(2, '102', 'SHIPPED', 'SHOP-TRK-445200', 'Delhivery'),
+(3, '103', 'CONFIRMED', NULL, 'Pending');

@@ -8,6 +8,10 @@ import org.springframework.stereotype.Repository;
 public interface UserRepository extends JpaRepository<User, Long> {
 
     User findByUsername(String username);
+    
+    // FIX ADDED: This teaches the database how to find a user by their email
+    User findByEmail(String email); 
+    
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
 }

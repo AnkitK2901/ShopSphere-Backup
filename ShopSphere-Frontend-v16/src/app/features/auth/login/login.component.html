@@ -9,8 +9,8 @@
     
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
       <div class="input-group">
-        <label>Email Address</label>
-        <input type="email" formControlName="email" placeholder="john@example.com">
+        <label>Username or Email</label>
+        <input type="text" formControlName="email" placeholder="john_doe or john@example.com">
       </div>
 
       <div class="input-group">

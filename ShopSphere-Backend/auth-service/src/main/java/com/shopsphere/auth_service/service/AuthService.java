@@ -59,13 +59,21 @@ public class AuthService {
 
     public String loginUser(LoginRequest loginRequest) {
         if (loginRequest.getUsername() == null || loginRequest.getUsername().trim().isEmpty()) {
-            throw new InvalidCredentialsException("Error: Username cannot be empty!");
+            throw new InvalidCredentialsException("Error: Username/Email cannot be empty!");
         }
         if (loginRequest.getPassword() == null || loginRequest.getPassword().trim().isEmpty()) {
             throw new InvalidCredentialsException("Error: Password cannot be empty!");
         }
 
+        // FIX ADDED: Try to find the user by Username first...
         User existingUser = userRepository.findByUsername(loginRequest.getUsername());
+        
+        // FIX ADDED: ...If it fails, try to find them by Email!
+        if (existingUser == null) {
+            existingUser = userRepository.findByEmail(loginRequest.getUsername());
+        }
+
+        // If it is STILL null after checking both, the user doesn't exist.
         if (existingUser == null || !passwordEncoder.matches(loginRequest.getPassword(), existingUser.getPassword())) {
             throw new InvalidCredentialsException("Invalid user credentials");
         }
