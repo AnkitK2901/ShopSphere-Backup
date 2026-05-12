@@ -45,7 +45,8 @@ class OrderServiceImplTest {
         mockUser.setUserName("ankit_admin");
 
         mockProduct = new ProductDTO();
-        mockProduct.setProductId("PROD-999");
+        // FIX 5: Use a Long ID
+        mockProduct.setProductId(999L);
         mockProduct.setTotalPrice(500.0);
 
         validRequest = new OrderRequest();
@@ -53,7 +54,8 @@ class OrderServiceImplTest {
         validRequest.setPaymentMode("CREDIT_CARD");
         
         OrderItemRequest itemReq = new OrderItemRequest();
-        itemReq.setProductId("PROD-999");
+        // FIX 6: Use a Long ID
+        itemReq.setProductId(999L);
         itemReq.setQuantity(2);
         validRequest.setItems(List.of(itemReq));
 
@@ -63,7 +65,8 @@ class OrderServiceImplTest {
         mockOrder.setTotalAmount(1000.0);
         
         OrderItemEntity itemEntity = new OrderItemEntity();
-        itemEntity.setProductId("PROD-999");
+        // FIX 7: Use a Long ID
+        itemEntity.setProductId(999L);
         itemEntity.setQuantity(2);
         mockOrder.setItems(List.of(itemEntity));
     }
@@ -71,7 +74,8 @@ class OrderServiceImplTest {
     @Test
     void placeOrder_Success() {
         when(userClient.getUserByUserName("ankit_admin")).thenReturn(mockUser);
-        when(productClient.findProductById("PROD-999")).thenReturn(mockProduct);
+        // FIX 8: Update mock to expect Long
+        when(productClient.findProductById(999L)).thenReturn(mockProduct);
         
         OrderEntity savedOrder = new OrderEntity();
         savedOrder.setOrderId(100L);
@@ -95,7 +99,6 @@ class OrderServiceImplTest {
 
         OrderResponse response = orderService.confirmPayment(100L);
 
-        // THE FIX: Assert the response so it is "used", clearing the warning
         assertNotNull(response); 
         assertEquals(OrderStatus.CONFIRMED, mockOrder.getStatus());
         verify(inventoryClient, times(1)).deductStock(any(StockRequest.class));

@@ -31,9 +31,9 @@ public class InventoryControllerTest {
     @Test
     void testCheckStock_ReturnsTrue() throws Exception {
         StockRequest request = new StockRequest();
-        request.setProductId("P101");
+        request.setProductId(101L); // FIX: Long Type
         request.setQuantity(5);
-        Mockito.when(inventoryService.checkStock("P101", 5)).thenReturn(true);
+        Mockito.when(inventoryService.checkStock(101L, 5)).thenReturn(true); // FIX: Long Type
         mockMvc.perform(MockMvcRequestBuilders.post("/api/inventory/check")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
@@ -43,8 +43,8 @@ public class InventoryControllerTest {
 
     @Test
     void addInventory_WhenRoleIsAdmin_ShouldReturnOk() throws Exception {
-        // THE FIX: Added 0L as the 6th parameter for the version field
-        InventoryItem item = new InventoryItem("P101", 10, "SUP_001", 5, 2, 0L);
+        // FIX: Replaced "P101" with 101L
+        InventoryItem item = new InventoryItem(101L, 10, "SUP_001", 5, 2, 0L);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/inventory")
                 .header("X-User-Role", "ROLE_ADMIN")
@@ -55,8 +55,8 @@ public class InventoryControllerTest {
 
     @Test
     void addInventory_WhenRoleIsNotAdmin_ShouldReturnForbidden() throws Exception {
-        // THE FIX: Added 0L as the 6th parameter for the version field
-        InventoryItem item = new InventoryItem("P101", 10, "SUP_001", 5, 2, 0L);
+        // FIX: Replaced "P101" with 101L
+        InventoryItem item = new InventoryItem(101L, 10, "SUP_001", 5, 2, 0L);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/inventory")
                 .header("X-User-Role", "ROLE_USER")
@@ -67,14 +67,14 @@ public class InventoryControllerTest {
 
     @Test
     void getAllInventory_WhenRoleIsAdmin_ShouldReturnOkAndList() throws Exception {
-        // THE FIX: Added 0L as the 6th parameter for the version field
-        InventoryItem item = new InventoryItem("P101", 10, "SUP_001", 5, 2, 0L);
+        // FIX: Replaced "P101" with 101L
+        InventoryItem item = new InventoryItem(101L, 10, "SUP_001", 5, 2, 0L);
         Mockito.when(inventoryService.getAllInventory()).thenReturn(Arrays.asList(item));
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/inventory")
                 .header("X-User-Role", "ROLE_ADMIN"))
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].productId").value("P101"));
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].productId").value(101)); // FIX: Asserting integer/long value
     }
 
     @Test

@@ -69,7 +69,7 @@ public class InventoryController {
     // ==============================================================
     @PostMapping("/initialize")
     public ResponseEntity<Void> initializeStock(
-            @RequestParam("productId") String productId,
+            @RequestParam("productId") Long productId,
             @RequestParam("stockLevel") int stockLevel) {
         log.info("Received POST request to initialize stock for new Product: {}", productId);
         inventoryService.initializeStock(productId, stockLevel);

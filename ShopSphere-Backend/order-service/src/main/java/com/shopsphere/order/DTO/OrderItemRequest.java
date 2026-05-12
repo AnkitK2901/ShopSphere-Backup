@@ -1,12 +1,12 @@
 package com.shopsphere.order.DTO;
 
 public class OrderItemRequest {
-    private String productId;
+    private Long productId; // THE FIX: Aligned with Inventory and Catalog
     private int quantity;
-    private String selectedOption; // THE FIX: Capture the specific choice
+    private String selectedOption; 
 
-    public String getProductId() { return productId; }
-    public void setProductId(String productId) { this.productId = productId; }
+    public Long getProductId() { return productId; }
+    public void setProductId(Long productId) { this.productId = productId; }
     public int getQuantity() { return quantity; }
     public void setQuantity(int quantity) { this.quantity = quantity; }
     public String getSelectedOption() { return selectedOption; }

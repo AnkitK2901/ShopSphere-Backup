@@ -3,7 +3,7 @@ package com.shopsphere.inventory.model;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.persistence.Version; // THE FIX: Import Version
+import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class InventoryItem {
     @Id
-    private String productId;
+    private Long productId; // CHANGED FROM String TO Long
     
     private Integer stockLevel;
     
@@ -25,7 +25,6 @@ public class InventoryItem {
     
     private Integer supplierLeadTimeDays;
 
-    // THE FIX: Hibernate will now block concurrent race conditions automatically
     @Version
     private Long version;
 }

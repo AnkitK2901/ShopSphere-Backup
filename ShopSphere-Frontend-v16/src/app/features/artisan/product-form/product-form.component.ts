@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ArtisanService } from '../../../core/services/artisan.service';
@@ -8,9 +8,10 @@ import { ArtisanService } from '../../../core/services/artisan.service';
   templateUrl: './product-form.component.html',
   styleUrls: ['./product-form.component.css']
 })
-export class ProductFormComponent {
+export class ProductFormComponent implements OnInit {
   productForm: FormGroup;
   isSubmitting: boolean = false;
+  availableOptions: any[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -18,44 +19,58 @@ export class ProductFormComponent {
     private router: Router
   ) {
     this.productForm = this.fb.group({
+      // Catalog fields
       name: ['', Validators.required],
       description: ['', Validators.required],
       price: ['', [Validators.required, Validators.min(0)]],
+      previewImageUrl: [''],
+      isActive: [true],
+      selectedOptionIds: [[]],
+      
+      // Inventory fields
       stockLevel: ['', [Validators.required, Validators.min(0)]],
-      reorderThreshold: ['', [Validators.required, Validators.min(0)]],
-      supplierId: ['', Validators.required],
-      supplierLeadTimeDays: ['', [Validators.required, Validators.min(1)]],
-      previewImageUrl: [''] // Added placeholder for text-based image URL
+      reorderThreshold: [10, [Validators.required, Validators.min(0)]],
+      supplierId: ['SELF', Validators.required],
+      supplierLeadTimeDays: [7, [Validators.required, Validators.min(1)]]
+    });
+  }
+
+  ngOnInit(): void {
+    this.loadOptions();
+  }
+
+  loadOptions(): void {
+    this.artisanService.getAvailableOptions().subscribe({
+      next: (res) => this.availableOptions = res,
+      error: (err) => console.error("Could not load options", err)
     });
   }
 
   onSubmit(): void {
     if (this.productForm.valid) {
       this.isSubmitting = true;
-      
-      // FIX: Clean JSON payload sent instead of FormData
-      const inventoryPayload = {
-        name: this.productForm.value.name,
-        description: this.productForm.value.description,
-        basePrice: this.productForm.value.price,
-        stockLevel: this.productForm.value.stockLevel,
-        reorderThreshold: this.productForm.value.reorderThreshold,
-        supplierId: this.productForm.value.supplierId,
-        supplierLeadTimeDays: this.productForm.value.supplierLeadTimeDays,
-        previewImage: this.productForm.value.previewImageUrl 
+      const formVals = this.productForm.value;
+
+      const catalogPayload = {
+        name: formVals.name,
+        description: formVals.description,
+        basePrice: formVals.price,
+        previewImage: formVals.previewImageUrl,
+        isActive: formVals.isActive,
+        selectedOptionIds: formVals.selectedOptionIds
       };
 
-      this.artisanService.addInventory(inventoryPayload).subscribe({
-        next: (response: any) => {
-          console.log('Product added successfully', response);
-          this.isSubmitting = false;
-          this.router.navigate(['/artisan/inventory']); 
-        },
-        error: (error: any) => {
-          console.error('Error adding product:', error);
-          this.isSubmitting = false;
-        }
-      });
+      this.artisanService.createProductAndInitializeInventory(catalogPayload, formVals.stockLevel)
+        .subscribe({
+          next: () => {
+            this.isSubmitting = false;
+            this.router.navigate(['/artisan/inventory']); 
+          },
+          error: (error: any) => {
+            console.error('Error creating product:', error);
+            this.isSubmitting = false;
+          }
+        });
     } else {
       this.productForm.markAllAsTouched();
     }

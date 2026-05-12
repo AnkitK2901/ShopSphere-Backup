@@ -11,7 +11,7 @@ public class OrderItemEntity {
     private Long orderItemId;
 
     @Column(nullable = false)
-    private String productId;
+    private Long productId; // THE FIX: Aligned with Inventory and Catalog
 
     @Column(nullable = false)
     private int quantity;
@@ -19,15 +19,25 @@ public class OrderItemEntity {
     @Column(nullable = false)
     private Double price;
 
+    // THE FIX: Prevent data loss so Logistics knows what to pack!
+    @Column(name = "selected_option")
+    private String selectedOption;
+
     public OrderItemEntity() {}
 
     // Getters and Setters
     public Long getOrderItemId() { return orderItemId; }
     public void setOrderItemId(Long orderItemId) { this.orderItemId = orderItemId; }
-    public String getProductId() { return productId; }
-    public void setProductId(String productId) { this.productId = productId; }
+    
+    public Long getProductId() { return productId; }
+    public void setProductId(Long productId) { this.productId = productId; }
+    
     public int getQuantity() { return quantity; }
     public void setQuantity(int quantity) { this.quantity = quantity; }
+    
     public Double getPrice() { return price; }
     public void setPrice(Double price) { this.price = price; }
+    
+    public String getSelectedOption() { return selectedOption; }
+    public void setSelectedOption(String selectedOption) { this.selectedOption = selectedOption; }
 }

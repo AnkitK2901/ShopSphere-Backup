@@ -61,31 +61,26 @@ public class OrderServiceImpl implements OrderService {
 
         double totalOrderAmount = 0.0;
         List<OrderItemEntity> orderItems = new ArrayList<>();
-        List<String> actualCustomizations = new ArrayList<>(); // THE FIX: Store actual choices
+        List<String> actualCustomizations = new ArrayList<>();
 
         for (OrderItemRequest itemReq : orderRequest.getItems()) {
+            // FIX 1: findProductById now receives a Long
             ProductDTO product = productClient.findProductById(itemReq.getProductId());
             if (product == null)
                 throw new ResourceNotFoundException("Product Not Found: " + itemReq.getProductId());
 
-            // THE FIX: Check if it's > 0.0 instead of != null since it's a primitive double
             double unitPrice = product.getTotalPrice() > 0.0 ? product.getTotalPrice() : product.getBasePrice();
             
             if (unitPrice <= 0.0) throw new ResourceNotFoundException("Product price is completely unavailable");
 
-            // Process Customizations and securely add the price adjustment
             if (itemReq.getSelectedOption() != null && !itemReq.getSelectedOption().isEmpty()) {
                 actualCustomizations.add(product.getName() + " [" + itemReq.getSelectedOption() + "]");
                 
-                // Securely calculate the price adjustment on the backend
                 if (product.getCustomOptions() != null) {
                     for (CustomOptionDTO opt : product.getCustomOptions()) {
                         String optionMatch = opt.getType() + ": " + opt.getValue();
                         if (optionMatch.equals(itemReq.getSelectedOption())) {
-                            
-                            // THE FIX: No need to check for null. Just add the primitive value directly!
                             unitPrice += opt.getPriceAdjustment(); 
-                            
                             break;
                         }
                     }
@@ -96,9 +91,12 @@ public class OrderServiceImpl implements OrderService {
             totalOrderAmount += itemTotal;
 
             OrderItemEntity itemEntity = new OrderItemEntity();
+            // FIX 2: setProductId now receives a Long
             itemEntity.setProductId(product.getProductId());
             itemEntity.setQuantity(itemReq.getQuantity());
             itemEntity.setPrice(unitPrice);
+            // THE FIX: Save the selection to the DB entity!
+            itemEntity.setSelectedOption(itemReq.getSelectedOption());
             orderItems.add(itemEntity);
         }
 
@@ -108,7 +106,7 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(OrderStatus.PENDING_PAYMENT);
         order.setItems(orderItems);
         order.setCustomizationDetails(actualCustomizations);
-        order.setShippingAddress(orderRequest.getShippingAddress()); // THE FIX: Save the address!
+        order.setShippingAddress(orderRequest.getShippingAddress());
 
         return mapToResponse(orderRepository.save(order));
     }
@@ -219,20 +217,21 @@ public class OrderServiceImpl implements OrderService {
         res.setCreatedAt(orderEntity.getCreatedAt());
         res.setUpdatedAt(orderEntity.getUpdatedAt());
         res.setCustomizationDetails(orderEntity.getCustomizationDetails());
-
-        // THE FIX: Map the address to the response
         res.setShippingAddress(orderEntity.getShippingAddress());
 
         if (orderEntity.getItems() != null && !orderEntity.getItems().isEmpty()) {
             List<OrderItemResponse> mappedItems = orderEntity.getItems().stream().map(item -> {
                 OrderItemResponse ir = new OrderItemResponse();
+                // FIX 3: setProductId now receives a Long
                 ir.setProductId(item.getProductId());
                 ir.setQuantity(item.getQuantity());
                 ir.setPrice(item.getPrice());
+                ir.setSelectedOption(item.getSelectedOption());
                 return ir;
             }).collect(Collectors.toList());
             res.setItems(mappedItems);
 
+            // FIX 4: setProductId now receives a Long
             res.setProductId(orderEntity.getItems().get(0).getProductId());
             res.setQuantity(orderEntity.getItems().get(0).getQuantity());
         }

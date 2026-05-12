@@ -1,14 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { Observable, switchMap } from 'rxjs';
 
-// FIX: Expanded the interface to include the form fields and made ID optional
 export interface InventoryItem { 
-  productId?: string; 
-  name?: string;
-  description?: string;
-  basePrice?: number;
-  previewImage?: string;
+  productId?: number; 
   stockLevel: number; 
   supplierId: string;
   reorderThreshold: number;
@@ -17,7 +12,7 @@ export interface InventoryItem {
 
 @Injectable({ providedIn: 'root' })
 export class ArtisanService {
-  private apiUrl = 'http://localhost:9090/api/inventory'; 
+  private gatewayUrl = 'http://localhost:9090/api'; 
 
   constructor(private http: HttpClient) {}
 
@@ -27,14 +22,31 @@ export class ArtisanService {
   }
 
   getInventory(): Observable<InventoryItem[]> {
-    return this.http.get<InventoryItem[]>(this.apiUrl, { headers: this.getHeaders() });
+    return this.http.get<InventoryItem[]>(`${this.gatewayUrl}/inventory`, { headers: this.getHeaders() });
   }
 
-  // FIX: Parameter set to 'any' to bypass strict Type checking during form submission
-  addInventory(item: any): Observable<any> {
-    return this.http.post(this.apiUrl, item, { 
-      headers: this.getHeaders(), 
-      responseType: 'text' 
-    });
+  getAvailableOptions(): Observable<any> {
+    return this.http.get(`${this.gatewayUrl}/options`, { headers: this.getHeaders() });
+  }
+
+  createProductAndInitializeInventory(catalogPayload: any, stockLevel: number): Observable<any> {
+    // 1. Create the Product in the Catalog Service
+    return this.http.post<any>(`${this.gatewayUrl}/products/create`, catalogPayload, { headers: this.getHeaders() })
+      .pipe(
+        switchMap(savedProduct => {
+           // 2. Take the new ID and initialize the Inventory Service
+           const productId = savedProduct.productId;
+           
+           const params = new HttpParams()
+             .set('productId', productId.toString())
+             .set('stockLevel', stockLevel.toString());
+
+           return this.http.post(`${this.gatewayUrl}/inventory/initialize`, null, { 
+             headers: this.getHeaders(),
+             params: params,
+             responseType: 'text' 
+           });
+        })
+      );
   }
 }

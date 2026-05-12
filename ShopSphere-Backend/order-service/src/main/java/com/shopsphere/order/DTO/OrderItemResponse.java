@@ -1,18 +1,18 @@
 package com.shopsphere.order.DTO;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class OrderItemResponse {
-    private String productId;
+    // FIX: Changed from String to Long
+    private Long productId; 
     private int quantity;
     private Double price;
-
-    public OrderItemResponse() {}
-
-    public String getProductId() { return productId; }
-    public void setProductId(String productId) { this.productId = productId; }
-
-    public int getQuantity() { return quantity; }
-    public void setQuantity(int quantity) { this.quantity = quantity; }
-
-    public Double getPrice() { return price; }
-    public void setPrice(Double price) { this.price = price; }
+    
+    // FIX: Added missing field to capture customization in responses
+    private String selectedOption; 
 }

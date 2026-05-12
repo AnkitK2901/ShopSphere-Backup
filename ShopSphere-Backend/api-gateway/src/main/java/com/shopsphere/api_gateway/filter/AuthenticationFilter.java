@@ -28,8 +28,7 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
-            
-            // FIX 1: Let the CorsWebFilter handle the preflight OPTIONS request natively
+
             if (exchange.getRequest().getMethod().matches("OPTIONS")) {
                 return chain.filter(exchange);
             }
@@ -51,7 +50,7 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
 
             try {
                 byte[] keyBytes = Decoders.BASE64.decode(secret);
-                
+
                 Claims claims = Jwts.parserBuilder()
                         .setSigningKey(Keys.hmacShaKeyFor(keyBytes))
                         .build()
@@ -61,21 +60,24 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                 String username = claims.getSubject();
                 String role = claims.get("role", String.class);
 
-                // FIX 2: Strip any incoming spoofed headers before setting the real ones
+                // THE FIX: Use mutate() to remove potentially spoofed headers before setting
+                // secure ones
                 ServerWebExchange modifiedExchange = exchange.mutate()
                         .request(exchange.getRequest().mutate()
                                 .headers(httpHeaders -> {
+                                    // Remove any existing user/role headers from the external request
                                     httpHeaders.remove("X-Logged-In-User");
                                     httpHeaders.remove("X-User-Role");
                                 })
+                                // Inject verified headers extracted from JWT
                                 .header("X-Logged-In-User", username)
                                 .header("X-User-Role", role != null ? role : "UNKNOWN")
-                                .header(HttpHeaders.AUTHORIZATION, originalAuthHeader) 
+                                .header(HttpHeaders.AUTHORIZATION, originalAuthHeader)
                                 .build())
                         .build();
 
                 return chain.filter(modifiedExchange);
-                
+
             } catch (ExpiredJwtException e) {
                 exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                 return exchange.getResponse().setComplete();

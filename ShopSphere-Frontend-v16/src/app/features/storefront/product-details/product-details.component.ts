@@ -72,15 +72,21 @@ export class ProductDetailsComponent implements OnInit {
 
   addToCart(): void {
     if (this.product) {
+      // THE FIX: Check if the product has variations and ensure one is selected
+      if (this.customOptions.length > 0 && !this.selectedOption) {
+        this.toastService.showError('Please select an option before adding to cart.');
+        return;
+      }
+
       const cartItem = {
         ...this.product,
+        // Ensure finalPrice is used for calculation
         basePrice: this.finalPrice, 
+        // Explicitly map the selected choice
         selectedOption: this.selectedOption
       };
       
       this.cartService.addToCart(cartItem, this.selectedQuantity);
-      
-      // FIX: Triggers the new sliding Toast Notification instead of blocking the screen!
       this.toastService.showSuccess(`Added ${this.selectedQuantity}x ${this.product.name} to your cart.`);
     }
   }

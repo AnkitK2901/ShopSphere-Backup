@@ -5,44 +5,62 @@ import { BehaviorSubject } from 'rxjs';
   providedIn: 'root',
 })
 export class CartService {
-  // Syncs instantly with LocalStorage so carts survive page reloads
   private cartItems: any[] = JSON.parse(
     localStorage.getItem('shopsphere_cart') || '[]',
   );
 
-  // BehaviorSubjects allow the Navbar to instantly update when items are added
   private cartSubject = new BehaviorSubject<any[]>(this.cartItems);
   cartItems$ = this.cartSubject.asObservable();
 
   constructor() {}
 
   addToCart(product: any, quantity: number = 1): void {
-    // THE FIX: Check both the Product ID AND the exact Custom Option
-    const existingItemIndex = this.cartItems.findIndex(
-      (item) =>
-        item.productId === product.productId &&
-        JSON.stringify(item.selectedOption) ===
-          JSON.stringify(product.selectedOption),
-    );
+    const existingItemIndex = this.cartItems.findIndex((item) => {
+      const isSameProduct =
+        item.productId === product.productId || item.id === product.id;
+
+      const isSameOption =
+        (!item.selectedOption && !product.selectedOption) ||
+        item.selectedOption?.id === product.selectedOption?.id;
+
+      return isSameProduct && isSameOption;
+    });
 
     if (existingItemIndex !== -1) {
       this.cartItems[existingItemIndex].quantity += quantity;
     } else {
-      this.cartItems.push({ ...product, quantity });
+      const newItem = { ...product, quantity };
+      if (!newItem.productId && newItem.id) {
+        newItem.productId = newItem.id;
+      }
+      this.cartItems.push(newItem);
     }
 
     this.updateCartState();
   }
 
-  removeFromCart(productId: number): void {
-    this.cartItems = this.cartItems.filter(
-      (item) => item.productId !== productId,
-    );
+  removeFromCart(productId: number, optionId?: number): void {
+    this.cartItems = this.cartItems.filter((item) => {
+      if (optionId !== undefined) {
+        return !(
+          item.productId === productId && item.selectedOption?.id === optionId
+        );
+      }
+      return item.productId !== productId;
+    });
     this.updateCartState();
   }
 
-  updateQuantity(productId: number, quantity: number): void {
-    const item = this.cartItems.find((item) => item.productId === productId);
+  updateQuantity(productId: number, quantity: number, optionId?: number): void {
+    const item = this.cartItems.find((item) => {
+      if (optionId !== undefined) {
+        return (
+          item.productId === productId && item.selectedOption?.id === optionId
+        );
+      }
+      return item.productId === productId;
+    });
+
     if (item && quantity > 0) {
       item.quantity = quantity;
       this.updateCartState();
@@ -54,11 +72,13 @@ export class CartService {
     this.updateCartState();
   }
 
+  // THE FIX: Round the total to 2 decimal places to avoid JS floating-point issues
   getCartTotal(): number {
-    return this.cartItems.reduce(
-      (total, item) => total + item.basePrice * item.quantity,
+    const total = this.cartItems.reduce(
+      (acc, item) => acc + item.basePrice * item.quantity,
       0,
     );
+    return Math.round((total + Number.EPSILON) * 100) / 100;
   }
 
   getCartItemCount(): number {

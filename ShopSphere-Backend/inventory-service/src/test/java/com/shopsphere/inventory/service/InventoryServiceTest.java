@@ -32,45 +32,45 @@ public class InventoryServiceTest {
 
     @BeforeEach
     void setUp() {
-        // THE FIX: Added 0L for the version
-        mockItem = new InventoryItem("P101", 50, "SUP_001", 10, 5, 0L);
+        // FIX: Changed "P101" to 101L
+        mockItem = new InventoryItem(101L, 50, "SUP_001", 10, 5, 0L);
     }
 
     @Test
     void checkStock_WhenStockIsSufficient_ShouldReturnTrue() {
-        when(inventoryRepository.findById("P101")).thenReturn(Optional.of(mockItem));
-        boolean result = inventoryService.checkStock("P101", 20);
+        when(inventoryRepository.findById(101L)).thenReturn(Optional.of(mockItem)); // FIX
+        boolean result = inventoryService.checkStock(101L, 20); // FIX
         assertTrue(result);
     }
 
     @Test
     void checkStock_WhenStockIsInsufficient_ShouldReturnFalse() {
-        when(inventoryRepository.findById("P101")).thenReturn(Optional.of(mockItem));
-        boolean result = inventoryService.checkStock("P101", 60);
+        when(inventoryRepository.findById(101L)).thenReturn(Optional.of(mockItem)); // FIX
+        boolean result = inventoryService.checkStock(101L, 60); // FIX
         assertFalse(result);
     }
 
     @Test
     void checkStock_WhenProductNotFound_ShouldThrowException() {
-        when(inventoryRepository.findById("P999")).thenReturn(Optional.empty());
+        when(inventoryRepository.findById(999L)).thenReturn(Optional.empty()); // FIX
         assertThrows(ResourceNotFoundException.class, () -> {
-            inventoryService.checkStock("P999", 10);
+            inventoryService.checkStock(999L, 10); // FIX
         });
     }
 
     @Test
     void deductStock_WhenStockIsSufficient_ShouldUpdateAndSave() {
-        when(inventoryRepository.findById("P101")).thenReturn(Optional.of(mockItem));
-        inventoryService.deductStock("P101", 10);
+        when(inventoryRepository.findById(101L)).thenReturn(Optional.of(mockItem)); // FIX
+        inventoryService.deductStock(101L, 10); // FIX
         assertEquals(40, mockItem.getStockLevel());
         verify(inventoryRepository, times(1)).save(mockItem);
     }
 
     @Test
     void deductStock_WhenStockIsInsufficient_ShouldThrowExceptionAndNotSave() {
-        when(inventoryRepository.findById("P101")).thenReturn(Optional.of(mockItem));
+        when(inventoryRepository.findById(101L)).thenReturn(Optional.of(mockItem)); // FIX
         assertThrows(InsufficientStockException.class, () -> {
-            inventoryService.deductStock("P101", 60);
+            inventoryService.deductStock(101L, 60); // FIX
         });
         assertEquals(50, mockItem.getStockLevel());
         verify(inventoryRepository, never()).save(any(InventoryItem.class));
@@ -78,9 +78,9 @@ public class InventoryServiceTest {
 
     @Test
     void addInventory_WhenItemExists_ShouldUpdateFieldsAndSave() {
-        when(inventoryRepository.findById("P101")).thenReturn(Optional.of(mockItem));
-        // THE FIX: Added 0L for the version
-        InventoryItem updateItem = new InventoryItem("P101", 20, "NEW_SUP", 15, 7, 0L);
+        when(inventoryRepository.findById(101L)).thenReturn(Optional.of(mockItem)); // FIX
+        
+        InventoryItem updateItem = new InventoryItem(101L, 20, "NEW_SUP", 15, 7, 0L); // FIX
 
         inventoryService.addInventory(updateItem);
 
@@ -91,9 +91,9 @@ public class InventoryServiceTest {
 
     @Test
     void addInventory_WhenItemDoesNotExist_ShouldSaveNewItem() {
-        when(inventoryRepository.findById("P202")).thenReturn(Optional.empty());
-        // THE FIX: Added 0L for the version
-        InventoryItem newItem = new InventoryItem("P202", 20, "SUP_002", 15, 7, 0L);
+        when(inventoryRepository.findById(202L)).thenReturn(Optional.empty()); // FIX
+        
+        InventoryItem newItem = new InventoryItem(202L, 20, "SUP_002", 15, 7, 0L); // FIX
 
         inventoryService.addInventory(newItem);
 
@@ -109,7 +109,7 @@ public class InventoryServiceTest {
 
         assertNotNull(actualList);
         assertEquals(1, actualList.size());
-        assertEquals("P101", actualList.get(0).getProductId());
+        assertEquals(101L, actualList.get(0).getProductId()); // FIX
         verify(inventoryRepository, times(1)).findAll();
     }
 }

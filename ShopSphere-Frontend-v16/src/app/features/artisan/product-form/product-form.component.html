@@ -1,11 +1,19 @@
 <div class="dashboard-container">
   <div class="form-card">
     <div class="form-header">
-      <h2>Add New Inventory Item</h2>
+      <h2>Add New Product</h2>
       <p>Fill out the details to list a new product in the global catalog.</p>
     </div>
 
     <form [formGroup]="productForm" (ngSubmit)="onSubmit()" class="modern-form">
+      
+      <div class="form-row">
+         <div class="form-group full-width" style="display: flex; align-items: center; gap: 10px;">
+           <input type="checkbox" formControlName="isActive" id="isActiveCheck">
+           <label for="isActiveCheck" style="margin-bottom: 0;">Make Product Active/Visible Immediately</label>
+         </div>
+      </div>
+
       <div class="form-row">
         <div class="form-group full-width">
           <label>Product Name</label>
@@ -32,13 +40,25 @@
       </div>
 
       <div class="form-row">
+        <div class="form-group full-width">
+          <label>Available Product Variations (Select Multiple)</label>
+          <select multiple formControlName="selectedOptionIds" style="height: 120px; width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+             <option *ngFor="let opt of availableOptions" [value]="opt.id">
+                {{opt.type}} - {{opt.value}}
+             </option>
+          </select>
+          <small style="color: #666; margin-top: 5px; display: block;">Hold Ctrl (or Cmd on Mac) to select multiple variations.</small>
+        </div>
+      </div>
+
+      <div class="form-row">
         <div class="form-group">
           <label>Reorder Threshold</label>
           <input type="number" formControlName="reorderThreshold" placeholder="10" />
         </div>
         <div class="form-group">
           <label>Supplier ID</label>
-          <input type="text" formControlName="supplierId" placeholder="SUP-001" />
+          <input type="text" formControlName="supplierId" placeholder="SELF" />
         </div>
       </div>
 

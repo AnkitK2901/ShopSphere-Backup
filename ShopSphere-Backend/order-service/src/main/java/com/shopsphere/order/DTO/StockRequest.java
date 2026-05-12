@@ -5,6 +5,6 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class StockRequest {
-    private String productId;
+    private Long productId; // THE FIX: Aligned with Inventory and Catalog
     private Integer quantity;
 }

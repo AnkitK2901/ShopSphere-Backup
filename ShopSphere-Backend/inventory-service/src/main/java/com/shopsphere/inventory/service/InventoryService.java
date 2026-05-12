@@ -24,7 +24,7 @@ public class InventoryService {
         return inventoryRepository.findAll();
     }
 
-    public boolean checkStock(String productId, int quantity) {
+    public boolean checkStock(Long productId, int quantity) {
         InventoryItem item = inventoryRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + productId));
         return item.getStockLevel() >= quantity;
@@ -48,7 +48,7 @@ public class InventoryService {
     }
 
     @Transactional
-    public void deductStock(String productId, int quantity) {
+    public void deductStock(Long productId, int quantity) {
         InventoryItem item = inventoryRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + productId));
 
@@ -78,7 +78,7 @@ public class InventoryService {
     // SURGICAL FIXES: Added specifically for Ghost Inventory & SAGA
     // ==============================================================
     @Transactional
-    public void initializeStock(String productId, int stockLevel) {
+    public void initializeStock(Long productId, int stockLevel) {
         InventoryItem item = new InventoryItem();
         item.setProductId(productId);
         item.setStockLevel(stockLevel);
@@ -88,7 +88,7 @@ public class InventoryService {
     }
 
     @Transactional
-    public void refundStock(String productId, int quantity) {
+    public void refundStock(Long productId, int quantity) {
         InventoryItem item = inventoryRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + productId));
         item.setStockLevel(item.getStockLevel() + quantity);

@@ -1,61 +1,20 @@
 package com.shopsphere.order.DTO;
 
-import java.util.ArrayList;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import java.util.List;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class ProductDTO {
-    private String productId;
+    // FIX: Changed from String to Long to match Catalog and Inventory
+    private Long productId; 
     private String name;
-    private Double basePrice;
+    private String description;
+    private double basePrice;
+    private double totalPrice;
     private String previewImage;
-    private Double totalPrice;
-    private List<CustomOptionDTO> customOptions = new ArrayList<>();
-
-    public Double getBasePrice() {
-        return basePrice;
-    }
-
-    public void setBasePrice(Double basePrice) {
-        this.basePrice = basePrice;
-    }
-
-    public List<CustomOptionDTO> getCustomOptions() {
-        return customOptions;
-    }
-
-    public void setCustomOptions(List<CustomOptionDTO> customOptions) {
-        this.customOptions = customOptions;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getPreviewImage() {
-        return previewImage;
-    }
-
-    public void setPreviewImage(String previewImage) {
-        this.previewImage = previewImage;
-    }
-
-    public String getProductId() {
-        return productId;
-    }
-
-    public void setProductId(String productId) {
-        this.productId = productId;
-    }
-
-    public Double getTotalPrice() {
-        return totalPrice;
-    }
-
-    public void setTotalPrice(Double totalPrice) {
-        this.totalPrice = totalPrice;
-    }
+    private List<CustomOptionDTO> customOptions;
 }

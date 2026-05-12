@@ -3,6 +3,7 @@ package com.shopsphere.inventory.exception;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException; // THE FIX: Added Import
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
@@ -34,15 +35,18 @@ public class GlobalExceptionHandler {
                 return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
         }
 
-        @ExceptionHandler(Exception.class)
-        public ResponseEntity<ErrorDetails> handleGlobalException(
-                        Exception exception, WebRequest webRequest) {
-                log.error("CRITICAL SERVER ERROR: ", exception);
+        // ==============================================================
+        // THE FIX: Catch Optimistic Locking Exceptions for Race Conditions
+        // ==============================================================
+        @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+        public ResponseEntity<ErrorDetails> handleOptimisticLockingFailure(
+                        ObjectOptimisticLockingFailureException exception, WebRequest webRequest) {
+                log.warn("Concurrent Checkout Conflict Detected: {}", exception.getMessage());
                 ErrorDetails errorDetails = new ErrorDetails(
                                 LocalDateTime.now(),
-                                "An unexpected internal server error occurred",
+                                "Sorry, this item was just purchased by another user. Please try again.",
                                 webRequest.getDescription(false));
-                return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
+                return new ResponseEntity<>(errorDetails, HttpStatus.CONFLICT); // Returns 409 Conflict
         }
 
         @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException.class)
@@ -53,5 +57,17 @@ public class GlobalExceptionHandler {
                 exception.getBindingResult().getFieldErrors()
                                 .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
                 return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+        }
+
+        // Always keep the generic Exception handler at the very bottom
+        @ExceptionHandler(Exception.class)
+        public ResponseEntity<ErrorDetails> handleGlobalException(
+                        Exception exception, WebRequest webRequest) {
+                log.error("CRITICAL SERVER ERROR: ", exception);
+                ErrorDetails errorDetails = new ErrorDetails(
+                                LocalDateTime.now(),
+                                "An unexpected internal server error occurred",
+                                webRequest.getDescription(false));
+                return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 }
