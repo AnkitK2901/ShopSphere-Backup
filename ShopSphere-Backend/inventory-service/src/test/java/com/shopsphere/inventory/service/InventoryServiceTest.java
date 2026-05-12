@@ -26,13 +26,14 @@ public class InventoryServiceTest {
     private InventoryRepository inventoryRepository;
 
     @InjectMocks
-    private InventoryService inventoryService; // Assuming this points to the Impl class in your setup
+    private InventoryService inventoryService; 
 
     private InventoryItem mockItem;
 
     @BeforeEach
     void setUp() {
-        mockItem = new InventoryItem("P101", 50, "SUP_001", 10, 5);
+        // THE FIX: Added 0L for the version
+        mockItem = new InventoryItem("P101", 50, "SUP_001", 10, 5, 0L);
     }
 
     @Test
@@ -78,11 +79,12 @@ public class InventoryServiceTest {
     @Test
     void addInventory_WhenItemExists_ShouldUpdateFieldsAndSave() {
         when(inventoryRepository.findById("P101")).thenReturn(Optional.of(mockItem));
-        InventoryItem updateItem = new InventoryItem("P101", 20, "NEW_SUP", 15, 7);
+        // THE FIX: Added 0L for the version
+        InventoryItem updateItem = new InventoryItem("P101", 20, "NEW_SUP", 15, 7, 0L);
 
         inventoryService.addInventory(updateItem);
 
-        assertEquals(70, mockItem.getStockLevel()); // 50 original + 20 new
+        assertEquals(70, mockItem.getStockLevel()); 
         assertEquals("NEW_SUP", mockItem.getSupplierId());
         verify(inventoryRepository, times(1)).save(mockItem);
     }
@@ -90,14 +92,14 @@ public class InventoryServiceTest {
     @Test
     void addInventory_WhenItemDoesNotExist_ShouldSaveNewItem() {
         when(inventoryRepository.findById("P202")).thenReturn(Optional.empty());
-        InventoryItem newItem = new InventoryItem("P202", 20, "SUP_002", 15, 7);
+        // THE FIX: Added 0L for the version
+        InventoryItem newItem = new InventoryItem("P202", 20, "SUP_002", 15, 7, 0L);
 
         inventoryService.addInventory(newItem);
 
         verify(inventoryRepository, times(1)).save(newItem);
     }
 
-    // --- NEW TEST ADDED FOR GET ALL INVENTORY ---
     @Test
     void getAllInventory_ShouldReturnListOfItems() {
         List<InventoryItem> expectedList = Arrays.asList(mockItem);

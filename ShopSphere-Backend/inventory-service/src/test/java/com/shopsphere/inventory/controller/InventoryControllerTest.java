@@ -43,7 +43,8 @@ public class InventoryControllerTest {
 
     @Test
     void addInventory_WhenRoleIsAdmin_ShouldReturnOk() throws Exception {
-        InventoryItem item = new InventoryItem("P101", 10, "SUP_001", 5, 2);
+        // THE FIX: Added 0L as the 6th parameter for the version field
+        InventoryItem item = new InventoryItem("P101", 10, "SUP_001", 5, 2, 0L);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/inventory")
                 .header("X-User-Role", "ROLE_ADMIN")
@@ -54,7 +55,8 @@ public class InventoryControllerTest {
 
     @Test
     void addInventory_WhenRoleIsNotAdmin_ShouldReturnForbidden() throws Exception {
-        InventoryItem item = new InventoryItem("P101", 10, "SUP_001", 5, 2);
+        // THE FIX: Added 0L as the 6th parameter for the version field
+        InventoryItem item = new InventoryItem("P101", 10, "SUP_001", 5, 2, 0L);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/inventory")
                 .header("X-User-Role", "ROLE_USER")
@@ -63,11 +65,10 @@ public class InventoryControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isForbidden());
     }
 
-    // --- NEW TESTS ADDED FOR GET ALL INVENTORY ---
-
     @Test
     void getAllInventory_WhenRoleIsAdmin_ShouldReturnOkAndList() throws Exception {
-        InventoryItem item = new InventoryItem("P101", 10, "SUP_001", 5, 2);
+        // THE FIX: Added 0L as the 6th parameter for the version field
+        InventoryItem item = new InventoryItem("P101", 10, "SUP_001", 5, 2, 0L);
         Mockito.when(inventoryService.getAllInventory()).thenReturn(Arrays.asList(item));
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/inventory")
