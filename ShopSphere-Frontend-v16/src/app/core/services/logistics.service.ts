@@ -1,28 +1,47 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
-@Injectable({
-  providedIn: 'root'
-})
+export interface ShipmentResponse {
+  shipmentId: number;
+  orderId: number;
+  trackingNumber: string;
+  trackingUrl: string;
+  status: string;
+  carrier: string;
+  updatedAt: string;
+}
+
+@Injectable({ providedIn: 'root' })
 export class LogisticsService {
-  // FIX: Pointing strictly to the API Gateway route
+  
   private apiUrl = 'http://localhost:9090/api/shipments';
 
   constructor(private http: HttpClient) {}
 
-  getAllShipments(): Observable<any> {
-    // Matches Backend: @GetMapping ""
-    return this.http.get(`${this.apiUrl}`);
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('jwt_token') || ''; 
+    return new HttpHeaders().set('Authorization', `Bearer ${token}`);
   }
 
-  getShipmentById(orderId: string): Observable<any> {
-    // Matches Backend: @GetMapping("/order/{orderId}")
-    return this.http.get(`${this.apiUrl}/order/${orderId}`);
+  getShipmentById(id: number): Observable<ShipmentResponse> {
+    return this.http.get<ShipmentResponse>(`${this.apiUrl}/order/${id}`, { headers: this.getHeaders() })
+      .pipe(catchError(this.handleError));
   }
 
-  updateStatus(orderId: string, newStatus: string): Observable<any> {
-    // Matches Backend: @PatchMapping("/order/{orderId}/{status}")
-    return this.http.patch(`${this.apiUrl}/order/${orderId}/${newStatus}`, {});
+  getAllShipments(): Observable<ShipmentResponse[]> {
+    return this.http.get<ShipmentResponse[]>(`${this.apiUrl}/all`, { headers: this.getHeaders() })
+      .pipe(catchError(this.handleError));
+  }
+
+  updateStatus(orderId: number, newStatus: string): Observable<ShipmentResponse> {
+    return this.http.patch<ShipmentResponse>(`${this.apiUrl}/order/${orderId}/${newStatus}`, {}, { headers: this.getHeaders() })
+      .pipe(catchError(this.handleError));
+  }
+
+  private handleError(error: any) {
+    console.error('Logistics API Error:', error);
+    return throwError(() => new Error('Failed to load the fulfillment queue. Check backend connection.'));
   }
 }

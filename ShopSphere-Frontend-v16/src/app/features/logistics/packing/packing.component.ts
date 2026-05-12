@@ -21,7 +21,7 @@ export class PackingComponent implements OnInit {
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
-      this.logisticsService.getShipmentById(id).subscribe({
+      this.logisticsService.getShipmentById(Number(id)).subscribe({
         next: (data) => {
           this.shipment = data;
           this.isLoading = false;

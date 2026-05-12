@@ -1,73 +1,128 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
-// Auth
+// Auth Components
 import { LoginComponent } from './features/auth/login/login.component';
 import { RegisterComponent } from './features/auth/register/register.component';
 import { ProfileComponent } from './features/auth/profile/profile.component';
-import { AuthGuard } from './core/guards/auth.guard';
-import { RoleGuard } from './core/guards/role.guard'; 
 
-// Artisan
-import { DashboardComponent as ArtisanDashboard } from './features/artisan/dashboard/dashboard.component';
-import { InventoryManagerComponent } from './features/artisan/inventory-manager/inventory-manager.component';
-import { ProductFormComponent } from './features/artisan/product-form/product-form.component';
-
-// Analytics
-import { DashboardComponent as AnalyticsDashboard } from './features/analytics/dashboard/dashboard.component';
-import { CustomerInsightsComponent } from './features/analytics/customer-insights/customer-insights.component';
-import { RevenueReportComponent } from './features/analytics/revenue-report/revenue-report.component';
-
-// Storefront & Orders
+// Storefront Components
 import { HomeComponent } from './features/storefront/home/home.component';
 import { CatalogComponent } from './features/storefront/catalog/catalog.component';
 import { ProductDetailsComponent } from './features/storefront/product-details/product-details.component';
+
+// Order Components
 import { CartComponent } from './features/orders/cart/cart.component';
 import { CheckoutComponent } from './features/orders/checkout/checkout.component';
 import { HistoryComponent } from './features/orders/history/history.component';
 
-// Logistics
+// Artisan Components
+import { DashboardComponent as ArtisanDashboard } from './features/artisan/dashboard/dashboard.component';
+import { InventoryManagerComponent } from './features/artisan/inventory-manager/inventory-manager.component';
+import { ProductFormComponent } from './features/artisan/product-form/product-form.component';
+
+// Logistics Components
 import { QueueComponent } from './features/logistics/queue/queue.component';
 import { PackingComponent } from './features/logistics/packing/packing.component';
 import { DispatchComponent } from './features/logistics/dispatch/dispatch.component';
 import { MonitorComponent } from './features/logistics/monitor/monitor.component';
 
+// Analytics Components
+import { DashboardComponent as AdminDashboard } from './features/analytics/dashboard/dashboard.component';
+import { RevenueReportComponent } from './features/analytics/revenue-report/revenue-report.component';
+import { CustomerInsightsComponent } from './features/analytics/customer-insights/customer-insights.component';
+
+import { AuthGuard } from './core/guards/auth.guard';
+import { RoleGuard } from './core/guards/role.guard';
+
 const routes: Routes = [
-  // Public Routes (Home is now default, Catalog is moved)
+  // Storefront (Public)
   { path: '', component: HomeComponent },
   { path: 'catalog', component: CatalogComponent },
   { path: 'product/:id', component: ProductDetailsComponent },
+
+  // Auth (Public)
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
+  { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
 
-  // Customer Routes
+  // Orders (Customer Only)
   { path: 'cart', component: CartComponent },
   { path: 'checkout', component: CheckoutComponent, canActivate: [AuthGuard] },
-  { path: 'orders/history', component: HistoryComponent, canActivate: [AuthGuard] },
-  { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] }, // Added Profile Route
+  { path: 'history', component: HistoryComponent, canActivate: [AuthGuard] },
 
-  // Artisan Routes
-  { path: 'artisan/dashboard', component: ArtisanDashboard, canActivate: [RoleGuard], data: { expectedRole: 'ROLE_ARTISAN' } },
-  { path: 'artisan/products/new', component: ProductFormComponent, canActivate: [RoleGuard], data: { expectedRole: 'ROLE_ARTISAN' } },
-  { path: 'artisan/inventory', component: InventoryManagerComponent, canActivate: [RoleGuard], data: { expectedRole: 'ROLE_ARTISAN' } },
+  // Artisan / Seller routes (Protected)
+  {
+    path: 'artisan/dashboard',
+    component: ArtisanDashboard,
+    canActivate: [RoleGuard],
+    data: { expectedRole: 'ROLE_ARTISAN' },
+  },
+  {
+    path: 'artisan/inventory',
+    component: InventoryManagerComponent,
+    canActivate: [RoleGuard],
+    data: { expectedRole: 'ROLE_ARTISAN' },
+  },
+  {
+    path: 'artisan/product/new',
+    component: ProductFormComponent,
+    canActivate: [RoleGuard],
+    data: { expectedRole: 'ROLE_ARTISAN' },
+  },
 
-  // Analytics Routes
-  { path: 'analytics/dashboard', component: AnalyticsDashboard, canActivate: [RoleGuard], data: { expectedRole: 'ROLE_ADMIN' } },
-  { path: 'analytics/customer-insights', component: CustomerInsightsComponent, canActivate: [RoleGuard], data: { expectedRole: 'ROLE_ADMIN' } },
-  { path: 'analytics/revenue-report', component: RevenueReportComponent, canActivate: [RoleGuard], data: { expectedRole: 'ROLE_ADMIN' } },
+  // Logistics / Warehouse routes (Protected)
+  {
+    path: 'logistics/queue',
+    component: QueueComponent,
+    canActivate: [RoleGuard],
+    data: { expectedRole: 'ROLE_LOGISTICS' },
+  },
+  {
+    path: 'logistics/packing',
+    component: PackingComponent,
+    canActivate: [RoleGuard],
+    data: { expectedRole: 'ROLE_LOGISTICS' },
+  },
+  {
+    path: 'logistics/dispatch',
+    component: DispatchComponent,
+    canActivate: [RoleGuard],
+    data: { expectedRole: 'ROLE_LOGISTICS' },
+  },
+  {
+    path: 'logistics/monitor',
+    component: MonitorComponent,
+    canActivate: [RoleGuard],
+    data: { expectedRole: 'ROLE_LOGISTICS' },
+  },
 
-  // Logistics Routes
-  { path: 'logistics/queue', component: QueueComponent, canActivate: [RoleGuard], data: { expectedRole: 'ROLE_LOGISTICS' } },
-  { path: 'logistics/pack/:id', component: PackingComponent, canActivate: [RoleGuard], data: { expectedRole: 'ROLE_LOGISTICS' } },
-  { path: 'logistics/dispatch/:id', component: DispatchComponent, canActivate: [RoleGuard], data: { expectedRole: 'ROLE_LOGISTICS' } },
-  { path: 'logistics/monitor', component: MonitorComponent, canActivate: [RoleGuard], data: { expectedRole: 'ROLE_LOGISTICS' } },
+  // Admin / Analytics routes (Protected)
+  {
+    path: 'admin/dashboard',
+    component: AdminDashboard,
+    canActivate: [RoleGuard],
+    data: { expectedRole: 'ROLE_ADMIN' },
+  },
+  {
+    path: 'admin/revenue',
+    component: RevenueReportComponent,
+    canActivate: [RoleGuard],
+    data: { expectedRole: 'ROLE_ADMIN' },
+  },
+  {
+    path: 'admin/insights',
+    component: CustomerInsightsComponent,
+    canActivate: [RoleGuard],
+    data: { expectedRole: 'ROLE_ADMIN' },
+  },
 
   // Fallback
-  { path: '**', redirectTo: '' }
+  { path: '**', redirectTo: '' },
 ];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {}

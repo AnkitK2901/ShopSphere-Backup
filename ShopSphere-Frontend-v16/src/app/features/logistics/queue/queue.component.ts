@@ -45,7 +45,7 @@ export class QueueComponent implements OnInit {
   }
 
   updateStatus(orderId: string, newStatus: string): void {
-    this.logisticsService.updateStatus(orderId, newStatus).subscribe({
+    this.logisticsService.updateStatus(Number(orderId), newStatus).subscribe({
       next: () => {
         this.toastService.showSuccess(`Shipment for Order #${orderId} updated to ${newStatus}`);
         this.fetchQueue(); 
