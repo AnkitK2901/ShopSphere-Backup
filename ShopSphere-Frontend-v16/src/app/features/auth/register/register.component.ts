@@ -23,6 +23,8 @@ export class RegisterComponent implements OnInit {
   ngOnInit(): void {
     this.registerForm = this.fb.group({
       name: ['', Validators.required],
+      // Added the dedicated username field here
+      username: ['', [Validators.required, Validators.minLength(3)]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       role: ['ROLE_CUSTOMER', Validators.required] 
@@ -33,21 +35,17 @@ export class RegisterComponent implements OnInit {
     if (this.registerForm.valid) {
       this.isLoading = true;
       
-      const payload = {
-        ...this.registerForm.value,
-        username: this.registerForm.value.email 
-      };
+      // Since username is now natively in the form, we can just pass the raw values
+      const payload = this.registerForm.value;
 
       this.authService.register(payload).subscribe({
         next: (response: any) => {
-          // UPDATED: Now showing the specific message from the backend DTO
           this.toastService.showSuccess(response.message || 'Registration successful!');
           this.router.navigate(['/login']);
         },
         error: (err) => {
           console.error(err);
-          // Backend now sends specific error strings (e.g., "Username is already taken")
-          this.toastService.showError(err.error || 'Registration failed. Email might already be in use.');
+          this.toastService.showError(err.error || 'Registration failed. Email or Username might already be in use.');
           this.isLoading = false;
         }
       });

@@ -6,28 +6,35 @@ import { Router } from '@angular/router';
 import { CartService } from './cart.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private apiUrl = 'http://localhost:9090/api/auth';
-  
+
   private loggedInSubject = new BehaviorSubject<boolean>(this.hasToken());
   public isLoggedIn$ = this.loggedInSubject.asObservable();
 
   constructor(
-    private http: HttpClient, 
+    private http: HttpClient,
     private router: Router,
-    private cartService: CartService 
+    private cartService: CartService,
   ) {}
 
   login(credentials: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/login`, credentials).pipe(
       tap((response: any) => {
+        // Now expecting the new AuthResponse format!
         if (response && response.token) {
           localStorage.setItem('jwt_token', response.token);
+
+          // FIX: Stop ignoring the new backend field! Save the userId.
+          if (response.userId) {
+            localStorage.setItem('userId', response.userId.toString());
+          }
+
           this.loggedInSubject.next(true);
         }
-      })
+      }),
     );
   }
 
@@ -38,7 +45,7 @@ export class AuthService {
 
   logout(): void {
     localStorage.removeItem('jwt_token');
-    this.cartService.clearCart(); 
+    this.cartService.clearCart();
     this.loggedInSubject.next(false);
     this.router.navigate(['/login']);
   }

@@ -86,10 +86,19 @@ public class AuthService {
     }
 
     public User getUserByUsername(String userName) {
+        // First try searching exactly by username
         User user = userRepository.findByUsername(userName);
+        
+        // If not found, use the email fallback (crucial for JWTs that store email)
         if (user == null) {
-            throw new RuntimeException("Username not Found");
+            user = userRepository.findByEmail(userName);
         }
+        
+        // If still null, the user legitimately does not exist
+        if (user == null) {
+            throw new RuntimeException("Username or Email not Found: " + userName);
+        }
+        
         return user;
     }
 

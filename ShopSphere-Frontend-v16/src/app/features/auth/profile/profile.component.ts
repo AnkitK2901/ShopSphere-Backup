@@ -12,7 +12,7 @@ export class ProfileComponent implements OnInit {
   profileForm!: FormGroup;
   isLoading = true;
   isSaving = false;
-  private apiUrl = 'http://localhost:9090/api/auth/profile';
+  private apiUrl = 'http://localhost:9090/api/auth/profile'; // adjust if needed
 
   constructor(private fb: FormBuilder, private http: HttpClient, private toast: ToastService) {}
 
@@ -21,7 +21,9 @@ export class ProfileComponent implements OnInit {
       name: ['', Validators.required],
       email: [{value: '', disabled: true}], // Cannot change email
       address: [''],
-      gender: ['']
+      gender: [''],
+      // ADDED: Optional password field for updating
+      password: [''] 
     });
     this.loadProfile();
   }
@@ -38,6 +40,7 @@ export class ProfileComponent implements OnInit {
           email: user.email,
           address: user.address,
           gender: user.gender
+          // Note: We purposely do NOT patch the password here! It stays blank.
         });
         this.isLoading = false;
       },
@@ -51,10 +54,23 @@ export class ProfileComponent implements OnInit {
   saveProfile() {
     if (this.profileForm.valid) {
       this.isSaving = true;
-      this.http.put(`${this.apiUrl}/update`, this.profileForm.getRawValue(), { headers: this.getHeaders() }).subscribe({
+      
+      // 1. Extract the raw values from the form
+      const payload = this.profileForm.getRawValue();
+
+      // 2. THE FIX: If the password field is empty, delete it from the payload
+      // so the backend completely ignores it and keeps the old password safe.
+      if (!payload.password || payload.password.trim() === '') {
+        delete payload.password;
+      }
+
+      this.http.put(`${this.apiUrl}/update`, payload, { headers: this.getHeaders() }).subscribe({
         next: () => {
           this.toast.showSuccess('Profile updated successfully!');
           this.isSaving = false;
+          
+          // Clear the password field after a successful save
+          this.profileForm.get('password')?.setValue('');
         },
         error: () => {
           this.toast.showError('Could not update profile.');

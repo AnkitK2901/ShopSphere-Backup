@@ -19,12 +19,18 @@ import java.util.stream.Collectors;
 @Service
 public class OrderServiceImpl implements OrderService {
 
-    @Autowired private UserClient userClient;
-    @Autowired private ProductClient productClient;
-    @Autowired private LogisticsClient logisticsClient;
-    @Autowired private OrderRepository orderRepository;
-    @Autowired private InventoryClient inventoryClient;
-    @Autowired private AnalyticsClient analyticsClient; 
+    @Autowired
+    private UserClient userClient;
+    @Autowired
+    private ProductClient productClient;
+    @Autowired
+    private LogisticsClient logisticsClient;
+    @Autowired
+    private OrderRepository orderRepository;
+    @Autowired
+    private InventoryClient inventoryClient;
+    @Autowired
+    private AnalyticsClient analyticsClient;
 
     @Override
     public List<OrderResponse> getAllOrders() {
@@ -41,30 +47,48 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional(readOnly = true)
     public List<OrderResponse> getOrdersByCustomerId(Long customerId) {
-        return orderRepository.findByCustomerId(customerId).stream().map(this::mapToResponse).collect(Collectors.toList());
+        return orderRepository.findByCustomerId(customerId).stream().map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
 
     @Override
     @Transactional
     public OrderResponse placeOrder(OrderRequest orderRequest) {
         UserDTO user = userClient.getUserByUserName(orderRequest.getUserName());
-        if (user == null) { throw new ResourceNotFoundException("Customer Not found"); }
+        if (user == null) {
+            throw new ResourceNotFoundException("Customer Not found");
+        }
 
         double totalOrderAmount = 0.0;
         List<OrderItemEntity> orderItems = new ArrayList<>();
-        List<String> allCustomizations = new ArrayList<>(); // To store everyone's choices
+        List<String> actualCustomizations = new ArrayList<>(); // THE FIX: Store actual choices
 
         for (OrderItemRequest itemReq : orderRequest.getItems()) {
             ProductDTO product = productClient.findProductById(itemReq.getProductId());
-            if (product == null) throw new ResourceNotFoundException("Product Not Found: " + itemReq.getProductId());
+            if (product == null)
+                throw new ResourceNotFoundException("Product Not Found: " + itemReq.getProductId());
 
-            Double unitPrice = product.getTotalPrice() != null ? product.getTotalPrice() : product.getBasePrice();
-            if (unitPrice == null) throw new ResourceNotFoundException("Product price is completely unavailable");
+            // THE FIX: Check if it's > 0.0 instead of != null since it's a primitive double
+            double unitPrice = product.getTotalPrice() > 0.0 ? product.getTotalPrice() : product.getBasePrice();
+            
+            if (unitPrice <= 0.0) throw new ResourceNotFoundException("Product price is completely unavailable");
 
-            // Collect product-specific customizations
-            if (product.getCustomOptions() != null) {
-                for (CustomOptionDTO opt : product.getCustomOptions()) {
-                    allCustomizations.add(product.getName() + " [" + opt.getType() + ": " + opt.getValue() + "]");
+            // Process Customizations and securely add the price adjustment
+            if (itemReq.getSelectedOption() != null && !itemReq.getSelectedOption().isEmpty()) {
+                actualCustomizations.add(product.getName() + " [" + itemReq.getSelectedOption() + "]");
+                
+                // Securely calculate the price adjustment on the backend
+                if (product.getCustomOptions() != null) {
+                    for (CustomOptionDTO opt : product.getCustomOptions()) {
+                        String optionMatch = opt.getType() + ": " + opt.getValue();
+                        if (optionMatch.equals(itemReq.getSelectedOption())) {
+                            
+                            // THE FIX: No need to check for null. Just add the primitive value directly!
+                            unitPrice += opt.getPriceAdjustment(); 
+                            
+                            break;
+                        }
+                    }
                 }
             }
 
@@ -82,14 +106,15 @@ public class OrderServiceImpl implements OrderService {
         order.setCustomerId(user.getId());
         order.setTotalAmount(totalOrderAmount);
         order.setStatus(OrderStatus.PENDING_PAYMENT);
-        order.setItems(orderItems); 
-        order.setCustomizationDetails(allCustomizations); // FIX: Now successfully calling the setter
+        order.setItems(orderItems);
+        order.setCustomizationDetails(actualCustomizations);
+        order.setShippingAddress(orderRequest.getShippingAddress()); // THE FIX: Save the address!
 
         return mapToResponse(orderRepository.save(order));
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class) 
+    @Transactional(rollbackFor = Exception.class)
     public OrderResponse confirmPayment(Long orderId) {
         OrderEntity order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order Id not found"));
@@ -102,7 +127,7 @@ public class OrderServiceImpl implements OrderService {
             for (OrderItemEntity item : order.getItems()) {
                 StockRequest stockRequest = new StockRequest(item.getProductId(), item.getQuantity());
                 inventoryClient.deductStock(stockRequest);
-                deductedStocks.add(stockRequest); 
+                deductedStocks.add(stockRequest);
             }
 
             order.setStatus(OrderStatus.CONFIRMED);
@@ -130,14 +155,18 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class) 
+    @Transactional(rollbackFor = Exception.class)
     public OrderResponse updateStatus(Long orderId, OrderStatus newStatus) {
-        OrderEntity order = orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order Id not found"));
+        OrderEntity order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order Id not found"));
         ValidTransaction(order.getStatus(), newStatus);
 
         if (newStatus == OrderStatus.SHIPPED) {
-            try { logisticsClient.createShipment(orderId); } 
-            catch (Exception e) { throw new IllegalStateException("Logistics failure.", e); }
+            try {
+                logisticsClient.createShipment(orderId);
+            } catch (Exception e) {
+                throw new IllegalStateException("Logistics failure.", e);
+            }
         }
 
         order.setStatus(newStatus);
@@ -147,7 +176,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponse cancelOrder(Long orderId) {
-        OrderEntity order = orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order Id not found"));
+        OrderEntity order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order Id not found"));
         ValidTransaction(order.getStatus(), OrderStatus.CANCELLED);
         order.setStatus(OrderStatus.CANCELLED);
         order.setUpdatedAt(LocalDateTime.now());
@@ -156,7 +186,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponse returnOrder(Long orderId) {
-        OrderEntity order = orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order Id not found"));
+        OrderEntity order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order Id not found"));
         ValidTransaction(order.getStatus(), OrderStatus.RETURNED);
         order.setStatus(OrderStatus.RETURNED);
         order.setUpdatedAt(LocalDateTime.now());
@@ -189,6 +220,9 @@ public class OrderServiceImpl implements OrderService {
         res.setUpdatedAt(orderEntity.getUpdatedAt());
         res.setCustomizationDetails(orderEntity.getCustomizationDetails());
 
+        // THE FIX: Map the address to the response
+        res.setShippingAddress(orderEntity.getShippingAddress());
+
         if (orderEntity.getItems() != null && !orderEntity.getItems().isEmpty()) {
             List<OrderItemResponse> mappedItems = orderEntity.getItems().stream().map(item -> {
                 OrderItemResponse ir = new OrderItemResponse();
@@ -198,7 +232,7 @@ public class OrderServiceImpl implements OrderService {
                 return ir;
             }).collect(Collectors.toList());
             res.setItems(mappedItems);
-            
+
             res.setProductId(orderEntity.getItems().get(0).getProductId());
             res.setQuantity(orderEntity.getItems().get(0).getQuantity());
         }

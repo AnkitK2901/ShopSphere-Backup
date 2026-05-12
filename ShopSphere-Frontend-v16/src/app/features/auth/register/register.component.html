@@ -10,6 +10,14 @@
       </div>
 
       <div class="input-group">
+        <label>Username</label>
+        <input type="text" formControlName="username" placeholder="Choose a unique username">
+        <div *ngIf="registerForm.get('username')?.invalid && registerForm.get('username')?.touched" class="error-text" style="color: #e74c3c; font-size: 0.85rem; margin-top: 5px;">
+          Username must be at least 3 characters.
+        </div>
+      </div>
+
+      <div class="input-group">
         <label>Email Address</label>
         <input type="email" formControlName="email" placeholder="john@example.com">
       </div>
@@ -24,7 +32,7 @@
         <select formControlName="role">
           <option value="ROLE_CUSTOMER">Shopper (Standard)</option>
           <option value="ROLE_ARTISAN">Artisan (Seller)</option>
-          </select>
+        </select>
       </div>
 
       <button type="submit" class="submit-btn" [disabled]="registerForm.invalid || isLoading">

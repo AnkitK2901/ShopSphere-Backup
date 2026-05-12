@@ -4,12 +4,12 @@ import { CatalogService } from '../../../core/services/catalog.service';
 @Component({
   selector: 'app-catalog',
   templateUrl: './catalog.component.html',
-  styleUrls: ['./catalog.component.css'] 
+  styleUrls: ['./catalog.component.css'],
 })
 export class CatalogComponent implements OnInit {
   products: any[] = [];
   currentPage: number = 0;
-  pageSize: number = 20; // Increased so frontend search works better
+  pageSize: number = 20; 
   searchQuery: string = '';
   isLoading: boolean = false;
   hasMoreProducts: boolean = true;
@@ -29,26 +29,25 @@ export class CatalogComponent implements OnInit {
     if (!this.hasMoreProducts) return;
 
     this.isLoading = true;
-    this.catalogService.getProducts(this.currentPage, this.pageSize, this.searchQuery)
+    this.catalogService
+      .getProducts(this.currentPage, this.pageSize, this.searchQuery)
       .subscribe({
         next: (response: any) => {
-          let newProducts = response.content || response; 
-          
-          // FIX: Bulletproof Frontend Search Fallback
-          // If the backend returned everything, we force filter it here.
+          let newProducts = response.content || response;
+
           if (this.searchQuery && this.searchQuery.trim() !== '') {
             const lowerQuery = this.searchQuery.toLowerCase();
-            newProducts = newProducts.filter((p: any) => 
-              p.name?.toLowerCase().includes(lowerQuery) || 
-              p.description?.toLowerCase().includes(lowerQuery)
+            newProducts = newProducts.filter(
+              (p: any) =>
+                p.name?.toLowerCase().includes(lowerQuery) ||
+                p.description?.toLowerCase().includes(lowerQuery),
             );
           }
 
-          this.products = [...this.products, ...newProducts];
-          
-          if (response.last === true || (response.content || response).length < this.pageSize) {
-            this.hasMoreProducts = false;
-          }
+          // Replace the array entirely to prevent duplicates
+          this.products = newProducts;
+          // Force to false to stop the infinite pagination loop
+          this.hasMoreProducts = false;
           this.isLoading = false;
         },
         error: (err) => {
@@ -60,7 +59,7 @@ export class CatalogComponent implements OnInit {
 
   onSearch(query: string): void {
     this.searchQuery = query;
-    this.loadProducts(true); 
+    this.loadProducts(true);
   }
 
   loadMore(): void {

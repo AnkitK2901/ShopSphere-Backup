@@ -35,6 +35,13 @@
         </div>
       </div>
 
+      <div class="form-row">
+        <div class="form-group" style="width: 100%;">
+          <label>Update Password</label>
+          <input type="password" formControlName="password" placeholder="Leave blank to keep your current password safe">
+        </div>
+      </div>
+
       <button type="submit" class="btn-save" [disabled]="isSaving || profileForm.invalid">
         {{ isSaving ? 'Saving Changes...' : 'Update Profile' }}
       </button>

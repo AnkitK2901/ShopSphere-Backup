@@ -34,7 +34,7 @@ public class ProductServiceImpl implements ProductService {
         product.setBasePrice(dto.getBasePrice());
         product.setPreviewImage(dto.getPreviewImage());
         product.setActive(true);
-
+        product.setDescription(dto.getDescription());
         if (dto.getSelectedOptionIds() != null && !dto.getSelectedOptionIds().isEmpty()) {
             List<CustomOption> options = optionRepository.findAllById(dto.getSelectedOptionIds());
             product.setCustomOptions(new LinkedHashSet<>(options));
@@ -66,7 +66,7 @@ public class ProductServiceImpl implements ProductService {
         product.setName(dto.getName());
         product.setBasePrice(dto.getBasePrice());
         product.setPreviewImage(dto.getPreviewImage());
-
+        product.setDescription(dto.getDescription());
         if (dto.getSelectedOptionIds() != null) {
             List<CustomOption> options = optionRepository.findAllById(dto.getSelectedOptionIds());
             product.setCustomOptions(new LinkedHashSet<>(options));

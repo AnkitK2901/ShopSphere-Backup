@@ -13,11 +13,11 @@
 
   <div class="orders-list" *ngIf="orders.length > 0">
     <div *ngFor="let order of orders" class="order-card">
-      
+
       <div class="order-header">
         <div class="order-info">
           <span class="order-id">Order #{{ order.orderId }}</span>
-          <span class="order-date">Date: {{ (order.createdAt | date:'medium') || 'Recently Placed' }}</span> 
+          <span class="order-date">Date: {{ (order.createdAt | date:'medium') || 'Recently Placed' }}</span>
         </div>
         <div class="order-total">
           Total: <strong>₹{{ order.totalOrderAmount | number:'1.2-2' }}</strong>
@@ -26,16 +26,16 @@
 
       <div class="tracker-section">
         <p class="status-text">
-          Current Status: <strong [style.color]="getProgressColor(order.orderStatus)">{{ order.orderStatus || 'PENDING_PAYMENT' }}</strong>
+          Current Status: <strong [style.color]="getProgressColor(order.orderStatus)">{{ order.orderStatus ||
+            'PENDING_PAYMENT' }}</strong>
         </p>
-        
+
         <div class="progress-track">
-          <div class="progress-fill" 
-               [style.width]="getProgressWidth(order.orderStatus)"
-               [style.background-color]="getProgressColor(order.orderStatus)">
+          <div class="progress-fill" [style.width]="getProgressWidth(order.orderStatus)"
+            [style.background-color]="getProgressColor(order.orderStatus)">
           </div>
         </div>
-        
+
         <div class="tracker-labels">
           <span>Confirmed</span>
           <span>Packed</span>
@@ -44,24 +44,37 @@
         </div>
       </div>
 
-      <div *ngIf="order.trackingUrl" class="tracking-info" style="margin-top:15px; padding:10px; background:#ebf8ff; border-radius:6px; color:#2b6cb0;">
-        <strong>Carrier:</strong> {{ order.carrier }} | 
-        <a [href]="order.trackingUrl" target="_blank" style="color:#3182ce; text-decoration:underline;">Track Package</a>
+      <div *ngIf="order.trackingUrl" class="tracking-info"
+        style="margin-top:15px; padding:10px; background:#ebf8ff; border-radius:6px; color:#2b6cb0;">
+        <strong>Carrier:</strong> {{ order.carrier }} |
+        <a [href]="order.trackingUrl" target="_blank" style="color:#3182ce; text-decoration:underline;">Track
+          Package</a>
       </div>
-
+      <div *ngIf="order.shippingAddress" class="shipping-info"
+        style="margin-top:15px; padding:12px; background:#f7fafc; border-radius:6px; border: 1px solid #e2e8f0;">
+        <h4 style="margin:0 0 5px 0; color:#4a5568; font-size: 0.95rem;">Shipping To:</h4>
+        <p style="margin:0; color:#2d3748; font-size: 0.95rem;">{{ order.shippingAddress }}</p>
+      </div>
       <div class="order-items">
         <h4>Items in this shipment:</h4>
-        
-        <div *ngFor="let item of order.items" class="product-preview" style="display: flex; gap: 15px; align-items: center; margin-top: 10px; padding-bottom: 10px; border-bottom: 1px solid #edf2f7;">
-          <img *ngIf="item.productImage" [src]="item.productImage" alt="Product" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0;">
-          <div *ngIf="!item.productImage" style="width: 60px; height: 60px; background: #e2e8f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #a0aec0; font-size: 0.8rem;">No Img</div>
+
+        <div *ngFor="let item of order.items" class="product-preview"
+          style="display: flex; gap: 15px; align-items: center; margin-top: 10px; padding-bottom: 10px; border-bottom: 1px solid #edf2f7;">
+          <img *ngIf="item.productImage" [src]="item.productImage" alt="Product"
+            style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0;">
+          <div *ngIf="!item.productImage"
+            style="width: 60px; height: 60px; background: #e2e8f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #a0aec0; font-size: 0.8rem;">
+            No Img</div>
           <div>
-            <h4 style="margin: 0; font-size: 1.1rem; color: #2d3748;">{{ item.productName || 'Loading product details...' }}</h4>
-            <p style="margin: 5px 0 0 0; color: #718096; font-size: 0.9rem;">Qty: {{ item.quantity }} | Unit Price: ₹{{ item.price | number:'1.2-2' }}</p>
+            <h4 style="margin: 0; font-size: 1.1rem; color: #2d3748;">{{ item.productName || 'Loading product
+              details...' }}</h4>
+            <p style="margin: 5px 0 0 0; color: #718096; font-size: 0.9rem;">Qty: {{ item.quantity }} | Unit Price: ₹{{
+              item.price | number:'1.2-2' }}</p>
           </div>
         </div>
 
-        <ul style="margin: 10px 0 0 0; padding-left: 20px; color: #718096; font-size: 0.9rem;" *ngIf="order.customizationDetails?.length > 0">
+        <ul style="margin: 10px 0 0 0; padding-left: 20px; color: #718096; font-size: 0.9rem;"
+          *ngIf="order.customizationDetails?.length > 0">
           <li *ngFor="let detail of order.customizationDetails">{{ detail }}</li>
         </ul>
 
