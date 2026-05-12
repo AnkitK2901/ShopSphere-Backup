@@ -27,10 +27,10 @@
 
         <ng-container *ngIf="isLoggedIn$ | async">
           <a routerLink="/profile" (click)="closeDropdown()">My Profile</a>
-          <a *ngIf="userRole === 'ROLE_CUSTOMER' || userRole === 'ROLE_ARTISAN'" routerLink="/orders/history" (click)="closeDropdown()">My Orders</a>
+          <a *ngIf="userRole === 'ROLE_CUSTOMER' || userRole === 'ROLE_ARTISAN'" routerLink="/history" (click)="closeDropdown()">My Orders</a>
           <a *ngIf="userRole === 'ROLE_ARTISAN'" routerLink="/artisan/dashboard" (click)="closeDropdown()">Artisan Dashboard</a>
           <a *ngIf="userRole === 'ROLE_LOGISTICS'" routerLink="/logistics/queue" (click)="closeDropdown()">Logistics Dashboard</a>
-          <a *ngIf="userRole === 'ROLE_ADMIN'" routerLink="/analytics/dashboard" (click)="closeDropdown()">Analytics Dashboard</a>
+          <a *ngIf="userRole === 'ROLE_ADMIN'" routerLink="/admin/dashboard" (click)="closeDropdown()">Analytics Dashboard</a>
           <hr>
           <a (click)="logout()" class="logout-link" style="cursor: pointer; color: #e53e3e;">Sign Out</a>
         </ng-container>

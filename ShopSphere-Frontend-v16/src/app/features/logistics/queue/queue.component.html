@@ -32,7 +32,7 @@
       </thead>
       <tbody>
         <tr *ngFor="let shipment of activeShipments">
-          <td><strong>#{{ shipment.id }}</strong></td>
+          <td><strong>#{{ shipment.shipmentId }}</strong></td>
           <td>{{ shipment.orderId }}</td>
           <td>{{ shipment.carrier || 'Unassigned' }}</td>
           <td>
@@ -42,14 +42,14 @@
             <span *ngIf="!shipment.trackingUrl" class="text-muted">Pending</span>
           </td>
           <td>
-            <span class="status-badge" [ngClass]="shipment.shipmentStatus?.toLowerCase()">
-              {{ shipment.shipmentStatus }}
+            <span class="status-badge" [ngClass]="shipment.status?.toLowerCase()">
+              {{ shipment.status }}
             </span>
           </td>
           <td class="action-cell">
-            <button class="btn-small" (click)="goToPacking(shipment.orderId)" *ngIf="shipment.shipmentStatus?.toUpperCase() === 'CONFIRMED' || shipment.shipmentStatus?.toUpperCase() === 'PENDING'">Pack</button>
-            <button class="btn-small primary" (click)="goToDispatch(shipment.orderId)" *ngIf="shipment.shipmentStatus?.toUpperCase() === 'PACKED'">Dispatch</button>
-            <span *ngIf="shipment.shipmentStatus?.toUpperCase() === 'SHIPPED'" class="text-success">In Transit</span>
+            <button class="btn-small" (click)="goToPacking(shipment.orderId)" *ngIf="shipment.status?.toUpperCase() === 'CREATED' || shipment.status?.toUpperCase() === 'PENDING'">Pack</button>
+            <button class="btn-small primary" (click)="goToDispatch(shipment.orderId)" *ngIf="shipment.status?.toUpperCase() === 'PICKED_UP'">Dispatch</button>
+            <span *ngIf="shipment.status?.toUpperCase() === 'IN_TRANSIT'" class="text-success">In Transit</span>
           </td>
         </tr>
       </tbody>

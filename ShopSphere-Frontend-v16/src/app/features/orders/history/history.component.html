@@ -8,7 +8,7 @@
 
   <div *ngIf="!isLoading && orders.length === 0" class="status-box empty-state">
     <h3>You haven't placed any orders yet.</h3>
-    <a routerLink="/" class="shop-btn">Start Shopping</a>
+    <a routerLink="/catalog" class="shop-btn">Start Shopping</a>
   </div>
 
   <div class="orders-list" *ngIf="orders.length > 0">
@@ -26,8 +26,7 @@
 
       <div class="tracker-section">
         <p class="status-text">
-          Current Status: <strong [style.color]="getProgressColor(order.orderStatus)">{{ order.orderStatus ||
-            'PENDING_PAYMENT' }}</strong>
+          Current Status: <strong [style.color]="getProgressColor(order.orderStatus)">{{ order.orderStatus || 'PENDING_PAYMENT' }}</strong>
         </p>
 
         <div class="progress-track">
@@ -47,8 +46,7 @@
       <div *ngIf="order.trackingUrl" class="tracking-info"
         style="margin-top:15px; padding:10px; background:#ebf8ff; border-radius:6px; color:#2b6cb0;">
         <strong>Carrier:</strong> {{ order.carrier }} |
-        <a [href]="order.trackingUrl" target="_blank" style="color:#3182ce; text-decoration:underline;">Track
-          Package</a>
+        <a [href]="order.trackingUrl" target="_blank" style="color:#3182ce; text-decoration:underline;">Track Package</a>
       </div>
       <div *ngIf="order.shippingAddress" class="shipping-info"
         style="margin-top:15px; padding:12px; background:#f7fafc; border-radius:6px; border: 1px solid #e2e8f0;">
@@ -66,17 +64,14 @@
             style="width: 60px; height: 60px; background: #e2e8f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #a0aec0; font-size: 0.8rem;">
             No Img</div>
           <div>
-            <h4 style="margin: 0; font-size: 1.1rem; color: #2d3748;">{{ item.productName || 'Loading product
-              details...' }}</h4>
+            <h4 style="margin: 0; font-size: 1.1rem; color: #2d3748;">{{ item.productName || 'Product ID: ' + item.productId }}</h4>
             <p style="margin: 5px 0 0 0; color: #718096; font-size: 0.9rem;">Qty: {{ item.quantity }} | Unit Price: ₹{{
               item.price | number:'1.2-2' }}</p>
+            <p *ngIf="item.selectedOption" style="margin: 2px 0 0 0; color: #4a5568; font-size: 0.85rem; font-style: italic;">
+              Customization: {{ item.selectedOption }}
+            </p>
           </div>
         </div>
-
-        <ul style="margin: 10px 0 0 0; padding-left: 20px; color: #718096; font-size: 0.9rem;"
-          *ngIf="order.customizationDetails?.length > 0">
-          <li *ngFor="let detail of order.customizationDetails">{{ detail }}</li>
-        </ul>
 
       </div>
     </div>

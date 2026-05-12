@@ -55,7 +55,9 @@ public class InventoryController {
     @GetMapping
     public ResponseEntity<List<InventoryItem>> getAllInventory(@RequestHeader("X-User-Role") String role) {
         log.info("Received GET request to fetch all inventory from Role: {}", role);
-        if (!"ROLE_ADMIN".equals(role) && !"ROLE_SELLER".equals(role)) {
+        
+        // FIX: Changed ROLE_SELLER to ROLE_ARTISAN to match Auth structure
+        if (!"ROLE_ADMIN".equals(role) && !"ROLE_ARTISAN".equals(role)) {
             log.warn("Unauthorized access attempt to inventory by role: {}", role);
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -64,9 +66,6 @@ public class InventoryController {
         return ResponseEntity.ok(items);
     }
 
-    // ==============================================================
-    // SURGICAL FIXES: Added specifically for Ghost Inventory & SAGA
-    // ==============================================================
     @PostMapping("/initialize")
     public ResponseEntity<Void> initializeStock(
             @RequestParam("productId") Long productId,

@@ -31,7 +31,8 @@ export class LogisticsService {
   }
 
   getAllShipments(): Observable<ShipmentResponse[]> {
-    return this.http.get<ShipmentResponse[]>(`${this.apiUrl}/all`, { headers: this.getHeaders() })
+    // FIX: Removed /all. Calling base URL matches backend GET endpoint
+    return this.http.get<ShipmentResponse[]>(this.apiUrl, { headers: this.getHeaders() })
       .pipe(catchError(this.handleError));
   }
 

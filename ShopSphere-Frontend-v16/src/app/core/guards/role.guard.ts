@@ -12,12 +12,16 @@ export class RoleGuard implements CanActivate {
     const expectedRole = route.data['expectedRole'];
     const currentRole = this.authService.getUserRole();
 
-    if (this.authService.hasToken() && currentRole === expectedRole) {
+    // FIX: Strip 'ROLE_' from both to ensure a perfect match every time
+    const normalizedExpected = expectedRole ? expectedRole.replace('ROLE_', '') : '';
+    const normalizedCurrent = currentRole ? currentRole.replace('ROLE_', '') : '';
+
+    if (this.authService.hasToken() && normalizedCurrent === normalizedExpected) {
       return true;
     }
 
-    alert('Access Denied: You do not have permission to view this page.');
-    this.router.navigate(['/']); // Kick them back to the storefront
+    alert('Access Denied: Role Mismatch.');
+    this.router.navigate(['/']); 
     return false;
   }
 }

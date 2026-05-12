@@ -29,9 +29,9 @@ export class QueueComponent implements OnInit {
         if (!shipments) {
           this.activeShipments = [];
         } else {
-          // SURGICAL FIX: Force Uppercase Check to prevent missing items
+          // FIX: Changed from shipmentStatus to status to match Backend JSON
           this.activeShipments = shipments.filter((s: any) => 
-            s.shipmentStatus?.toUpperCase() !== 'DELIVERED'
+            s.status?.toUpperCase() !== 'DELIVERED'
           );
         }
         this.isLoading = false;

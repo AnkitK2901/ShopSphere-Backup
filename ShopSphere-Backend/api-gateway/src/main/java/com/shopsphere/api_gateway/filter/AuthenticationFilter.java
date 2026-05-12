@@ -60,22 +60,23 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                 String username = claims.getSubject();
                 String role = claims.get("role", String.class);
 
-                // THE FIX: Use mutate() to remove potentially spoofed headers before setting
-                // secure ones
+                // FIX 1: Normalize role mapping to ensure downstream compatibility
+                String normalizedRole = (role != null && !role.startsWith("ROLE_")) ? "ROLE_" + role : role;
+
+                // FIX 2: Build the new, enriched request object
                 ServerWebExchange modifiedExchange = exchange.mutate()
                         .request(exchange.getRequest().mutate()
                                 .headers(httpHeaders -> {
-                                    // Remove any existing user/role headers from the external request
                                     httpHeaders.remove("X-Logged-In-User");
                                     httpHeaders.remove("X-User-Role");
                                 })
-                                // Inject verified headers extracted from JWT
                                 .header("X-Logged-In-User", username)
-                                .header("X-User-Role", role != null ? role : "UNKNOWN")
-                                .header(HttpHeaders.AUTHORIZATION, originalAuthHeader)
+                                .header("X-User-Role", normalizedRole != null ? normalizedRole : "UNKNOWN")
+                                .header(HttpHeaders.AUTHORIZATION, originalAuthHeader) // Pass token along
                                 .build())
                         .build();
 
+                // FIX 3: CRITICAL. You must pass the MODIFIED exchange, not the original.
                 return chain.filter(modifiedExchange);
 
             } catch (ExpiredJwtException e) {

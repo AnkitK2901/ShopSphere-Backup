@@ -64,7 +64,6 @@ public class OrderServiceImpl implements OrderService {
         List<String> actualCustomizations = new ArrayList<>();
 
         for (OrderItemRequest itemReq : orderRequest.getItems()) {
-            // FIX 1: findProductById now receives a Long
             ProductDTO product = productClient.findProductById(itemReq.getProductId());
             if (product == null)
                 throw new ResourceNotFoundException("Product Not Found: " + itemReq.getProductId());
@@ -91,11 +90,9 @@ public class OrderServiceImpl implements OrderService {
             totalOrderAmount += itemTotal;
 
             OrderItemEntity itemEntity = new OrderItemEntity();
-            // FIX 2: setProductId now receives a Long
             itemEntity.setProductId(product.getProductId());
             itemEntity.setQuantity(itemReq.getQuantity());
             itemEntity.setPrice(unitPrice);
-            // THE FIX: Save the selection to the DB entity!
             itemEntity.setSelectedOption(itemReq.getSelectedOption());
             orderItems.add(itemEntity);
         }
@@ -216,13 +213,30 @@ public class OrderServiceImpl implements OrderService {
         res.setTotalOrderAmount(orderEntity.getTotalAmount());
         res.setCreatedAt(orderEntity.getCreatedAt());
         res.setUpdatedAt(orderEntity.getUpdatedAt());
-        res.setCustomizationDetails(orderEntity.getCustomizationDetails());
         res.setShippingAddress(orderEntity.getShippingAddress());
 
+        // THE FIX: Cartesian Join Deduplication for Customizations
+        if (orderEntity.getCustomizationDetails() != null) {
+            res.setCustomizationDetails(orderEntity.getCustomizationDetails().stream()
+                .distinct()
+                .collect(Collectors.toList()));
+        }
+
+        // THE FIX: Cartesian Join Deduplication for Order Items
         if (orderEntity.getItems() != null && !orderEntity.getItems().isEmpty()) {
-            List<OrderItemResponse> mappedItems = orderEntity.getItems().stream().map(item -> {
+            List<OrderItemEntity> distinctItems = new ArrayList<>();
+            for (OrderItemEntity item : orderEntity.getItems()) {
+                boolean exists = distinctItems.stream().anyMatch(d -> 
+                    d.getProductId().equals(item.getProductId()) && 
+                    (d.getSelectedOption() == null ? item.getSelectedOption() == null : d.getSelectedOption().equals(item.getSelectedOption()))
+                );
+                if (!exists) {
+                    distinctItems.add(item);
+                }
+            }
+
+            List<OrderItemResponse> mappedItems = distinctItems.stream().map(item -> {
                 OrderItemResponse ir = new OrderItemResponse();
-                // FIX 3: setProductId now receives a Long
                 ir.setProductId(item.getProductId());
                 ir.setQuantity(item.getQuantity());
                 ir.setPrice(item.getPrice());
@@ -231,9 +245,8 @@ public class OrderServiceImpl implements OrderService {
             }).collect(Collectors.toList());
             res.setItems(mappedItems);
 
-            // FIX 4: setProductId now receives a Long
-            res.setProductId(orderEntity.getItems().get(0).getProductId());
-            res.setQuantity(orderEntity.getItems().get(0).getQuantity());
+            res.setProductId(distinctItems.get(0).getProductId());
+            res.setQuantity(distinctItems.get(0).getQuantity());
         }
 
         if (orderEntity.getStatus() == OrderStatus.SHIPPED || orderEntity.getStatus() == OrderStatus.DELIVERED) {

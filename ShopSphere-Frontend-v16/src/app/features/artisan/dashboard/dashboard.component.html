@@ -1,43 +1,36 @@
 <div class="dashboard-container">
-  <div class="dashboard-header">
-    <h1>Executive Analytics Dashboard</h1>
-    <p>Real-time insights across your microservice ecosystem.</p>
+  <div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+      <h1>Artisan Dashboard</h1>
+      <p>Manage your ecosystem, products, and inventory.</p>
+    </div>
+    <button class="btn-primary" routerLink="/artisan/product/new" style="padding: 10px 20px; border-radius: 8px; font-weight: bold; background-color: #4a5568; color: white; border: none; cursor: pointer;">
+      + Add New Product
+    </button>
   </div>
 
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-icon revenue-icon">💰</div>
-      <div class="stat-details">
-        <h3>Total Revenue</h3>
-        <p class="stat-number">$124,500</p>
-      </div>
+  <div *ngIf="errorMessage" class="error-banner" style="background-color: #fee2e2; color: #991b1b; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+    {{ errorMessage }}
+  </div>
+
+  <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
+    
+    <div class="stat-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+      <h3>Total Unique Products</h3>
+      <p style="font-size: 2rem; font-weight: bold; color: #2b6cb0;">{{ totalProducts }}</p>
     </div>
     
-    <div class="stat-card">
-      <div class="stat-icon order-icon">📦</div>
-      <div class="stat-details">
-        <h3>Active Orders</h3>
-        <p class="stat-number">1,204</p>
-      </div>
+    <div class="stat-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+      <h3>Total Items in Stock</h3>
+      <p style="font-size: 2rem; font-weight: bold; color: #38a169;">{{ totalItemsInStock }}</p>
     </div>
 
-    <div class="stat-card">
-      <div class="stat-icon inventory-icon">📊</div>
-      <div class="stat-details">
-        <h3>Low Stock Alerts</h3>
-        <p class="stat-number alert-text">14</p>
-      </div>
-    </div>
   </div>
 
-  <div class="action-grid">
-    <div class="action-card" routerLink="/analytics/revenue">
-      <h3>Revenue Report</h3>
-      <p>View detailed breakdown of sales by product category.</p>
-    </div>
-    <div class="action-card" routerLink="/analytics/customers">
-      <h3>Customer Insights</h3>
-      <p>Analyze user engagement and platform retention.</p>
+  <div class="action-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+    <div class="action-card" routerLink="/artisan/inventory" style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; cursor: pointer; transition: transform 0.2s;">
+      <h3>Manage Inventory Levels</h3>
+      <p>View stock details, update quantities, and check thresholds.</p>
     </div>
   </div>
 </div>

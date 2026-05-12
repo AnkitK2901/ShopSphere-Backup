@@ -19,7 +19,6 @@ export class LoginComponent {
     private router: Router
   ) {
     this.loginForm = this.fb.group({
-      // FIX: Removed Validators.email so you can type plain usernames like 'john_doe'
       email: ['', [Validators.required]], 
       password: ['', Validators.required]
     });
@@ -31,7 +30,7 @@ export class LoginComponent {
       this.errorMessage = '';
       
       const payload = {
-        username: this.loginForm.value.email, // This now takes either john_doe or an email
+        username: this.loginForm.value.email,
         password: this.loginForm.value.password
       };
       
@@ -41,11 +40,13 @@ export class LoginComponent {
           this.isLoading = false;
           
           if (role === 'ROLE_ADMIN') {
-            this.router.navigate(['/analytics/dashboard']);
+            this.router.navigate(['/admin/dashboard']); // FIX: Matches router
           } else if (role === 'ROLE_ARTISAN') {
             this.router.navigate(['/artisan/dashboard']);
           } else if (role === 'ROLE_LOGISTICS') {
             this.router.navigate(['/logistics/queue']);
+          } else if (role === 'ROLE_CUSTOMER') {
+            this.router.navigate(['/catalog']); // FIX: Directs customer to catalog
           } else {
             this.router.navigate(['/']); 
           }
