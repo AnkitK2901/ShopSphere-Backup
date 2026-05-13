@@ -33,7 +33,7 @@ public class InventoryServiceTest {
     @BeforeEach
     void setUp() {
         // FIX: Changed "P101" to 101L
-        mockItem = new InventoryItem(101L, 50, "SUP_001", 10, 5, 0L);
+        mockItem = new InventoryItem(101L, 50, 1L, 10, 5, 1L);
     }
 
     @Test
@@ -80,7 +80,7 @@ public class InventoryServiceTest {
     void addInventory_WhenItemExists_ShouldUpdateFieldsAndSave() {
         when(inventoryRepository.findById(101L)).thenReturn(Optional.of(mockItem)); // FIX
         
-        InventoryItem updateItem = new InventoryItem(101L, 20, "NEW_SUP", 15, 7, 0L); // FIX
+        InventoryItem updateItem = new InventoryItem(101L, 50, 1L, 10, 5, 1L); // FIX
 
         inventoryService.addInventory(updateItem);
 
@@ -93,7 +93,7 @@ public class InventoryServiceTest {
     void addInventory_WhenItemDoesNotExist_ShouldSaveNewItem() {
         when(inventoryRepository.findById(202L)).thenReturn(Optional.empty()); // FIX
         
-        InventoryItem newItem = new InventoryItem(202L, 20, "SUP_002", 15, 7, 0L); // FIX
+        InventoryItem newItem = new InventoryItem(101L, 50, 1L, 10, 5, 1L); // FIX
 
         inventoryService.addInventory(newItem);
 

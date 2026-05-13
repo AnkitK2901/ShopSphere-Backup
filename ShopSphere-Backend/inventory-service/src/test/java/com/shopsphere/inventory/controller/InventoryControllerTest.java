@@ -44,7 +44,7 @@ public class InventoryControllerTest {
     @Test
     void addInventory_WhenRoleIsAdmin_ShouldReturnOk() throws Exception {
         // FIX: Replaced "P101" with 101L
-        InventoryItem item = new InventoryItem(101L, 10, "SUP_001", 5, 2, 0L);
+        InventoryItem item = new InventoryItem(101L, 50, 1L, 10, 5, 1L);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/inventory")
                 .header("X-User-Role", "ROLE_ADMIN")
@@ -56,7 +56,7 @@ public class InventoryControllerTest {
     @Test
     void addInventory_WhenRoleIsNotAdmin_ShouldReturnForbidden() throws Exception {
         // FIX: Replaced "P101" with 101L
-        InventoryItem item = new InventoryItem(101L, 10, "SUP_001", 5, 2, 0L);
+        InventoryItem item = new InventoryItem(101L, 50, 1L, 10, 5, 1L);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/inventory")
                 .header("X-User-Role", "ROLE_USER")
@@ -68,7 +68,7 @@ public class InventoryControllerTest {
     @Test
     void getAllInventory_WhenRoleIsAdmin_ShouldReturnOkAndList() throws Exception {
         // FIX: Replaced "P101" with 101L
-        InventoryItem item = new InventoryItem(101L, 10, "SUP_001", 5, 2, 0L);
+        InventoryItem item = new InventoryItem(101L, 50, 1L, 10, 5, 1L);
         Mockito.when(inventoryService.getAllInventory()).thenReturn(Arrays.asList(item));
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/inventory")

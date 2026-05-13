@@ -7,6 +7,8 @@ import com.shopsphere.catalog.Repository.ProductRepository;
 import com.shopsphere.catalog.Repository.CustomOptionRepository;
 import com.shopsphere.catalog.RequestDTO.ProductRequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict; // ADDED
+import org.springframework.cache.annotation.Cacheable; // ADDED
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
@@ -27,6 +29,7 @@ public class ProductServiceImpl implements ProductService {
     private CustomOptionRepository optionRepository;
 
     @Override
+    @CacheEvict(value = "products", allEntries = true) // Clear list cache on new product
     public Product createProduct(ProductRequestDTO dto) {
         logger.info("Creating product: {}", dto.getName());
         Product product = new Product();
@@ -43,23 +46,24 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Cacheable(value = "products") // Loads products from RAM for sub-1s latency
     public List<Product> getAllProducts() {
-        logger.info("Fetching all ACTIVE products directly from DB");
-        // FIX: Added .stream().distinct() to remove Cartesian duplicates caused by
-        // EAGER fetching
+        logger.info("Fetching all ACTIVE products from DB/Cache");
         return productRepository.findByIsActiveTrue().stream()
                 .distinct()
                 .collect(Collectors.toList());
     }
 
     @Override
+    @Cacheable(value = "product", key = "#id") // Caches specific product details
     public Product getProductById(Long id) {
-        logger.info("Fetching product {} directly from DB", id);
+        logger.info("Fetching product {} from DB/Cache", id);
         return productRepository.findByProductIdAndIsActiveTrue(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Active Product not found with id: " + id));
     }
 
     @Override
+    @CacheEvict(value = {"products", "product"}, allEntries = true) // Purge cache on update
     public Product updateProduct(Long id, ProductRequestDTO dto) {
         logger.info("Updating product with id: {}", id);
         Product product = getProductById(id);
@@ -75,6 +79,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @CacheEvict(value = {"products", "product"}, allEntries = true) // Purge cache on delete
     public void deleteProduct(Long id) {
         logger.info("Deactivating product with id: {}", id);
         Product product = getProductById(id);

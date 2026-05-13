@@ -1,11 +1,14 @@
 package com.shopsphere.order.Service;
 
 import com.shopsphere.order.DTO.*;
+import com.shopsphere.order.Entity.CartEntity;
 import com.shopsphere.order.Entity.OrderEntity;
 import com.shopsphere.order.Entity.OrderItemEntity;
 import com.shopsphere.order.Enums.OrderStatus;
 import com.shopsphere.order.Exception.ResourceNotFoundException;
+import com.shopsphere.order.Repository.CartRepository;
 import com.shopsphere.order.Repository.OrderRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +34,10 @@ public class OrderServiceImpl implements OrderService {
     private InventoryClient inventoryClient;
     @Autowired
     private AnalyticsClient analyticsClient;
+    
+    // THE FIX: Injected Cart Repo for Abandoned Cart Tracking
+    @Autowired
+    private CartRepository cartRepository; 
 
     @Override
     public List<OrderResponse> getAllOrders() {
@@ -61,20 +68,23 @@ public class OrderServiceImpl implements OrderService {
 
         double totalOrderAmount = 0.0;
         List<OrderItemEntity> orderItems = new ArrayList<>();
-        List<String> actualCustomizations = new ArrayList<>();
 
         for (OrderItemRequest itemReq : orderRequest.getItems()) {
             ProductDTO product = productClient.findProductById(itemReq.getProductId());
             if (product == null)
                 throw new ResourceNotFoundException("Product Not Found: " + itemReq.getProductId());
 
+            // THE FIX: Check Inventory BEFORE building the order to prevent Over-selling
+            Boolean inStock = inventoryClient.checkStock(new StockRequest(product.getProductId(), itemReq.getQuantity())).getBody();
+            if (inStock != null && !inStock) {
+                throw new IllegalStateException("Insufficient stock to fulfill order for product: " + product.getName());
+            }
+
             double unitPrice = product.getTotalPrice() > 0.0 ? product.getTotalPrice() : product.getBasePrice();
             
             if (unitPrice <= 0.0) throw new ResourceNotFoundException("Product price is completely unavailable");
 
             if (itemReq.getSelectedOption() != null && !itemReq.getSelectedOption().isEmpty()) {
-                actualCustomizations.add(product.getName() + " [" + itemReq.getSelectedOption() + "]");
-                
                 if (product.getCustomOptions() != null) {
                     for (CustomOptionDTO opt : product.getCustomOptions()) {
                         String optionMatch = opt.getType() + ": " + opt.getValue();
@@ -97,13 +107,22 @@ public class OrderServiceImpl implements OrderService {
             orderItems.add(itemEntity);
         }
 
+        // THE FIX: Price Tampering Security Check
+        if (orderRequest.getExpectedTotal() != null) {
+            if (Math.abs(totalOrderAmount - orderRequest.getExpectedTotal()) > 0.01) {
+                throw new IllegalStateException("Security Alert: Price Mismatch Detected.");
+            }
+        }
+
         OrderEntity order = new OrderEntity();
         order.setCustomerId(user.getId());
         order.setTotalAmount(totalOrderAmount);
         order.setStatus(OrderStatus.PENDING_PAYMENT);
         order.setItems(orderItems);
-        order.setCustomizationDetails(actualCustomizations);
         order.setShippingAddress(orderRequest.getShippingAddress());
+
+        // THE FIX: Clear the abandoned cart upon successful checkout initiation
+        cartRepository.findById(user.getId()).ifPresent(cartRepository::delete);
 
         return mapToResponse(orderRepository.save(order));
     }
@@ -189,6 +208,24 @@ public class OrderServiceImpl implements OrderService {
         return mapToResponse(orderRepository.save(order));
     }
 
+    // THE FIX: Implementation for syncing the cart to the Database
+    @Override
+    @Transactional
+    public void syncCart(String username, String cartJson) {
+        try {
+            UserDTO user = userClient.getUserByUserName(username);
+            if (user != null) {
+                CartEntity cart = cartRepository.findById(user.getId()).orElse(new CartEntity());
+                cart.setCustomerId(user.getId());
+                cart.setCartJson(cartJson);
+                cart.setLastUpdated(LocalDateTime.now());
+                cartRepository.save(cart);
+            }
+        } catch (Exception e) {
+            System.err.println("Silent cart sync failed for user: " + username);
+        }
+    }
+
     private static final Map<OrderStatus, List<OrderStatus>> ALLOWED_TRANSITIONS = Map.of(
             OrderStatus.PENDING_PAYMENT, List.of(OrderStatus.CONFIRMED, OrderStatus.CANCELLED),
             OrderStatus.CONFIRMED, List.of(OrderStatus.PACKED, OrderStatus.CANCELLED),
@@ -214,13 +251,6 @@ public class OrderServiceImpl implements OrderService {
         res.setCreatedAt(orderEntity.getCreatedAt());
         res.setUpdatedAt(orderEntity.getUpdatedAt());
         res.setShippingAddress(orderEntity.getShippingAddress());
-
-        // THE FIX: Cartesian Join Deduplication for Customizations
-        if (orderEntity.getCustomizationDetails() != null) {
-            res.setCustomizationDetails(orderEntity.getCustomizationDetails().stream()
-                .distinct()
-                .collect(Collectors.toList()));
-        }
 
         // THE FIX: Cartesian Join Deduplication for Order Items
         if (orderEntity.getItems() != null && !orderEntity.getItems().isEmpty()) {

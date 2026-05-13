@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LogisticsService } from '../../../core/services/logistics.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { OrderService } from '../../../core/services/order.service';
+
 @Component({
   selector: 'app-packing',
   templateUrl: './packing.component.html',
@@ -15,7 +17,8 @@ export class PackingComponent implements OnInit {
     private route: ActivatedRoute,
     private logisticsService: LogisticsService,
     private router: Router,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private orderService: OrderService
   ) {}
 
   ngOnInit(): void {
@@ -24,6 +27,14 @@ export class PackingComponent implements OnInit {
       this.logisticsService.getShipmentById(Number(id)).subscribe({
         next: (data) => {
           this.shipment = data;
+          
+          // ADDED BLOCK: Fetch the Order details to get the real Customer ID
+          this.orderService.getOrderById(this.shipment.orderId).subscribe({
+             next: (orderData: any) => { // FIX: Added explicit ': any' here
+                this.shipment.customerId = orderData.customerId;
+             }
+          });
+
           this.isLoading = false;
         },
         error: (err) => {

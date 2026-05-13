@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root',
@@ -12,7 +13,8 @@ export class CartService {
   private cartSubject = new BehaviorSubject<any[]>(this.cartItems);
   cartItems$ = this.cartSubject.asObservable();
 
-  constructor() {}
+  // THE FIX: Injected HttpClient
+  constructor(private http: HttpClient) {}
 
   addToCart(product: any, quantity: number = 1): void {
     const existingItemIndex = this.cartItems.findIndex((item) => {
@@ -72,7 +74,6 @@ export class CartService {
     this.updateCartState();
   }
 
-  // THE FIX: Round the total to 2 decimal places to avoid JS floating-point issues
   getCartTotal(): number {
     const total = this.cartItems.reduce(
       (acc, item) => acc + item.basePrice * item.quantity,
@@ -88,5 +89,16 @@ export class CartService {
   private updateCartState(): void {
     localStorage.setItem('shopsphere_cart', JSON.stringify(this.cartItems));
     this.cartSubject.next(this.cartItems);
+    
+    // THE FIX: Sync to backend
+    this.syncWithBackend();
+  }
+
+  private syncWithBackend(): void {
+    // The AuthInterceptor automatically applies the JWT here!
+    this.http.post('http://localhost:9090/api/orders/cart/sync', JSON.stringify(this.cartItems))
+      .subscribe({
+        error: (err) => console.error('Silent cart sync failed', err)
+      });
   }
 }

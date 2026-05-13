@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, switchMap } from 'rxjs';
 
 export interface InventoryItem { 
@@ -16,22 +16,17 @@ export class ArtisanService {
 
   constructor(private http: HttpClient) {}
 
-  private getHeaders(): HttpHeaders {
-    const token = localStorage.getItem('jwt_token') || ''; 
-    return new HttpHeaders().set('Authorization', `Bearer ${token}`);
-  }
-
   getInventory(): Observable<InventoryItem[]> {
-    return this.http.get<InventoryItem[]>(`${this.gatewayUrl}/inventory`, { headers: this.getHeaders() });
+    return this.http.get<InventoryItem[]>(`${this.gatewayUrl}/inventory`);
   }
 
   getAvailableOptions(): Observable<any> {
-    return this.http.get(`${this.gatewayUrl}/options`, { headers: this.getHeaders() });
+    return this.http.get(`${this.gatewayUrl}/options`);
   }
 
   createProductAndInitializeInventory(catalogPayload: any, stockLevel: number): Observable<any> {
     // 1. Create the Product in the Catalog Service
-    return this.http.post<any>(`${this.gatewayUrl}/products/create`, catalogPayload, { headers: this.getHeaders() })
+    return this.http.post<any>(`${this.gatewayUrl}/products/create`, catalogPayload)
       .pipe(
         switchMap(savedProduct => {
            // 2. Take the new ID and initialize the Inventory Service
@@ -42,7 +37,6 @@ export class ArtisanService {
              .set('stockLevel', stockLevel.toString());
 
            return this.http.post(`${this.gatewayUrl}/inventory/initialize`, null, { 
-             headers: this.getHeaders(),
              params: params,
              responseType: 'text' 
            });

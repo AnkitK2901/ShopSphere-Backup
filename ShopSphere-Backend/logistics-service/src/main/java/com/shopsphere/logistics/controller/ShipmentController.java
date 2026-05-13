@@ -19,8 +19,11 @@ public class ShipmentController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getAllShipments() {
+    public ResponseEntity<?> getAllShipments(@RequestHeader(value = "X-User-Role", defaultValue = "UNKNOWN") String role) {
         try {
+            if (!"ROLE_LOGISTICS".equals(role) && !"ROLE_ADMIN".equals(role)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
             log.info("Fetching all shipments");
             List<Shipment> shipments = shipmentService.getAllShipments();
 
@@ -66,8 +69,12 @@ public class ShipmentController {
     @PatchMapping("/order/{orderId}/{status}")
     public ResponseEntity<?> updateStatusByOrderId(
             @PathVariable Long orderId,
-            @PathVariable String status) {
+            @PathVariable String status,
+            @RequestHeader(value = "X-User-Role", defaultValue = "UNKNOWN") String role) {
         try {
+            if (!"ROLE_LOGISTICS".equals(role) && !"ROLE_ADMIN".equals(role)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
             log.info("Updating shipment status for Order ID: {} to {}", orderId, status);
             Shipment shipment = shipmentService.updateShipmentStatusByOrderId(String.valueOf(orderId), status);
             log.info("Shipment status updated successfully for Order ID: {}", orderId);

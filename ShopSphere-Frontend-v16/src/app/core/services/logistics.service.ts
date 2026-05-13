@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
@@ -20,24 +20,19 @@ export class LogisticsService {
 
   constructor(private http: HttpClient) {}
 
-  private getHeaders(): HttpHeaders {
-    const token = localStorage.getItem('jwt_token') || ''; 
-    return new HttpHeaders().set('Authorization', `Bearer ${token}`);
-  }
-
   getShipmentById(id: number): Observable<ShipmentResponse> {
-    return this.http.get<ShipmentResponse>(`${this.apiUrl}/order/${id}`, { headers: this.getHeaders() })
+    return this.http.get<ShipmentResponse>(`${this.apiUrl}/order/${id}`)
       .pipe(catchError(this.handleError));
   }
 
   getAllShipments(): Observable<ShipmentResponse[]> {
     // FIX: Removed /all. Calling base URL matches backend GET endpoint
-    return this.http.get<ShipmentResponse[]>(this.apiUrl, { headers: this.getHeaders() })
+    return this.http.get<ShipmentResponse[]>(this.apiUrl)
       .pipe(catchError(this.handleError));
   }
 
-  updateStatus(orderId: number, newStatus: string): Observable<ShipmentResponse> {
-    return this.http.patch<ShipmentResponse>(`${this.apiUrl}/order/${orderId}/${newStatus}`, {}, { headers: this.getHeaders() })
+  updateStatus(orderId: string, newStatus: string): Observable<ShipmentResponse> {
+    return this.http.patch<ShipmentResponse>(`${this.apiUrl}/order/${orderId}/${newStatus}`, {})
       .pipe(catchError(this.handleError));
   }
 

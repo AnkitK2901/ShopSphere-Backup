@@ -79,13 +79,13 @@ const routes: Routes = [
     data: { expectedRole: 'ROLE_LOGISTICS' },
   },
   {
-    path: 'logistics/packing',
+    path: 'logistics/packing/:id',
     component: PackingComponent,
     canActivate: [RoleGuard],
     data: { expectedRole: 'ROLE_LOGISTICS' },
   },
   {
-    path: 'logistics/dispatch',
+    path: 'logistics/dispatch/:id',
     component: DispatchComponent,
     canActivate: [RoleGuard],
     data: { expectedRole: 'ROLE_LOGISTICS' },

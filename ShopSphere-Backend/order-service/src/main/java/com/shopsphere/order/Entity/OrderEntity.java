@@ -47,12 +47,6 @@ public class OrderEntity {
     @JoinColumn(name = "order_id")
     private List<OrderItemEntity> items;
 
-    // FIX: Added customizationDetails back to the Entity
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "order_customizations", joinColumns = @JoinColumn(name = "order_id"))
-    @Column(name = "custom_detail")
-    private List<String> customizationDetails;
-
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
@@ -125,14 +119,5 @@ public class OrderEntity {
 
     public void setItems(List<OrderItemEntity> items) {
         this.items = items;
-    }
-
-    // FIX: Added getter and setter for the Service to use
-    public List<String> getCustomizationDetails() {
-        return customizationDetails;
-    }
-
-    public void setCustomizationDetails(List<String> customizationDetails) {
-        this.customizationDetails = customizationDetails;
     }
 }

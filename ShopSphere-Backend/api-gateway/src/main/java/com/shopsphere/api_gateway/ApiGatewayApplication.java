@@ -20,17 +20,16 @@ public class ApiGatewayApplication {
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration corsConfig = new CorsConfiguration();
         
-        // 1. THE FIX: Use OriginPattern("*") instead of specific "localhost"
-        // This flawlessly handles 127.0.0.1, localhost, and trailing slashes.
+        // 1. THE FIX: AllowedOriginPattern allows credentials with wildcards
         corsConfig.addAllowedOriginPattern("*"); 
         
-        // 2. Allow ALL headers
+        // 2. Allow ALL headers (Authorization, Content-Type, X-User-Role, etc.)
         corsConfig.addAllowedHeader("*");
         
-        // 3. Allow ALL methods (GET, POST, OPTIONS, etc.)
+        // 3. Allow ALL methods (GET, POST, PUT, DELETE, PATCH, OPTIONS)
         corsConfig.addAllowedMethod("*");
         
-        // 4. Must be true to pass JWT tokens safely
+        // 4. Required to allow JWT Bearer tokens to pass through CORS
         corsConfig.setAllowCredentials(true);
         corsConfig.setMaxAge(3600L);
 

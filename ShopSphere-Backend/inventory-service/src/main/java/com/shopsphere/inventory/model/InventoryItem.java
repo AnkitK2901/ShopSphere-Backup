@@ -15,11 +15,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class InventoryItem {
     @Id
-    private Long productId; // CHANGED FROM String TO Long
+    private Long productId; 
     
     private Integer stockLevel;
     
-    private String supplierId;
+    // THE FIX: Changed from String to Long to map accurately to the Artisan's User ID
+    private Long supplierId; 
     
     private Integer reorderThreshold;
     

@@ -25,6 +25,11 @@ export class OrderService {
     return this.http.get(`${this.apiUrl}/my-history`);
   }
 
+  // ADDED MISSING METHOD:
+  getOrderById(orderId: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${orderId}`);
+  }
+
   updateOrderStatus(orderId: number, status: string): Observable<any> {
     const payload = { newStatus: status }; 
     return this.http.patch(`${this.apiUrl}/${orderId}/status`, payload); 

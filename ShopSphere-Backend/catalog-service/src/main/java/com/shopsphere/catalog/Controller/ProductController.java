@@ -29,7 +29,7 @@ public class ProductController {
         
         log.info("Received request to create product: {}", dto.getName());
 
-        if (!"ROLE_ADMIN".equals(role) && !"ROLE_SELLER".equals(role)) {
+        if (!"ROLE_ADMIN".equals(role) && !"ROLE_ARTISAN".equals(role)) {
             log.warn("Access Denied for role: {}", role);
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("Access Denied: You do not have permission to create products.");
@@ -64,7 +64,7 @@ public class ProductController {
 
         log.info("Received request to update product with ID: {}", id);
 
-        if (!"ROLE_ADMIN".equals(role) && !"ROLE_SELLER".equals(role)) {
+        if (!"ROLE_ADMIN".equals(role) && !"ROLE_ARTISAN".equals(role)) {
             log.warn("Access Denied for role: {}", role);
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("Access Denied: You do not have permission to update products.");

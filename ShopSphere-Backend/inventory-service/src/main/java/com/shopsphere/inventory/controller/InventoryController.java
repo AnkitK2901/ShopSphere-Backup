@@ -45,7 +45,14 @@ public class InventoryController {
     }
 
     @PostMapping("/deduct")
-    public ResponseEntity<String> deductStock(@Valid @RequestBody StockRequest request) {
+    public ResponseEntity<String> deductStock(
+            @Valid @RequestBody StockRequest request,
+            @RequestHeader(value = "X-User-Role", defaultValue = "UNKNOWN") String role) {
+        
+        if (!"ROLE_ADMIN".equals(role) && !"ROLE_ARTISAN".equals(role) && !"ROLE_LOGISTICS".equals(role)) {
+             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         log.info("Received POST request to deduct stock for Product: {}", request.getProductId());
         inventoryService.deductStock(request.getProductId(), request.getQuantity());
         return ResponseEntity
@@ -69,7 +76,13 @@ public class InventoryController {
     @PostMapping("/initialize")
     public ResponseEntity<Void> initializeStock(
             @RequestParam("productId") Long productId,
-            @RequestParam("stockLevel") int stockLevel) {
+            @RequestParam("stockLevel") int stockLevel,
+            @RequestHeader(value = "X-User-Role", defaultValue = "UNKNOWN") String role) {
+        
+        if (!"ROLE_ARTISAN".equals(role) && !"ROLE_ADMIN".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         log.info("Received POST request to initialize stock for new Product: {}", productId);
         inventoryService.initializeStock(productId, stockLevel);
         return ResponseEntity.ok().build();

@@ -23,4 +23,6 @@ public interface OrderService {
     OrderResponse cancelOrder(Long orderId);
 
     OrderResponse returnOrder(Long orderId);
+
+    void syncCart(String username, String cartJson);
 }

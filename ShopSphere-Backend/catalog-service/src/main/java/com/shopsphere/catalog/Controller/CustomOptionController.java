@@ -22,7 +22,7 @@ public class CustomOptionController {
             @RequestBody CustomOption option,
             @RequestHeader(value = "X-User-Role", defaultValue = "UNKNOWN") String role) {
         
-        if (!"ROLE_ADMIN".equals(role) && !"ROLE_SELLER".equals(role)) {
+        if (!"ROLE_ADMIN".equals(role) && !"ROLE_ARTISAN".equals(role)) {
             log.warn("Access Denied for role: {}", role);
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("Access Denied: You do not have permission to create options.");
@@ -42,7 +42,7 @@ public class CustomOptionController {
             @PathVariable Long id,
             @RequestHeader(value = "X-User-Role", defaultValue = "UNKNOWN") String role) {
             
-        if (!"ROLE_ADMIN".equals(role) && !"ROLE_SELLER".equals(role)) {
+        if (!"ROLE_ADMIN".equals(role) && !"ROLE_ARTISAN".equals(role)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("Access Denied: Only Admins and Sellers can delete options.");
         }

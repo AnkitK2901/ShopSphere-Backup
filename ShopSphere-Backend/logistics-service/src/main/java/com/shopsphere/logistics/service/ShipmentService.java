@@ -3,6 +3,7 @@ package com.shopsphere.logistics.service;
 import com.shopsphere.logistics.carrier.CarrierClient;
 import com.shopsphere.logistics.carrier.MockDelhiveryClient;
 import com.shopsphere.logistics.carrier.MockShiprocketClient;
+import com.shopsphere.logistics.client.OrderFeignClient;
 import com.shopsphere.logistics.entity.Shipment;
 import com.shopsphere.logistics.entity.ShipmentStatus;
 import com.shopsphere.logistics.exception.InvalidShipmentStatusException;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -23,14 +25,17 @@ public class ShipmentService {
     private final ShipmentRepository repository;
     private final MockDelhiveryClient delhiveryClient;
     private final MockShiprocketClient shiprocketClient;
+    private final OrderFeignClient orderFeignClient;
 
     public ShipmentService(ShipmentRepository repository,
                            MockDelhiveryClient delhiveryClient,
-                           MockShiprocketClient shiprocketClient
+                           MockShiprocketClient shiprocketClient,
+                           OrderFeignClient orderFeignClient
                            ) {
         this.repository = repository;
         this.delhiveryClient = delhiveryClient;
         this.shiprocketClient = shiprocketClient;
+        this.orderFeignClient = orderFeignClient;
     }
 
     public List<Shipment> getAllShipments() {
@@ -91,6 +96,8 @@ public class ShipmentService {
 
         Shipment updatedShipment = repository.save(shipment);
 
+        syncWithOrderService(orderId, status);
+
         return updatedShipment;
     }
 
@@ -109,9 +116,18 @@ public class ShipmentService {
             shipment.setStatus(nextStatus);
 
             repository.save(shipment);
-
+            syncWithOrderService(shipment.getOrderId(), nextStatus.name());
         }
     }
+
+    private void syncWithOrderService(String orderId, String status) {
+        try {
+            orderFeignClient.updateOrderStatus(Long.parseLong(orderId), Map.of("newStatus", status));
+        } catch (Exception e) {
+            System.err.println("Failed to sync status to Order Service for ID: " + orderId);
+        }
+    }
+
     private boolean isReadyForNextStage(Shipment shipment) {
         LocalDateTime lastUpdated = shipment.getUpdatedAt();
         long minutesElapsed =
@@ -163,4 +179,3 @@ public class ShipmentService {
     }
 
 }
-

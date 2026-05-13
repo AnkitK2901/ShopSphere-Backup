@@ -75,6 +75,7 @@ export class CheckoutComponent implements OnInit {
           shippingAddress: fullAddress, // Pass it to the backend!
           items: mappedItems,
           paymentMode: 'CREDIT_CARD',
+          expectedTotal: this.cartTotal // THE FIX: Send total for backend verification
         })
         .subscribe({
           next: (response: any) => {

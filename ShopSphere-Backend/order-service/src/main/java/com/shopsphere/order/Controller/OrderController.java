@@ -22,8 +22,6 @@ import java.util.List;
 public class OrderController {
 
     private final OrderService orderService;
-    
-    // FIX: Inject UserClient to securely map the Header Email to the Numeric ID
     private final UserClient userClient; 
 
     @PostMapping("/place")
@@ -54,21 +52,16 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getOrderById(orderId));
     }
 
-    // Retained for Logistics/Admin fetching
     @GetMapping("/customer/{customerId}")
     public ResponseEntity<List<OrderResponse>> getOrdersByCustomerId(@PathVariable Long customerId) {
         return ResponseEntity.ok(orderService.getOrdersByCustomerId(customerId));
     }
 
-    // ==========================================
-    // 🛡️ THE SECURE FRONTEND ENDPOINT FIX 🛡️
-    // ==========================================
     @GetMapping("/my-history")
     public ResponseEntity<List<OrderResponse>> getMySecureOrderHistory(
             @RequestHeader(value = "X-Logged-In-User") String username) {
         
         log.info("Fetching secure order history for: {}", username);
-        // Look up the database ID internally, so the frontend never has to guess it!
         UserDTO user = userClient.getUserByUserName(username);
         return ResponseEntity.ok(orderService.getOrdersByCustomerId(user.getId()));
     }
@@ -88,5 +81,16 @@ public class OrderController {
     @PutMapping("/{orderId}/return")
     public ResponseEntity<OrderResponse> returnOrder(@PathVariable Long orderId) {
         return ResponseEntity.ok(orderService.returnOrder(orderId));
+    }
+
+    // ==========================================
+    // 🛡️ THE ABANDONED CART FIX 🛡️
+    // ==========================================
+    @PostMapping("/cart/sync")
+    public ResponseEntity<Void> syncCart(
+            @RequestBody String cartJson, 
+            @RequestHeader(value = "X-Logged-In-User") String username) {
+        orderService.syncCart(username, cartJson);
+        return ResponseEntity.ok().build();
     }
 }
