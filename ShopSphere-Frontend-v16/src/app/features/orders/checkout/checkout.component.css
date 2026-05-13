@@ -87,6 +87,7 @@
   border: 1px solid #cccccc;
   border-radius: 4px;
   font-size: 15px;
+  transition: all 0.2s ease;
 }
 
 .input-group input:focus {
@@ -185,4 +186,17 @@
 .place-order-btn:disabled {
   background-color: #bbbbbb;
   cursor: not-allowed;
+}
+
+/* 🛡️ ENTERPRISE VALIDATION CSS */
+.is-invalid {
+  border-color: #e53e3e !important;
+  background-color: #fff5f5 !important;
+}
+
+.error-text {
+  color: #e53e3e;
+  font-size: 0.85rem;
+  margin-top: 6px;
+  display: block;
 }

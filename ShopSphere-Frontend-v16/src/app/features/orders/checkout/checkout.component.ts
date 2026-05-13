@@ -49,61 +49,66 @@ export class CheckoutComponent implements OnInit {
   }
 
   placeOrder(): void {
-    if (this.checkoutForm.valid) {
-      this.isProcessing = true;
-
-      // THE FIX: Safely extract the exact customization choice if it exists
-      const mappedItems = this.cartItems.map((item) => {
-        let optionString = '';
-        if (item.selectedOption) {
-          optionString = `${item.selectedOption.type}: ${item.selectedOption.value}`;
-        }
-
-        return {
-          productId: String(item.productId || item.id),
-          quantity: item.quantity || 1,
-          selectedOption: optionString, // Pass it to the backend!
-        };
-      });
-
-      // THE FIX: Combine the form fields into a single readable Address
-      const formVals = this.checkoutForm.value;
-      const fullAddress = `${formVals.fullName}, ${formVals.shippingAddress}, ${formVals.city}, Zip: ${formVals.zipCode}`;
-
-      this.orderService
-        .placeOrder({
-          shippingAddress: fullAddress, // Pass it to the backend!
-          items: mappedItems,
-          paymentMode: 'CREDIT_CARD',
-          expectedTotal: this.cartTotal // THE FIX: Send total for backend verification
-        })
-        .subscribe({
-          next: (response: any) => {
-            this.orderService.confirmPayment(response.orderId).subscribe({
-              next: () => {
-                this.cartService.clearCart();
-                this.toastService.showSuccess(
-                  'Payment Successful! Order confirmed and sent to logistics.',
-                );
-                this.router.navigate(['/orders/history']);
-              },
-              error: (err) => {
-                this.toastService.showError(
-                  'Payment confirmed, but logistics sync failed.',
-                );
-                this.isProcessing = false;
-              },
-            });
-          },
-          error: (err) => {
-            this.toastService.showError(
-              'Failed to process payment. Ensure your backend Microservices are running.',
-            );
-            this.isProcessing = false;
-          },
-        });
-    } else {
+    // 🛡️ THE FIX: Enterprise Form Validation UX
+    if (this.checkoutForm.invalid) {
       this.checkoutForm.markAllAsTouched();
+      this.toastService.showError('Please complete all required fields (highlighted in red) correctly.');
+      return; 
     }
+
+    this.isProcessing = true;
+
+    const mappedItems = this.cartItems.map((item) => {
+      let optionString = '';
+      
+      // Handle the "None" string safely
+      if (item.selectedOption && item.selectedOption !== "None") {
+        optionString = `${item.selectedOption.type}: ${item.selectedOption.value}`;
+      } else if (item.selectedOption === "None") {
+        optionString = "None";
+      }
+
+      return {
+        productId: String(item.productId || item.id),
+        quantity: item.quantity || 1,
+        selectedOption: optionString, 
+      };
+    });
+
+    const formVals = this.checkoutForm.value;
+    const fullAddress = `${formVals.fullName}, ${formVals.shippingAddress}, ${formVals.city}, Zip: ${formVals.zipCode}`;
+
+    this.orderService
+      .placeOrder({
+        shippingAddress: fullAddress, 
+        items: mappedItems,
+        paymentMode: 'CREDIT_CARD',
+        expectedTotal: this.cartTotal 
+      })
+      .subscribe({
+        next: (response: any) => {
+          this.orderService.confirmPayment(response.orderId).subscribe({
+            next: () => {
+              this.cartService.clearCart();
+              this.toastService.showSuccess(
+                'Payment Successful! Order confirmed and sent to logistics.',
+              );
+              this.router.navigate(['/orders/history']);
+            },
+            error: (err) => {
+              this.toastService.showError(
+                'Payment confirmed, but logistics sync failed.',
+              );
+              this.isProcessing = false;
+            },
+          });
+        },
+        error: (err) => {
+          this.toastService.showError(
+            'Failed to process payment. Ensure your backend Microservices are running.',
+          );
+          this.isProcessing = false;
+        },
+      });
   }
 }

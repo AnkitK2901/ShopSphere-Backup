@@ -37,17 +37,24 @@ export class AuthInterceptor implements HttpInterceptor {
       catchError((error: HttpErrorResponse) => {
         // FIX: Removed the 403 check. Only clear local storage on true 401 expiration.
         if (error.status === 401) {
-          console.warn('Session expired. Logging out.');
+          
+          // THE FIX: Check if the user already intentionally clicked Logout!
+          const isAlreadyLoggedOut = !localStorage.getItem('jwt_token');
 
-          // Clear all user data
-          localStorage.removeItem('jwt_token');
-          localStorage.removeItem('userId');
+          // Only trigger the toast if they didn't just log out themselves
+          if (!isAlreadyLoggedOut) {
+            console.warn('Session expired. Logging out.');
 
-          this.toastService.showError(
-            'Your session has expired. Please log in again.',
-          );
+            // Clear all user data
+            localStorage.removeItem('jwt_token');
+            localStorage.removeItem('userId');
 
-          this.router.navigate(['/login']);
+            this.toastService.showError(
+              'Your session has expired. Please log in again.',
+            );
+
+            this.router.navigate(['/login']);
+          }
         }
         return throwError(() => error);
       }),

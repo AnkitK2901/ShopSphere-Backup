@@ -72,18 +72,14 @@ export class ProductDetailsComponent implements OnInit {
 
   addToCart(): void {
     if (this.product) {
-      // THE FIX: Check if the product has variations and ensure one is selected
-      if (this.customOptions.length > 0 && !this.selectedOption) {
-        this.toastService.showError('Please select an option before adding to cart.');
-        return;
-      }
+      
+      // 🛡️ THE FIX: Set to "None" if user didn't pick anything
+      const finalOptionToSave = this.selectedOption ? this.selectedOption : "None";
 
       const cartItem = {
         ...this.product,
-        // Ensure finalPrice is used for calculation
         basePrice: this.finalPrice, 
-        // Explicitly map the selected choice
-        selectedOption: this.selectedOption
+        selectedOption: finalOptionToSave
       };
       
       this.cartService.addToCart(cartItem, this.selectedQuantity);

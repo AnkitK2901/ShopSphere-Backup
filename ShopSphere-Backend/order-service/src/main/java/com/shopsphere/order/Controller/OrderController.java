@@ -35,8 +35,9 @@ public class OrderController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    // THE FIX: Explicitly defined name inside @PathVariable
     @PostMapping("/{orderId}/confirm-payment")
-    public ResponseEntity<OrderResponse> confirmPayment(@PathVariable Long orderId) {
+    public ResponseEntity<OrderResponse> confirmPayment(@PathVariable("orderId") Long orderId) {
         log.info("Payment confirmed for Order ID: {}", orderId);
         OrderResponse response = orderService.confirmPayment(orderId);
         return ResponseEntity.ok(response);
@@ -47,13 +48,15 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getAllOrders());
     }
 
+    // THE FIX: Explicitly defined name inside @PathVariable
     @GetMapping("/{orderId}")
-    public ResponseEntity<OrderResponse> getOrderById(@PathVariable Long orderId) {
+    public ResponseEntity<OrderResponse> getOrderById(@PathVariable("orderId") Long orderId) {
         return ResponseEntity.ok(orderService.getOrderById(orderId));
     }
 
+    // THE FIX: Explicitly defined name inside @PathVariable
     @GetMapping("/customer/{customerId}")
-    public ResponseEntity<List<OrderResponse>> getOrdersByCustomerId(@PathVariable Long customerId) {
+    public ResponseEntity<List<OrderResponse>> getOrdersByCustomerId(@PathVariable("customerId") Long customerId) {
         return ResponseEntity.ok(orderService.getOrdersByCustomerId(customerId));
     }
 
@@ -66,20 +69,23 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getOrdersByCustomerId(user.getId()));
     }
 
+    // THE FIX: Explicitly defined name inside @PathVariable
     @PatchMapping("/{orderId}/status")
     public ResponseEntity<OrderResponse> updateStatus(
-            @PathVariable Long orderId,
+            @PathVariable("orderId") Long orderId,
             @Valid @RequestBody StatusUpdateRequest request) {
         return ResponseEntity.ok(orderService.updateStatus(orderId, request.getNewStatus()));
     }
 
+    // THE FIX: Explicitly defined name inside @PathVariable
     @PutMapping("/{orderId}/cancel")
-    public ResponseEntity<OrderResponse> cancelOrder(@PathVariable Long orderId) {
+    public ResponseEntity<OrderResponse> cancelOrder(@PathVariable("orderId") Long orderId) {
         return ResponseEntity.ok(orderService.cancelOrder(orderId));
     }
 
+    // THE FIX: Explicitly defined name inside @PathVariable
     @PutMapping("/{orderId}/return")
-    public ResponseEntity<OrderResponse> returnOrder(@PathVariable Long orderId) {
+    public ResponseEntity<OrderResponse> returnOrder(@PathVariable("orderId") Long orderId) {
         return ResponseEntity.ok(orderService.returnOrder(orderId));
     }
 

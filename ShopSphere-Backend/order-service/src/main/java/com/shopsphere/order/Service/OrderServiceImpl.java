@@ -35,7 +35,6 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private AnalyticsClient analyticsClient;
     
-    // THE FIX: Injected Cart Repo for Abandoned Cart Tracking
     @Autowired
     private CartRepository cartRepository; 
 
@@ -74,7 +73,6 @@ public class OrderServiceImpl implements OrderService {
             if (product == null)
                 throw new ResourceNotFoundException("Product Not Found: " + itemReq.getProductId());
 
-            // THE FIX: Check Inventory BEFORE building the order to prevent Over-selling
             Boolean inStock = inventoryClient.checkStock(new StockRequest(product.getProductId(), itemReq.getQuantity())).getBody();
             if (inStock != null && !inStock) {
                 throw new IllegalStateException("Insufficient stock to fulfill order for product: " + product.getName());
@@ -84,7 +82,8 @@ public class OrderServiceImpl implements OrderService {
             
             if (unitPrice <= 0.0) throw new ResourceNotFoundException("Product price is completely unavailable");
 
-            if (itemReq.getSelectedOption() != null && !itemReq.getSelectedOption().isEmpty()) {
+            // 🛡️ THE 'None' FIX: We only add price if they picked a REAL option, not 'None'
+            if (itemReq.getSelectedOption() != null && !itemReq.getSelectedOption().isEmpty() && !itemReq.getSelectedOption().equals("None")) {
                 if (product.getCustomOptions() != null) {
                     for (CustomOptionDTO opt : product.getCustomOptions()) {
                         String optionMatch = opt.getType() + ": " + opt.getValue();
@@ -107,7 +106,6 @@ public class OrderServiceImpl implements OrderService {
             orderItems.add(itemEntity);
         }
 
-        // THE FIX: Price Tampering Security Check
         if (orderRequest.getExpectedTotal() != null) {
             if (Math.abs(totalOrderAmount - orderRequest.getExpectedTotal()) > 0.01) {
                 throw new IllegalStateException("Security Alert: Price Mismatch Detected.");
@@ -121,7 +119,6 @@ public class OrderServiceImpl implements OrderService {
         order.setItems(orderItems);
         order.setShippingAddress(orderRequest.getShippingAddress());
 
-        // THE FIX: Clear the abandoned cart upon successful checkout initiation
         cartRepository.findById(user.getId()).ifPresent(cartRepository::delete);
 
         return mapToResponse(orderRepository.save(order));
@@ -173,6 +170,12 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponse updateStatus(Long orderId, OrderStatus newStatus) {
         OrderEntity order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order Id not found"));
+        
+        // 🛡️ THE IDEMPOTENCY FIX: Silently ignore duplicate status updates!
+        if (order.getStatus() == newStatus) {
+            return mapToResponse(order);
+        }
+
         ValidTransaction(order.getStatus(), newStatus);
 
         if (newStatus == OrderStatus.SHIPPED) {
@@ -208,7 +211,6 @@ public class OrderServiceImpl implements OrderService {
         return mapToResponse(orderRepository.save(order));
     }
 
-    // THE FIX: Implementation for syncing the cart to the Database
     @Override
     @Transactional
     public void syncCart(String username, String cartJson) {
@@ -252,12 +254,12 @@ public class OrderServiceImpl implements OrderService {
         res.setUpdatedAt(orderEntity.getUpdatedAt());
         res.setShippingAddress(orderEntity.getShippingAddress());
 
-        // THE FIX: Cartesian Join Deduplication for Order Items
         if (orderEntity.getItems() != null && !orderEntity.getItems().isEmpty()) {
             List<OrderItemEntity> distinctItems = new ArrayList<>();
             for (OrderItemEntity item : orderEntity.getItems()) {
                 boolean exists = distinctItems.stream().anyMatch(d -> 
                     d.getProductId().equals(item.getProductId()) && 
+                    // 🛡️ THE 'None' FIX: Safe check for string matching
                     (d.getSelectedOption() == null ? item.getSelectedOption() == null : d.getSelectedOption().equals(item.getSelectedOption()))
                 );
                 if (!exists) {

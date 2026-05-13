@@ -40,9 +40,9 @@ public class ShipmentController {
         }
     }
 
-    // FIX: Changed String orderId to Long orderId to align cross-service variable types
+    // THE FIX: Explicitly defined name inside @PathVariable
     @PostMapping("/createShipment/{orderId}")
-    public ResponseEntity<?> createShipment(@PathVariable Long orderId) {
+    public ResponseEntity<?> createShipment(@PathVariable("orderId") Long orderId) {
         try {
             log.info("Received request to create shipment for Order ID: {}", orderId);
             Shipment shipment = shipmentService.createShipment(String.valueOf(orderId));
@@ -53,9 +53,9 @@ public class ShipmentController {
         }
     }
 
-    // FIX: Changed String orderId to Long orderId
+    // THE FIX: Explicitly defined name inside @PathVariable
     @GetMapping("/order/{orderId}")
-    public ResponseEntity<?> getByOrderId(@PathVariable Long orderId) {
+    public ResponseEntity<?> getByOrderId(@PathVariable("orderId") Long orderId) {
         try {
             log.info("Fetching shipment details for Order ID: {}", orderId);
             Shipment shipment = shipmentService.getShipmentByOrderId(String.valueOf(orderId));
@@ -65,11 +65,11 @@ public class ShipmentController {
         }
     }
 
-    // FIX: Changed String orderId to Long orderId
+    // THE FIX: Explicitly defined names inside @PathVariable
     @PatchMapping("/order/{orderId}/{status}")
     public ResponseEntity<?> updateStatusByOrderId(
-            @PathVariable Long orderId,
-            @PathVariable String status,
+            @PathVariable("orderId") Long orderId,
+            @PathVariable("status") String status,
             @RequestHeader(value = "X-User-Role", defaultValue = "UNKNOWN") String role) {
         try {
             if (!"ROLE_LOGISTICS".equals(role) && !"ROLE_ADMIN".equals(role)) {

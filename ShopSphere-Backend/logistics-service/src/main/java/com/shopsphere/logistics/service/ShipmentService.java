@@ -30,8 +30,7 @@ public class ShipmentService {
     public ShipmentService(ShipmentRepository repository,
                            MockDelhiveryClient delhiveryClient,
                            MockShiprocketClient shiprocketClient,
-                           OrderFeignClient orderFeignClient
-                           ) {
+                           OrderFeignClient orderFeignClient) {
         this.repository = repository;
         this.delhiveryClient = delhiveryClient;
         this.shiprocketClient = shiprocketClient;
@@ -56,16 +55,11 @@ public class ShipmentService {
         shipment.setOrderId(orderId);
         shipment.setStatus(ShipmentStatus.CREATED);
 
-        // THE FIX 1: Explicitly set timestamps to prevent NullPointerExceptions
         shipment.setCreatedAt(LocalDateTime.now());
         shipment.setUpdatedAt(LocalDateTime.now());
 
-        Shipment savedShipment = repository.save(shipment);
-
-
-        return savedShipment;
+        return repository.save(shipment);
     }
-
 
     public Shipment getShipmentByOrderId(String orderId) {
         return repository.findByOrderId(orderId)
@@ -75,35 +69,45 @@ public class ShipmentService {
 
     public Shipment updateShipmentStatusByOrderId(String orderId, String status) {
 
+        // 🛡️ THE EXTENDED DICTIONARY FIX: Translate UI vocabulary to Logistics vocabulary
+        String internalStatus = status.toUpperCase();
+        
+        if ("PACKED".equals(internalStatus)) {
+            internalStatus = "PICKED_UP";
+        } else if ("DISPATCHED".equals(internalStatus) || "SHIPPED".equals(internalStatus)) {
+            // Tell Logistics that 'Dispatched' means the carrier has it in transit!
+            internalStatus = "IN_TRANSIT";
+        }
+
         ShipmentStatus newStatus;
         try {
-            newStatus = ShipmentStatus.valueOf(status.toUpperCase());
+            newStatus = ShipmentStatus.valueOf(internalStatus);
         } catch (IllegalArgumentException ex) {
-            throw new InvalidShipmentStatusException(
-                    "Invalid shipment status: " + status);
+            throw new InvalidShipmentStatusException("Invalid shipment status: " + status);
         }
 
         Shipment shipment = repository.findByOrderId(orderId)
-                .orElseThrow(() ->
-                        new ShipmentNotFoundException(
-                                "Shipment not found for orderId: " + orderId));
+                .orElseThrow(() -> new ShipmentNotFoundException("Shipment not found for orderId: " + orderId));
 
         ShipmentStatus currentStatus = shipment.getStatus();
 
+        // Prevent crashes if the warehouse clicks the button twice
+        if (currentStatus == newStatus) {
+            return shipment;
+        }
+
         if (!currentStatus.canTransitionTo(newStatus)) {
             throw new InvalidShipmentStatusException(
-                    "Invalid status transition from "
-                            + currentStatus + " to " + newStatus);
+                    "Invalid status transition from " + currentStatus + " to " + newStatus);
         }
 
         shipment.setStatus(newStatus);
-        
-        // Ensure manual updates also refresh the timestamp
         shipment.setUpdatedAt(LocalDateTime.now());
 
         Shipment updatedShipment = repository.save(shipment);
 
-        syncWithOrderService(orderId, status);
+        // Sync translated status to Order Service
+        syncWithOrderService(orderId, newStatus.name());
 
         return updatedShipment;
     }
@@ -121,65 +125,67 @@ public class ShipmentService {
 
             ShipmentStatus nextStatus = getNextStatus(shipment.getStatus());
             shipment.setStatus(nextStatus);
-
-            // THE FIX 2: Update the timestamp so the next stage has a valid starting point
             shipment.setUpdatedAt(LocalDateTime.now());
 
             repository.save(shipment);
+            
+            // Notify Order Service of the automated progress!
             syncWithOrderService(shipment.getOrderId(), nextStatus.name());
         }
     }
 
-    private void syncWithOrderService(String orderId, String status) {
-        // THE FIX: Only notify the Order Service if the shipment is finally DELIVERED.
-        // The Order Service's Enum does not understand "IN_TRANSIT" or "PICKED_UP".
-        if ("DELIVERED".equalsIgnoreCase(status)) {
-            try {
-                orderFeignClient.updateOrderStatus(Long.parseLong(orderId), Map.of("newStatus", status));
-                System.out.println("✅ Successfully synced DELIVERED status to Order Service for Order: " + orderId);
-            } catch (Exception e) {
-                System.err.println("❌ Failed to sync DELIVERED status to Order Service for ID: " + orderId);
-            }
+    private void syncWithOrderService(String orderId, String internalStatus) {
+        // 🛡️ THE DICTIONARY FIX: Translate Logistics statuses to Order Service statuses!
+        String mappedStatus = internalStatus;
+        
+        if ("PICKED_UP".equals(internalStatus)) {
+            mappedStatus = "PACKED";
+        } else if ("IN_TRANSIT".equals(internalStatus) || "OUT_FOR_DELIVERY".equals(internalStatus)) {
+            mappedStatus = "SHIPPED";
+        }
+        // "DELIVERED" stays "DELIVERED"
+
+        try {
+            orderFeignClient.updateOrderStatus(Long.parseLong(orderId), Map.of("newStatus", mappedStatus));
+            System.out.println("✅ Successfully synced " + mappedStatus + " status to Order Service for Order: " + orderId);
+        } catch (Exception e) {
+            System.err.println("❌ Failed to sync " + mappedStatus + " status to Order Service for ID: " + orderId);
         }
     }
 
     private boolean isReadyForNextStage(Shipment shipment) {
         LocalDateTime lastUpdated = shipment.getUpdatedAt();
         
-        // THE FIX 3: Null Safety Fallback in case old DB records lack timestamps
         if (lastUpdated == null) {
             lastUpdated = shipment.getCreatedAt() != null ? shipment.getCreatedAt() : LocalDateTime.now();
         }
 
-        long minutesElapsed =
-                Duration.between(lastUpdated, LocalDateTime.now()).toMinutes();
-
+        long minutesElapsed = Duration.between(lastUpdated, LocalDateTime.now()).toMinutes();
         boolean result;
 
+        // Reduced time slightly for faster automated testing
         switch (shipment.getStatus()) {
             case CREATED:
                 result = minutesElapsed >= 1;
                 break;
             case PICKED_UP:
-                result = minutesElapsed >= 2;
+                result = minutesElapsed >= 1;
                 break;
             case IN_TRANSIT:
-                result = minutesElapsed >= 5;
+                result = minutesElapsed >= 2;
                 break;
             case OUT_FOR_DELIVERY:
-                result = minutesElapsed >= 2;
+                result = minutesElapsed >= 1;
                 break;
             default:
                 result = false;
                 break;
         }
-
         return result;
     }
     
     private ShipmentStatus getNextStatus(ShipmentStatus current) {
         ShipmentStatus nextStatus;
-
         switch (current) {
             case CREATED:
                 nextStatus = ShipmentStatus.PICKED_UP;
@@ -196,8 +202,6 @@ public class ShipmentService {
             default:
                 throw new IllegalStateException("Shipment already delivered");
         }
-
         return nextStatus;
     }
-
 }

@@ -10,15 +10,39 @@
       <form [formGroup]="checkoutForm" (ngSubmit)="placeOrder()">
         <div class="form-section">
           <h3>1. Shipping Details</h3>
-          <div class="input-group"><label>Full Name</label><input type="text" formControlName="fullName"
-              placeholder="John Doe"></div>
-          <div class="input-group"><label>Street Address</label><input type="text" formControlName="shippingAddress"
-              placeholder="123 Artisan Lane"></div>
+          
+          <div class="input-group">
+            <label>Full Name *</label>
+            <input type="text" formControlName="fullName" placeholder="John Doe"
+                   [ngClass]="{'is-invalid': checkoutForm.get('fullName')?.invalid && checkoutForm.get('fullName')?.touched}">
+            <small class="error-text" *ngIf="checkoutForm.get('fullName')?.invalid && checkoutForm.get('fullName')?.touched">
+              Name is required.
+            </small>
+          </div>
+          
+          <div class="input-group">
+            <label>Street Address *</label>
+            <input type="text" formControlName="shippingAddress" placeholder="123 Artisan Lane"
+                   [ngClass]="{'is-invalid': checkoutForm.get('shippingAddress')?.invalid && checkoutForm.get('shippingAddress')?.touched}">
+            <small class="error-text" *ngIf="checkoutForm.get('shippingAddress')?.invalid && checkoutForm.get('shippingAddress')?.touched">
+              Address is required.
+            </small>
+          </div>
+          
           <div class="form-row">
-            <div class="input-group half"><label>City</label><input type="text" formControlName="city"
-                placeholder="New York"></div>
-            <div class="input-group half"><label>Zip/Postal Code</label><input type="text" formControlName="zipCode"
-                placeholder="10001"></div>
+            <div class="input-group half">
+              <label>City *</label>
+              <input type="text" formControlName="city" placeholder="New York"
+                     [ngClass]="{'is-invalid': checkoutForm.get('city')?.invalid && checkoutForm.get('city')?.touched}">
+            </div>
+            <div class="input-group half">
+              <label>Zip/Postal Code *</label>
+              <input type="text" formControlName="zipCode" placeholder="10001"
+                     [ngClass]="{'is-invalid': checkoutForm.get('zipCode')?.invalid && checkoutForm.get('zipCode')?.touched}">
+              <small class="error-text" *ngIf="checkoutForm.get('zipCode')?.invalid && checkoutForm.get('zipCode')?.touched">
+                Must be 5-6 digits.
+              </small>
+            </div>
           </div>
         </div>
 
@@ -26,41 +50,61 @@
           <h3>2. Payment Method</h3>
 
           <div class="input-group">
-            <label>Card Number (16 Digits)</label>
-            <input type="text" formControlName="cardNumber" placeholder="0000 0000 0000 0000" maxlength="16">
+            <label>Card Number (16 Digits) *</label>
+            <input type="text" formControlName="cardNumber" placeholder="0000 0000 0000 0000" maxlength="16"
+                   [ngClass]="{'is-invalid': checkoutForm.get('cardNumber')?.invalid && checkoutForm.get('cardNumber')?.touched}">
+            <small class="error-text" *ngIf="checkoutForm.get('cardNumber')?.invalid && checkoutForm.get('cardNumber')?.touched">
+              Requires 16 digits.
+            </small>
           </div>
 
           <div class="form-row">
             <div class="input-group half">
-              <label>Expiry Date</label>
-              <input type="text" formControlName="expiry" placeholder="MM/YY">
+              <label>Expiry Date *</label>
+              <input type="text" formControlName="expiry" placeholder="MM/YY"
+                     [ngClass]="{'is-invalid': checkoutForm.get('expiry')?.invalid && checkoutForm.get('expiry')?.touched}">
             </div>
             <div class="input-group half">
-              <label>CVV</label>
-              <input type="password" formControlName="cvv" placeholder="123" maxlength="3">
+              <label>CVV *</label>
+              <input type="password" formControlName="cvv" placeholder="123" maxlength="3"
+                     [ngClass]="{'is-invalid': checkoutForm.get('cvv')?.invalid && checkoutForm.get('cvv')?.touched}">
+              <small class="error-text" *ngIf="checkoutForm.get('cvv')?.invalid && checkoutForm.get('cvv')?.touched">
+                Requires 3 digits.
+              </small>
             </div>
           </div>
         </div>
 
-        <div class="summary-column">
-          <div class="summary-box">
-            <h3>Order Summary</h3>
+        <button type="submit" class="place-order-btn" [disabled]="isProcessing">
+          {{ isProcessing ? 'Processing Payment...' : 'Place Order' }}
+        </button>
 
-            <div class="summary-items">
-              <div class="item-row" *ngFor="let item of cartItems">
-                <div class="item-details">
-                  <strong>{{ item.quantity }}x {{ item.name }}</strong>
-                  <span class="item-variant">{{ item.selectedOption?.value || 'Standard' }}</span>
-                </div>
-                <div class="item-price">₹{{ (item.basePrice * item.quantity) | number:'1.2-2' }}</div>
-              </div>
+      </form>
+    </div>
+
+    <div class="summary-column">
+      <div class="summary-box">
+        <h3>Order Summary</h3>
+
+        <div class="summary-items">
+          <div class="item-row" *ngFor="let item of cartItems">
+            <div class="item-details">
+              <strong>{{ item.quantity }}x {{ item.name }}</strong>
+              <span class="item-variant">
+                {{ (item.selectedOption && item.selectedOption !== 'None') ? item.selectedOption.value : 'Standard' }}
+              </span>
             </div>
-
-            <div class="summary-divider"></div>
-
-            <div class="summary-total">
-              <span>Total</span>
-              <span class="total-amount">₹{{ cartTotal | number:'1.2-2' }}</span>
-            </div>
+            <div class="item-price">₹{{ (item.basePrice * item.quantity) | number:'1.2-2' }}</div>
           </div>
         </div>
+
+        <div class="summary-divider"></div>
+
+        <div class="summary-total">
+          <span>Total</span>
+          <span class="total-amount">₹{{ cartTotal | number:'1.2-2' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
