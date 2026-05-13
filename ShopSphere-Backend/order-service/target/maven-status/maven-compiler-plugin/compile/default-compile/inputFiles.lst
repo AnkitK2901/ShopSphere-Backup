@@ -1,26 +1,33 @@
-C:\Users\2485815\OneDrive - Cognizant\Documents\ShopSphere\order-service\src\main\java\com\shopsphere\order\DTO\OrderRequest.java
-C:\Users\2485815\OneDrive - Cognizant\Documents\ShopSphere\order-service\src\main\java\com\shopsphere\order\Service\OrderServiceImpl.java
-C:\Users\2485815\OneDrive - Cognizant\Documents\ShopSphere\order-service\src\main\java\com\shopsphere\order\DTO\StatusUpdateRequest.java
-C:\Users\2485815\OneDrive - Cognizant\Documents\ShopSphere\order-service\src\main\java\com\shopsphere\order\Controller\OrderController.java
-C:\Users\2485815\OneDrive - Cognizant\Documents\ShopSphere\order-service\src\main\java\com\shopsphere\order\DTO\ProductDTO.java
-C:\Users\2485815\OneDrive - Cognizant\Documents\ShopSphere\order-service\src\main\java\com\shopsphere\order\DTO\ShipmentResponse.java
-C:\Users\2485815\OneDrive - Cognizant\Documents\ShopSphere\order-service\src\main\java\com\shopsphere\order\Enums\OrderStatus.java
-C:\Users\2485815\OneDrive - Cognizant\Documents\ShopSphere\order-service\src\main\java\com\shopsphere\order\Entity\OrderEntity.java
-C:\Users\2485815\OneDrive - Cognizant\Documents\ShopSphere\order-service\src\main\java\com\shopsphere\order\DTO\ProductClient.java
-C:\Users\2485815\OneDrive - Cognizant\Documents\ShopSphere\order-service\src\main\java\com\shopsphere\order\DTO\UserDTO.java
-C:\Users\2485815\OneDrive - Cognizant\Documents\ShopSphere\order-service\src\main\java\com\shopsphere\order\Service\OrderService.java
-C:\Users\2485815\OneDrive - Cognizant\Documents\ShopSphere\order-service\src\main\java\com\shopsphere\order\OrderServiceApplication.java
-C:\Users\2485815\OneDrive - Cognizant\Documents\ShopSphere\order-service\src\main\java\com\shopsphere\order\Config\FeignConfig.java
-C:\Users\2485815\OneDrive - Cognizant\Documents\ShopSphere\order-service\src\main\java\com\shopsphere\order\Exception\ResourceNotFoundException.java
-C:\Users\2485815\OneDrive - Cognizant\Documents\ShopSphere\order-service\src\main\java\com\shopsphere\order\DTO\StockRequest.java
-C:\Users\2485815\OneDrive - Cognizant\Documents\ShopSphere\order-service\src\main\java\com\shopsphere\order\DTO\UserClient.java
-C:\Users\2485815\OneDrive - Cognizant\Documents\ShopSphere\order-service\src\main\java\com\shopsphere\order\DTO\LogisticsClient.java
-C:\Users\2485815\OneDrive - Cognizant\Documents\ShopSphere\order-service\src\main\java\com\shopsphere\order\DTO\CustomOptionDTO.java
-C:\Users\2485815\OneDrive - Cognizant\Documents\ShopSphere\order-service\src\main\java\com\shopsphere\order\DTO\PaymentRequest.java
-C:\Users\2485815\OneDrive - Cognizant\Documents\ShopSphere\order-service\src\main\java\com\shopsphere\order\DTO\OrderResponse.java
-C:\Users\2485815\OneDrive - Cognizant\Documents\ShopSphere\order-service\src\main\java\com\shopsphere\order\DTO\InventoryClient.java
-C:\Users\2485815\OneDrive - Cognizant\Documents\ShopSphere\order-service\src\main\java\com\shopsphere\order\DTO\LogisticsDTO.java
-C:\Users\2485815\OneDrive - Cognizant\Documents\ShopSphere\order-service\src\main\java\com\shopsphere\order\Exception\GlobalExceptionHandler.java
-C:\Users\2485815\OneDrive - Cognizant\Documents\ShopSphere\order-service\src\main\java\com\shopsphere\order\Repository\OrderRepository.java
-C:\Users\2485815\OneDrive - Cognizant\Documents\ShopSphere\order-service\src\main\java\com\shopsphere\order\DTO\ShipmentStatusDTO.java
-C:\Users\2485815\OneDrive - Cognizant\Documents\ShopSphere\order-service\src\main\java\com\shopsphere\order\Enums\PaymentStatus.java
+c:\Users\2485815\OneDrive - Cognizant\Documents\Cognizant Internship Project\ShopSphere-Backend\order-service\src\main\java\com\shopsphere\order\Config\FeignConfig.java
+c:\Users\2485815\OneDrive - Cognizant\Documents\Cognizant Internship Project\ShopSphere-Backend\order-service\src\main\java\com\shopsphere\order\Exception\GlobalExceptionHandler.java
+c:\Users\2485815\OneDrive - Cognizant\Documents\Cognizant Internship Project\ShopSphere-Backend\order-service\src\main\java\com\shopsphere\order\Controller\OrderController.java
+c:\Users\2485815\OneDrive - Cognizant\Documents\Cognizant Internship Project\ShopSphere-Backend\order-service\src\main\java\com\shopsphere\order\DTO\PaymentRequest.java
+c:\Users\2485815\OneDrive - Cognizant\Documents\Cognizant Internship Project\ShopSphere-Backend\order-service\src\main\java\com\shopsphere\order\DTO\ProductDTO.java
+c:\Users\2485815\OneDrive - Cognizant\Documents\Cognizant Internship Project\ShopSphere-Backend\order-service\src\main\java\com\shopsphere\order\Entity\OrderEntity.java
+c:\Users\2485815\OneDrive - Cognizant\Documents\Cognizant Internship Project\ShopSphere-Backend\order-service\src\main\java\com\shopsphere\order\DTO\UserDTO.java
+c:\Users\2485815\OneDrive - Cognizant\Documents\Cognizant Internship Project\ShopSphere-Backend\order-service\src\main\java\com\shopsphere\order\Entity\OrderItemEntity.java
+c:\Users\2485815\OneDrive - Cognizant\Documents\Cognizant Internship Project\ShopSphere-Backend\order-service\src\main\java\com\shopsphere\order\Repository\OrderRepository.java
+c:\Users\2485815\OneDrive - Cognizant\Documents\Cognizant Internship Project\ShopSphere-Backend\order-service\src\main\java\com\shopsphere\order\DTO\OrderRequest.java
+c:\Users\2485815\OneDrive - Cognizant\Documents\Cognizant Internship Project\ShopSphere-Backend\order-service\src\main\java\com\shopsphere\order\DTO\ProductClient.java
+c:\Users\2485815\OneDrive - Cognizant\Documents\Cognizant Internship Project\ShopSphere-Backend\order-service\src\main\java\com\shopsphere\order\DTO\StockRequest.java
+c:\Users\2485815\OneDrive - Cognizant\Documents\Cognizant Internship Project\ShopSphere-Backend\order-service\src\main\java\com\shopsphere\order\OrderServiceApplication.java
+c:\Users\2485815\OneDrive - Cognizant\Documents\Cognizant Internship Project\ShopSphere-Backend\order-service\src\main\java\com\shopsphere\order\Enums\PaymentStatus.java
+c:\Users\2485815\OneDrive - Cognizant\Documents\Cognizant Internship Project\ShopSphere-Backend\order-service\src\main\java\com\shopsphere\order\Enums\OrderStatus.java
+c:\Users\2485815\OneDrive - Cognizant\Documents\Cognizant Internship Project\ShopSphere-Backend\order-service\src\main\java\com\shopsphere\order\DTO\AnalyticsClient.java
+c:\Users\2485815\OneDrive - Cognizant\Documents\Cognizant Internship Project\ShopSphere-Backend\order-service\src\main\java\com\shopsphere\order\DTO\CustomOptionDTO.java
+c:\Users\2485815\OneDrive - Cognizant\Documents\Cognizant Internship Project\ShopSphere-Backend\order-service\src\main\java\com\shopsphere\order\DTO\ShipmentResponse.java
+c:\Users\2485815\OneDrive - Cognizant\Documents\Cognizant Internship Project\ShopSphere-Backend\order-service\src\main\java\com\shopsphere\order\DTO\LogisticsClient.java
+c:\Users\2485815\OneDrive - Cognizant\Documents\Cognizant Internship Project\ShopSphere-Backend\order-service\src\main\java\com\shopsphere\order\DTO\OrderItemResponse.java
+c:\Users\2485815\OneDrive - Cognizant\Documents\Cognizant Internship Project\ShopSphere-Backend\order-service\src\main\java\com\shopsphere\order\DTO\LogisticsDTO.java
+c:\Users\2485815\OneDrive - Cognizant\Documents\Cognizant Internship Project\ShopSphere-Backend\order-service\src\main\java\com\shopsphere\order\DTO\InventoryClient.java
+c:\Users\2485815\OneDrive - Cognizant\Documents\Cognizant Internship Project\ShopSphere-Backend\order-service\src\main\java\com\shopsphere\order\Exception\ResourceNotFoundException.java
+c:\Users\2485815\OneDrive - Cognizant\Documents\Cognizant Internship Project\ShopSphere-Backend\order-service\src\main\java\com\shopsphere\order\DTO\UserClient.java
+c:\Users\2485815\OneDrive - Cognizant\Documents\Cognizant Internship Project\ShopSphere-Backend\order-service\src\main\java\com\shopsphere\order\DTO\OrderItemRequest.java
+c:\Users\2485815\OneDrive - Cognizant\Documents\Cognizant Internship Project\ShopSphere-Backend\order-service\src\main\java\com\shopsphere\order\Service\OrderService.java
+c:\Users\2485815\OneDrive - Cognizant\Documents\Cognizant Internship Project\ShopSphere-Backend\order-service\src\main\java\com\shopsphere\order\Entity\CartEntity.java
+c:\Users\2485815\OneDrive - Cognizant\Documents\Cognizant Internship Project\ShopSphere-Backend\order-service\src\main\java\com\shopsphere\order\DTO\ShipmentStatusDTO.java
+c:\Users\2485815\OneDrive - Cognizant\Documents\Cognizant Internship Project\ShopSphere-Backend\order-service\src\main\java\com\shopsphere\order\Repository\CartRepository.java
+c:\Users\2485815\OneDrive - Cognizant\Documents\Cognizant Internship Project\ShopSphere-Backend\order-service\src\main\java\com\shopsphere\order\DTO\OrderResponse.java
+c:\Users\2485815\OneDrive - Cognizant\Documents\Cognizant Internship Project\ShopSphere-Backend\order-service\src\main\java\com\shopsphere\order\Exception\ErrorDetails.java
+c:\Users\2485815\OneDrive - Cognizant\Documents\Cognizant Internship Project\ShopSphere-Backend\order-service\src\main\java\com\shopsphere\order\Service\OrderServiceImpl.java
+c:\Users\2485815\OneDrive - Cognizant\Documents\Cognizant Internship Project\ShopSphere-Backend\order-service\src\main\java\com\shopsphere\order\DTO\StatusUpdateRequest.java

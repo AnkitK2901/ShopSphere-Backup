@@ -68,14 +68,12 @@ public class ShipmentService {
     }
 
     public Shipment updateShipmentStatusByOrderId(String orderId, String status) {
-
-        // 🛡️ THE EXTENDED DICTIONARY FIX: Translate UI vocabulary to Logistics vocabulary
         String internalStatus = status.toUpperCase();
         
+        // Dictionary Fix: Translate UI actions to Logistics states
         if ("PACKED".equals(internalStatus)) {
             internalStatus = "PICKED_UP";
         } else if ("DISPATCHED".equals(internalStatus) || "SHIPPED".equals(internalStatus)) {
-            // Tell Logistics that 'Dispatched' means the carrier has it in transit!
             internalStatus = "IN_TRANSIT";
         }
 
@@ -89,24 +87,20 @@ public class ShipmentService {
         Shipment shipment = repository.findByOrderId(orderId)
                 .orElseThrow(() -> new ShipmentNotFoundException("Shipment not found for orderId: " + orderId));
 
-        ShipmentStatus currentStatus = shipment.getStatus();
-
-        // Prevent crashes if the warehouse clicks the button twice
-        if (currentStatus == newStatus) {
+        if (shipment.getStatus() == newStatus) {
             return shipment;
         }
 
-        if (!currentStatus.canTransitionTo(newStatus)) {
+        if (!shipment.getStatus().canTransitionTo(newStatus)) {
             throw new InvalidShipmentStatusException(
-                    "Invalid status transition from " + currentStatus + " to " + newStatus);
+                    "Invalid status transition from " + shipment.getStatus() + " to " + newStatus);
         }
 
         shipment.setStatus(newStatus);
         shipment.setUpdatedAt(LocalDateTime.now());
-
         Shipment updatedShipment = repository.save(shipment);
 
-        // Sync translated status to Order Service
+        // Sync to Order Service
         syncWithOrderService(orderId, newStatus.name());
 
         return updatedShipment;
@@ -114,11 +108,9 @@ public class ShipmentService {
 
     @Transactional
     public void simulateShipmentProgress() {
-        List<Shipment> activeShipments =
-                repository.findByStatusNot(ShipmentStatus.DELIVERED);
+        List<Shipment> activeShipments = repository.findByStatusNot(ShipmentStatus.DELIVERED);
 
         for (Shipment shipment : activeShipments) {
-
             if (!isReadyForNextStage(shipment)) {
                 continue;
             }
@@ -126,16 +118,13 @@ public class ShipmentService {
             ShipmentStatus nextStatus = getNextStatus(shipment.getStatus());
             shipment.setStatus(nextStatus);
             shipment.setUpdatedAt(LocalDateTime.now());
-
             repository.save(shipment);
             
-            // Notify Order Service of the automated progress!
             syncWithOrderService(shipment.getOrderId(), nextStatus.name());
         }
     }
 
     private void syncWithOrderService(String orderId, String internalStatus) {
-        // 🛡️ THE DICTIONARY FIX: Translate Logistics statuses to Order Service statuses!
         String mappedStatus = internalStatus;
         
         if ("PICKED_UP".equals(internalStatus)) {
@@ -143,65 +132,33 @@ public class ShipmentService {
         } else if ("IN_TRANSIT".equals(internalStatus) || "OUT_FOR_DELIVERY".equals(internalStatus)) {
             mappedStatus = "SHIPPED";
         }
-        // "DELIVERED" stays "DELIVERED"
 
         try {
             orderFeignClient.updateOrderStatus(Long.parseLong(orderId), Map.of("newStatus", mappedStatus));
             System.out.println("✅ Successfully synced " + mappedStatus + " status to Order Service for Order: " + orderId);
         } catch (Exception e) {
-            System.err.println("❌ Failed to sync " + mappedStatus + " status to Order Service for ID: " + orderId);
+            System.err.println("❌ Failed to sync status to Order Service: " + e.getMessage());
         }
     }
 
     private boolean isReadyForNextStage(Shipment shipment) {
-        LocalDateTime lastUpdated = shipment.getUpdatedAt();
-        
-        if (lastUpdated == null) {
-            lastUpdated = shipment.getCreatedAt() != null ? shipment.getCreatedAt() : LocalDateTime.now();
-        }
-
+        LocalDateTime lastUpdated = shipment.getUpdatedAt() != null ? shipment.getUpdatedAt() : shipment.getCreatedAt();
         long minutesElapsed = Duration.between(lastUpdated, LocalDateTime.now()).toMinutes();
-        boolean result;
 
-        // Reduced time slightly for faster automated testing
-        switch (shipment.getStatus()) {
-            case CREATED:
-                result = minutesElapsed >= 1;
-                break;
-            case PICKED_UP:
-                result = minutesElapsed >= 1;
-                break;
-            case IN_TRANSIT:
-                result = minutesElapsed >= 2;
-                break;
-            case OUT_FOR_DELIVERY:
-                result = minutesElapsed >= 1;
-                break;
-            default:
-                result = false;
-                break;
-        }
-        return result;
+        return switch (shipment.getStatus()) {
+            case CREATED, PICKED_UP, OUT_FOR_DELIVERY -> minutesElapsed >= 1;
+            case IN_TRANSIT -> minutesElapsed >= 2;
+            default -> false;
+        };
     }
     
     private ShipmentStatus getNextStatus(ShipmentStatus current) {
-        ShipmentStatus nextStatus;
-        switch (current) {
-            case CREATED:
-                nextStatus = ShipmentStatus.PICKED_UP;
-                break;
-            case PICKED_UP:
-                nextStatus = ShipmentStatus.IN_TRANSIT;
-                break;
-            case IN_TRANSIT:
-                nextStatus = ShipmentStatus.OUT_FOR_DELIVERY;
-                break;
-            case OUT_FOR_DELIVERY:
-                nextStatus = ShipmentStatus.DELIVERED;
-                break;
-            default:
-                throw new IllegalStateException("Shipment already delivered");
-        }
-        return nextStatus;
+        return switch (current) {
+            case CREATED -> ShipmentStatus.PICKED_UP;
+            case PICKED_UP -> ShipmentStatus.IN_TRANSIT;
+            case IN_TRANSIT -> ShipmentStatus.OUT_FOR_DELIVERY;
+            case OUT_FOR_DELIVERY -> ShipmentStatus.DELIVERED;
+            default -> throw new IllegalStateException("Shipment already delivered");
+        };
     }
 }

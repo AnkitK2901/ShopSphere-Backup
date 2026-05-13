@@ -82,7 +82,7 @@ public class OrderServiceImpl implements OrderService {
             
             if (unitPrice <= 0.0) throw new ResourceNotFoundException("Product price is completely unavailable");
 
-            // 🛡️ THE 'None' FIX: We only add price if they picked a REAL option, not 'None'
+            // Handle 'None' or empty custom options safely
             if (itemReq.getSelectedOption() != null && !itemReq.getSelectedOption().isEmpty() && !itemReq.getSelectedOption().equals("None")) {
                 if (product.getCustomOptions() != null) {
                     for (CustomOptionDTO opt : product.getCustomOptions()) {
@@ -145,6 +145,13 @@ public class OrderServiceImpl implements OrderService {
             order.setUpdatedAt(LocalDateTime.now());
             OrderEntity savedOrder = orderRepository.save(order);
 
+            // Trigger shipment creation immediately so Warehouse Lead can see the order
+            try {
+                logisticsClient.createShipment(orderId);
+            } catch (Exception logisticsErr) {
+                System.err.println("WARNING: Logistics ticket creation failed for Order " + orderId);
+            }
+
             try {
                 analyticsClient.logRevenueEvent(savedOrder.getTotalAmount());
             } catch (Exception analyticsErr) {
@@ -154,6 +161,7 @@ public class OrderServiceImpl implements OrderService {
             return mapToResponse(savedOrder);
 
         } catch (Exception e) {
+            // Isolated saga rollback loop: prevents one failed refund from blocking others
             for (StockRequest refundReq : deductedStocks) {
                 try {
                     inventoryClient.refundStock(refundReq);
@@ -171,20 +179,12 @@ public class OrderServiceImpl implements OrderService {
         OrderEntity order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order Id not found"));
         
-        // 🛡️ THE IDEMPOTENCY FIX: Silently ignore duplicate status updates!
+        // Idempotency: Ignore if status is already correct
         if (order.getStatus() == newStatus) {
             return mapToResponse(order);
         }
 
         ValidTransaction(order.getStatus(), newStatus);
-
-        if (newStatus == OrderStatus.SHIPPED) {
-            try {
-                logisticsClient.createShipment(orderId);
-            } catch (Exception e) {
-                throw new IllegalStateException("Logistics failure.", e);
-            }
-        }
 
         order.setStatus(newStatus);
         order.setUpdatedAt(LocalDateTime.now());
@@ -259,7 +259,6 @@ public class OrderServiceImpl implements OrderService {
             for (OrderItemEntity item : orderEntity.getItems()) {
                 boolean exists = distinctItems.stream().anyMatch(d -> 
                     d.getProductId().equals(item.getProductId()) && 
-                    // 🛡️ THE 'None' FIX: Safe check for string matching
                     (d.getSelectedOption() == null ? item.getSelectedOption() == null : d.getSelectedOption().equals(item.getSelectedOption()))
                 );
                 if (!exists) {

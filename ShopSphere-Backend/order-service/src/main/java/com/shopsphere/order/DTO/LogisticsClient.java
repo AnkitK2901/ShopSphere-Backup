@@ -8,11 +8,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 @FeignClient(name = "logistics-service", path = "/api/shipments")
 public interface LogisticsClient {
 
-    // FIX: Changed from String to Long to match your ShipmentController
-    @PostMapping("/create/{orderId}")
+    @PostMapping("/createShipment/{orderId}")
     ShipmentResponse createShipment(@PathVariable("orderId") Long orderId);
 
-    // FIX: Changed from String to Long
     @GetMapping("/order/{orderId}")
     ShipmentResponse getByOrderId(@PathVariable("orderId") Long orderId);
 }

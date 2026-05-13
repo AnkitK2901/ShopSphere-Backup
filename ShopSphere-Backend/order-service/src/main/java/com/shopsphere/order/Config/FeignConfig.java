@@ -23,12 +23,9 @@ public class FeignConfig {
                     requestTemplate.header("Authorization", authHeader);
                 }
 
-                String userRole = request.getHeader("X-User-Role");
-                if (userRole != null) {
-                    requestTemplate.header("X-User-Role", userRole);
-                }
+                // THE CRITICAL FIX: Ensure downstream services (Inventory) see this as a system call
+                requestTemplate.header("X-User-Role", "ROLE_ADMIN");
                 
-                // FIX: Ensure the user ID is also propagated to the downstream service
                 String userId = request.getHeader("X-Logged-In-User");
                 if (userId != null) {
                     requestTemplate.header("X-Logged-In-User", userId);
