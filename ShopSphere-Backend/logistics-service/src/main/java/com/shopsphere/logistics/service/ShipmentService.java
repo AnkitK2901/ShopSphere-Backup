@@ -121,10 +121,15 @@ public class ShipmentService {
     }
 
     private void syncWithOrderService(String orderId, String status) {
-        try {
-            orderFeignClient.updateOrderStatus(Long.parseLong(orderId), Map.of("newStatus", status));
-        } catch (Exception e) {
-            System.err.println("Failed to sync status to Order Service for ID: " + orderId);
+        // THE FIX: Only notify the Order Service if the shipment is finally DELIVERED.
+        // The Order Service's Enum does not understand "IN_TRANSIT" or "PICKED_UP".
+        if ("DELIVERED".equalsIgnoreCase(status)) {
+            try {
+                orderFeignClient.updateOrderStatus(Long.parseLong(orderId), Map.of("newStatus", status));
+                System.out.println("✅ Successfully synced DELIVERED status to Order Service for Order: " + orderId);
+            } catch (Exception e) {
+                System.err.println("❌ Failed to sync DELIVERED status to Order Service for ID: " + orderId);
+            }
         }
     }
 
