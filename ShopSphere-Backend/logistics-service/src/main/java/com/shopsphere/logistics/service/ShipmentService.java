@@ -56,6 +56,10 @@ public class ShipmentService {
         shipment.setOrderId(orderId);
         shipment.setStatus(ShipmentStatus.CREATED);
 
+        // THE FIX 1: Explicitly set timestamps to prevent NullPointerExceptions
+        shipment.setCreatedAt(LocalDateTime.now());
+        shipment.setUpdatedAt(LocalDateTime.now());
+
         Shipment savedShipment = repository.save(shipment);
 
 
@@ -93,6 +97,9 @@ public class ShipmentService {
         }
 
         shipment.setStatus(newStatus);
+        
+        // Ensure manual updates also refresh the timestamp
+        shipment.setUpdatedAt(LocalDateTime.now());
 
         Shipment updatedShipment = repository.save(shipment);
 
@@ -115,6 +122,9 @@ public class ShipmentService {
             ShipmentStatus nextStatus = getNextStatus(shipment.getStatus());
             shipment.setStatus(nextStatus);
 
+            // THE FIX 2: Update the timestamp so the next stage has a valid starting point
+            shipment.setUpdatedAt(LocalDateTime.now());
+
             repository.save(shipment);
             syncWithOrderService(shipment.getOrderId(), nextStatus.name());
         }
@@ -135,6 +145,12 @@ public class ShipmentService {
 
     private boolean isReadyForNextStage(Shipment shipment) {
         LocalDateTime lastUpdated = shipment.getUpdatedAt();
+        
+        // THE FIX 3: Null Safety Fallback in case old DB records lack timestamps
+        if (lastUpdated == null) {
+            lastUpdated = shipment.getCreatedAt() != null ? shipment.getCreatedAt() : LocalDateTime.now();
+        }
+
         long minutesElapsed =
                 Duration.between(lastUpdated, LocalDateTime.now()).toMinutes();
 
@@ -160,6 +176,7 @@ public class ShipmentService {
 
         return result;
     }
+    
     private ShipmentStatus getNextStatus(ShipmentStatus current) {
         ShipmentStatus nextStatus;
 

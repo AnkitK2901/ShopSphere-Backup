@@ -10,9 +10,3 @@ INSERT IGNORE INTO order_items (order_id, product_id, quantity, price) VALUES
 (101, '2', 1, 3000.0), -- Links to Order 101
 (102, '3', 1, 1200.0), -- Links to Order 102
 (103, '7', 1, 850.0);  -- Links to Order 103
-
--- 3. CUSTOMIZATIONS (Keep these linked to the master order_id)
-INSERT IGNORE INTO order_customizations (order_id, custom_detail) VALUES 
-(101, 'Premium Hoodie [Size: Large (L)]'), 
-(101, 'Luxury Wallet [Material: Genuine Leather]'),
-(102, 'Organic Face Serum [Service: Basic 1-Year Warranty]');
