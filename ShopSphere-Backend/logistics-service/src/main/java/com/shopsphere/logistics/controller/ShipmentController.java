@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map; // NEW: Added import
 
 @RestController
 @RequestMapping("/api/shipments")
@@ -34,13 +35,11 @@ public class ShipmentController {
             return ResponseEntity.ok(shipments);
         } catch (Exception e) {
             log.error("Internal Logistics DB Error: ", e);
-            // This exposes the EXACT crash reason to your F12 console instead of hiding it behind a 500.
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("Logistics System Error: " + e.getMessage());
         }
     }
 
-    // THE FIX: Explicitly defined name inside @PathVariable
     @PostMapping("/createShipment/{orderId}")
     public ResponseEntity<?> createShipment(@PathVariable("orderId") Long orderId) {
         try {
@@ -53,7 +52,6 @@ public class ShipmentController {
         }
     }
 
-    // THE FIX: Explicitly defined name inside @PathVariable
     @GetMapping("/order/{orderId}")
     public ResponseEntity<?> getByOrderId(@PathVariable("orderId") Long orderId) {
         try {
@@ -65,18 +63,30 @@ public class ShipmentController {
         }
     }
 
-    // THE FIX: Explicitly defined names inside @PathVariable
+    // THE FIX: Added the missing endpoint to serve the enriched data to Angular
+    @GetMapping("/enriched/order/{orderId}")
+    public ResponseEntity<?> getEnrichedByOrderId(@PathVariable("orderId") Long orderId) {
+        try {
+            log.info("Fetching enriched shipment details for Order ID: {}", orderId);
+            Map<String, Object> enrichedData = shipmentService.getEnrichedShipmentByOrderId(String.valueOf(orderId));
+            return ResponseEntity.ok(enrichedData);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
     @PatchMapping("/order/{orderId}/{status}")
     public ResponseEntity<?> updateStatusByOrderId(
             @PathVariable("orderId") Long orderId,
             @PathVariable("status") String status,
+            @RequestParam(value = "carrier", required = false) String carrier,
             @RequestHeader(value = "X-User-Role", defaultValue = "UNKNOWN") String role) {
         try {
             if (!"ROLE_LOGISTICS".equals(role) && !"ROLE_ADMIN".equals(role)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
-            log.info("Updating shipment status for Order ID: {} to {}", orderId, status);
-            Shipment shipment = shipmentService.updateShipmentStatusByOrderId(String.valueOf(orderId), status);
+            log.info("Updating shipment status for Order ID: {} to {} with carrier {}", orderId, status, carrier);
+            Shipment shipment = shipmentService.updateShipmentStatusByOrderId(String.valueOf(orderId), status, carrier);
             log.info("Shipment status updated successfully for Order ID: {}", orderId);
             return ResponseEntity.ok(shipment);
         } catch (Exception e) {

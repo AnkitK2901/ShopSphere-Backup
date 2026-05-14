@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, switchMap } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
 export interface InventoryItem { 
   productId?: number; 
@@ -24,23 +24,7 @@ export class ArtisanService {
     return this.http.get(`${this.gatewayUrl}/options`);
   }
 
-  createProductAndInitializeInventory(catalogPayload: any, stockLevel: number): Observable<any> {
-    // 1. Create the Product in the Catalog Service
-    return this.http.post<any>(`${this.gatewayUrl}/products/create`, catalogPayload)
-      .pipe(
-        switchMap(savedProduct => {
-           // 2. Take the new ID and initialize the Inventory Service
-           const productId = savedProduct.productId;
-           
-           const params = new HttpParams()
-             .set('productId', productId.toString())
-             .set('stockLevel', stockLevel.toString());
-
-           return this.http.post(`${this.gatewayUrl}/inventory/initialize`, null, { 
-             params: params,
-             responseType: 'text' 
-           });
-        })
-      );
+  createProduct(catalogPayload: any): Observable<any> {
+    return this.http.post<any>(`${this.gatewayUrl}/products/create`, catalogPayload);
   }
 }

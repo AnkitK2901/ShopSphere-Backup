@@ -2,7 +2,7 @@ package com.shopsphere.logistics.entity;
 
 public enum ShipmentStatus {
     CREATED,
-    PICKED_UP,
+    PACKED,
     IN_TRANSIT,
     OUT_FOR_DELIVERY,
     DELIVERED;
@@ -12,9 +12,9 @@ public enum ShipmentStatus {
 
         switch (this) {
             case CREATED:
-                isValid = nextStatus == PICKED_UP;
+                isValid = nextStatus == PACKED;
                 break;
-            case PICKED_UP:
+            case PACKED:
                 isValid = nextStatus == IN_TRANSIT;
                 break;
             case IN_TRANSIT:

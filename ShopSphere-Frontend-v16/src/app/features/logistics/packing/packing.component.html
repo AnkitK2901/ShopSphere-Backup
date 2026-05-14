@@ -1,20 +1,51 @@
 <div class="dashboard-container" *ngIf="!isLoading && shipment">
-  <div class="form-card">
-    <div class="form-header" style="background: #2b6cb0;">
-      <h2>Packing Slip: Order #{{ shipment.orderId }}</h2>
-      <p>Verify all items before sealing the package.</p>
+  <div class="packing-slip-card">
+    
+    <div class="slip-header">
+      <div class="slip-title">
+        <span class="icon">📦</span>
+        <h2>Warehouse Packing Slip</h2>
+      </div>
+      <div class="order-badge">Order #{{ shipment.orderId }}</div>
     </div>
-    <div class="modern-form">
-      <div class="info-banner" style="background: #ebf8ff; padding: 20px; border-radius: 8px;">
-        <h3 style="margin-top: 0; color: #2b6cb0;">Shipping To:</h3>
-        <p><strong>Customer ID:</strong> {{ shipment.customerId || 'Loading...' }}</p>
-        <p><strong>Current Status:</strong> {{ shipment.status }}</p>
+
+    <div class="slip-body">
+      <div class="customer-info-box">
+        <h4>Shipment Details</h4>
+        <p class="customer-id">Destination Customer: <span>#{{ shipment.customerId || 'Order Detail' }}</span></p>
+        <div class="status-badge" [ngClass]="shipment.status | lowercase">
+            {{ formatStatus(shipment.status) | titlecase }}
+        </div>
       </div>
 
-      <div class="form-actions" style="margin-top: 30px;">
-        <button class="btn-secondary" routerLink="/logistics/queue">Back to Queue</button>
-        <button class="btn-primary" (click)="markAsPacked()" style="background: #2b6cb0;">Verify & Mark Packed</button>
+      <div class="items-container">
+        <h4>Items to Verify ({{ orderItems.length }})</h4>
+        
+        <div class="item-list">
+          <div class="pack-item" *ngFor="let item of orderItems">
+            <img [src]="item.previewImage || 'assets/no-image.png'" class="item-thumb">
+            
+            <div class="item-qty">{{ item.quantity }}x</div>
+            
+            <div class="item-details">
+              <span class="item-name">{{ item.name }}</span>
+              <span class="item-variant">ID: {{ item.productId }} | {{ item.selectedOption }}</span>
+            </div>
+            
+            <div class="check-box" [class.checked]="item.packed" (click)="toggleItemPacked(item)">
+              <span *ngIf="item.packed">✓</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
+
+    <div class="slip-footer">
+      <button class="btn-outline" routerLink="/logistics/queue">Cancel</button>
+      <button class="btn-primary" (click)="markAsPacked()" [disabled]="!allItemsPacked">
+        <span class="icon">✔️</span> Verify & Mark Packed
+      </button>
+    </div>
+
   </div>
 </div>

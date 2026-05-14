@@ -5,6 +5,7 @@ import com.shopsphere.order.DTO.OrderResponse;
 import com.shopsphere.order.DTO.StatusUpdateRequest;
 import com.shopsphere.order.DTO.UserClient;
 import com.shopsphere.order.DTO.UserDTO;
+import com.shopsphere.order.Enums.OrderStatus;
 import com.shopsphere.order.Service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -98,5 +100,15 @@ public class OrderController {
             @RequestHeader(value = "X-Logged-In-User") String username) {
         orderService.syncCart(username, cartJson);
         return ResponseEntity.ok().build();
+    }
+
+    // THE FIX: Endpoint for Logistics Sweeper
+    @GetMapping("/status/{status}")
+    public ResponseEntity<List<OrderResponse>> getOrdersByStatus(@PathVariable("status") OrderStatus status) {
+        List<OrderResponse> allOrders = orderService.getAllOrders();
+        List<OrderResponse> filtered = allOrders.stream()
+                .filter(o -> o.getOrderStatus() == status)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(filtered);
     }
 }

@@ -57,10 +57,11 @@ export class ProductFormComponent implements OnInit {
         basePrice: formVals.price,
         previewImage: formVals.previewImageUrl,
         isActive: formVals.isActive,
-        selectedOptionIds: formVals.selectedOptionIds
+        selectedOptionIds: formVals.selectedOptionIds,
+        stockLevel: formVals.stockLevel 
       };
 
-      this.artisanService.createProductAndInitializeInventory(catalogPayload, formVals.stockLevel)
+      this.artisanService.createProduct(catalogPayload)
         .subscribe({
           next: () => {
             this.isSubmitting = false;

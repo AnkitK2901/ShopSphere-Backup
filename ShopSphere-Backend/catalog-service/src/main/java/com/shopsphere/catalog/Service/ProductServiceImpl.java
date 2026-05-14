@@ -1,5 +1,6 @@
 package com.shopsphere.catalog.Service;
 
+import com.shopsphere.catalog.Client.InventoryFeignClient;
 import com.shopsphere.catalog.Entity.Product;
 import com.shopsphere.catalog.Entity.CustomOption;
 import com.shopsphere.catalog.Exception.ResourceNotFoundException;
@@ -28,6 +29,9 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private CustomOptionRepository optionRepository;
 
+    @Autowired(required = false)
+    private InventoryFeignClient inventoryClient;
+
     @Override
     @CacheEvict(value = "products", allEntries = true) // Clear list cache on new product
     public Product createProduct(ProductRequestDTO dto) {
@@ -42,7 +46,19 @@ public class ProductServiceImpl implements ProductService {
             List<CustomOption> options = optionRepository.findAllById(dto.getSelectedOptionIds());
             product.setCustomOptions(new LinkedHashSet<>(options));
         }
-        return productRepository.save(product);
+        Product savedProduct = productRepository.save(product);
+
+        try {
+            if (inventoryClient != null) {
+                Integer initialStock = (dto.getStockLevel() != null) ? dto.getStockLevel() : 0;
+                inventoryClient.initializeInventory(savedProduct.getProductId(), initialStock);
+                logger.info("Stock initialized via Feign for product: {} with quantity: {}", savedProduct.getProductId(), initialStock);
+            }
+        } catch (Exception e) {
+            logger.error("WARNING: Feign call failed to auto-initialize stock for Product ID {}. Cause: {}", savedProduct.getProductId(), e.getMessage());
+        }
+
+        return savedProduct;
     }
 
     @Override

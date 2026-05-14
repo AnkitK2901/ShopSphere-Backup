@@ -1,7 +1,9 @@
 package com.shopsphere.logistics.service;
 
 import com.shopsphere.logistics.carrier.MockDelhiveryClient;
+import com.shopsphere.logistics.carrier.MockFedExClient;
 import com.shopsphere.logistics.carrier.MockShiprocketClient;
+import com.shopsphere.logistics.client.OrderFeignClient;
 import com.shopsphere.logistics.entity.Shipment;
 import com.shopsphere.logistics.entity.ShipmentStatus;
 import com.shopsphere.logistics.exception.InvalidShipmentStatusException;
@@ -34,6 +36,12 @@ class ShipmentServiceTest {
     @Mock
     private MockShiprocketClient shiprocketClient;
 
+    @Mock
+    private MockFedExClient fedexClient; // FIX: Added missing FedEx mock
+
+    @Mock
+    private OrderFeignClient orderFeignClient; // FIX: Added missing Order service mock
+
     @InjectMocks
     private ShipmentService shipmentService;
 
@@ -65,12 +73,6 @@ class ShipmentServiceTest {
 
         when(repository.findByOrderId(orderId)).thenReturn(Optional.empty());
 
-        if (orderId.hashCode() % 2 == 0) {
-            when(delhiveryClient.createShipment(orderId)).thenReturn(shipment);
-        } else {
-            when(shiprocketClient.createShipment(orderId)).thenReturn(shipment);
-        }
-
         when(repository.save(any(Shipment.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -79,6 +81,8 @@ class ShipmentServiceTest {
         assertNotNull(result.getShipmentId());
         assertEquals(orderId, result.getOrderId());
         assertEquals(ShipmentStatus.CREATED, result.getStatus());
+        // FIX: Verify it creates an unassigned blank ticket, not a random carrier
+        assertEquals("Unassigned", result.getCarrier()); 
     }
 
     @Test
@@ -121,17 +125,19 @@ class ShipmentServiceTest {
                 .thenReturn(Optional.of(shipment));
         when(repository.save(any(Shipment.class))).thenReturn(shipment);
 
+        // FIX: Passing null for carrier and testing the new "packed" status
         Shipment result =
-                shipmentService.updateShipmentStatusByOrderId("order-123", "picked_up");
+                shipmentService.updateShipmentStatusByOrderId("order-123", "packed", null);
 
-        assertEquals(ShipmentStatus.PICKED_UP, result.getStatus());
+        assertEquals(ShipmentStatus.PACKED, result.getStatus());
     }
 
     @Test
     void shouldThrowExceptionForInvalidStatusValue() {
+        // FIX: Passing null for carrier
         assertThrows(
                 InvalidShipmentStatusException.class,
-                () -> shipmentService.updateShipmentStatusByOrderId("order-123", "INVALID")
+                () -> shipmentService.updateShipmentStatusByOrderId("order-123", "INVALID", null) 
         );
     }
 
@@ -142,15 +148,17 @@ class ShipmentServiceTest {
         when(repository.findByOrderId("order-123"))
                 .thenReturn(Optional.of(shipment));
 
+        // FIX: Passing null for carrier
         assertThrows(
                 InvalidShipmentStatusException.class,
-                () -> shipmentService.updateShipmentStatusByOrderId("order-123", "DELIVERED")
+                () -> shipmentService.updateShipmentStatusByOrderId("order-123", "DELIVERED", null) 
         );
     }
 
     @Test
     void shouldProgressShipmentStatus() {
-        shipment.setStatus(ShipmentStatus.CREATED);
+        // FIX: Simulator ignores CREATED now, so we start the test at PACKED
+        shipment.setStatus(ShipmentStatus.PACKED); 
         shipment.setUpdatedAt(LocalDateTime.now().minusMinutes(2));
 
         when(repository.findByStatusNot(ShipmentStatus.DELIVERED))
@@ -160,6 +168,7 @@ class ShipmentServiceTest {
         shipmentService.simulateShipmentProgress();
 
         verify(repository).save(shipment);
-        assertEquals(ShipmentStatus.PICKED_UP, shipment.getStatus());
+        // FIX: Status progresses from PACKED -> IN_TRANSIT
+        assertEquals(ShipmentStatus.IN_TRANSIT, shipment.getStatus());
     }
 }

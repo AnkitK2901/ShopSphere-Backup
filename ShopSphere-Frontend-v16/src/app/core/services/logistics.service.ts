@@ -25,14 +25,23 @@ export class LogisticsService {
       .pipe(catchError(this.handleError));
   }
 
+  // THE FIX: Added the missing method to talk to the new backend endpoint
+  getEnrichedShipmentByOrderId(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/enriched/order/${id}`)
+      .pipe(catchError(this.handleError));
+  }
+
   getAllShipments(): Observable<ShipmentResponse[]> {
-    // FIX: Removed /all. Calling base URL matches backend GET endpoint
     return this.http.get<ShipmentResponse[]>(this.apiUrl)
       .pipe(catchError(this.handleError));
   }
 
-  updateStatus(orderId: string, newStatus: string): Observable<ShipmentResponse> {
-    return this.http.patch<ShipmentResponse>(`${this.apiUrl}/order/${orderId}/${newStatus}`, {})
+  updateStatus(orderId: string, newStatus: string, carrier?: string): Observable<ShipmentResponse> {
+    let url = `${this.apiUrl}/order/${orderId}/${newStatus}`;
+    if (carrier) {
+      url += `?carrier=${encodeURIComponent(carrier)}`;
+    }
+    return this.http.patch<ShipmentResponse>(url, {})
       .pipe(catchError(this.handleError));
   }
 

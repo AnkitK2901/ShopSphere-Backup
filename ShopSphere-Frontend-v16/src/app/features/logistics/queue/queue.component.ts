@@ -29,7 +29,6 @@ export class QueueComponent implements OnInit {
         if (!shipments) {
           this.activeShipments = [];
         } else {
-          // FIX: Changed from shipmentStatus to status to match Backend JSON
           this.activeShipments = shipments.filter(
             (s: any) => s.status?.toUpperCase() !== 'DELIVERED',
           );
@@ -38,19 +37,22 @@ export class QueueComponent implements OnInit {
       },
       error: (err) => {
         console.error(err);
-        this.errorMessage =
-          'Failed to load the fulfillment queue. Check backend connection.';
+        this.errorMessage = 'Failed to load the fulfillment queue. Check backend connection.';
         this.isLoading = false;
       },
     });
   }
 
+  // THE FIX: Cleans the raw backend enum string for the UI
+  formatStatus(status: string): string {
+    if (!status) return '';
+    return status.replace(/_/g, ' ');
+  }
+
   updateStatus(orderId: string, newStatus: string): void {
     this.logisticsService.updateStatus(orderId, newStatus).subscribe({
       next: () => {
-        this.toastService.showSuccess(
-          `Shipment for Order #${orderId} updated to ${newStatus}`,
-        );
+        this.toastService.showSuccess(`Shipment for Order #${orderId} updated to ${newStatus}`);
         this.fetchQueue();
       },
       error: (err) => {

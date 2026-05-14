@@ -1,25 +1,58 @@
 <div class="dashboard-container" *ngIf="!isLoading && shipment">
-  <div class="form-card">
-    <div class="form-header" style="background: #2f855a;">
-      <h2>Dispatch: Order #{{ shipment.orderId }}</h2>
-      <p>Assign carrier and generate tracking.</p>
-    </div>
-    <div class="modern-form">
-      <div class="form-row">
-        <div class="form-group full-width">
-          <label>Select Carrier</label>
-          <select [(ngModel)]="selectedCarrier" style="padding: 12px; border-radius: 8px; border: 1px solid #cbd5e0;">
-            <option value="Delhivery">Delhivery Express</option>
-            <option value="Shiprocket">Shiprocket Prime</option>
-            <option value="FedEx">FedEx International</option>
-          </select>
-        </div>
+  <div class="dispatch-card">
+    
+    <div class="dispatch-header">
+      <div class="header-content">
+        <span class="icon">🚚</span>
+        <h2>Dispatch Order #{{ shipment.orderId }}</h2>
       </div>
+      <p>Assign a shipping carrier to generate tracking details.</p>
+    </div>
 
-      <div class="form-actions" style="margin-top: 30px;">
-        <button class="btn-secondary" routerLink="/logistics/queue">Cancel</button>
-        <button class="btn-primary" (click)="dispatchShipment()" style="background: #2f855a;">Handover to Carrier</button>
+    <div class="dispatch-body">
+      <div class="carrier-selection">
+        <h4>Select Delivery Partner</h4>
+        
+        <label class="carrier-option">
+          <input type="radio" name="carrier" value="Delhivery" [(ngModel)]="selectedCarrier">
+          <div class="carrier-card">
+            <div class="radio-circle"></div>
+            <div class="carrier-details">
+              <span class="carrier-name">Delhivery Express</span>
+              <span class="carrier-desc">Standard 3-4 days delivery</span>
+            </div>
+          </div>
+        </label>
+
+        <label class="carrier-option">
+          <input type="radio" name="carrier" value="Shiprocket" [(ngModel)]="selectedCarrier">
+          <div class="carrier-card">
+            <div class="radio-circle"></div>
+            <div class="carrier-details">
+              <span class="carrier-name">Shiprocket Prime</span>
+              <span class="carrier-desc">Aggregated reliable shipping</span>
+            </div>
+          </div>
+        </label>
+
+        <label class="carrier-option">
+          <input type="radio" name="carrier" value="FedEx" [(ngModel)]="selectedCarrier">
+          <div class="carrier-card">
+            <div class="radio-circle"></div>
+            <div class="carrier-details">
+              <span class="carrier-name">FedEx International</span>
+              <span class="carrier-desc">Expedited 2-day priority delivery</span>
+            </div>
+          </div>
+        </label>
+
       </div>
     </div>
+
+    <div class="dispatch-footer">
+      <button class="btn-outline" routerLink="/logistics/queue">Cancel</button>
+      <button class="btn-primary" (click)="dispatchShipment()">Handover to Carrier</button>
+    </div>
+
   </div>
 </div>

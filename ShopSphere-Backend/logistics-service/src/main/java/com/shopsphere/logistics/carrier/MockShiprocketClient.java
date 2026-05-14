@@ -11,7 +11,7 @@ public class MockShiprocketClient implements CarrierClient {
     @Override
     public Shipment createShipment(String orderId) {
         Shipment shipment = new Shipment();
-        shipment.setCarrier("MOCK_SHIPROCKET");
+        shipment.setCarrier("SHIPROCKET");
         shipment.setTrackingNumber("SR" + System.currentTimeMillis());
         shipment.setTrackingUrl("https://mock-shiprocket/track");
         shipment.setEstimatedDelivery(LocalDate.now().plusDays(3));

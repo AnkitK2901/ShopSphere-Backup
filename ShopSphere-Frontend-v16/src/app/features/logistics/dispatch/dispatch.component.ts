@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LogisticsService } from '../../../core/services/logistics.service';
 import { ToastService } from '../../../core/services/toast.service';
+
 @Component({
   selector: 'app-dispatch',
   templateUrl: './dispatch.component.html',
@@ -10,7 +11,7 @@ import { ToastService } from '../../../core/services/toast.service';
 export class DispatchComponent implements OnInit {
   shipment: any = null;
   isLoading: boolean = true;
-  selectedCarrier: string = 'Delhivery'; // Default mock carrier
+  selectedCarrier: string = 'Delhivery'; 
 
   constructor(
     private route: ActivatedRoute,
@@ -38,8 +39,7 @@ export class DispatchComponent implements OnInit {
 
   dispatchShipment(): void {
     if (this.shipment) {
-      // FIX: Triggers the SHIPPED status, which alerts the downstream Carrier clients in Spring Boot
-      this.logisticsService.updateStatus(this.shipment.orderId, 'SHIPPED').subscribe({
+      this.logisticsService.updateStatus(this.shipment.orderId, 'IN_TRANSIT', this.selectedCarrier).subscribe({
         next: () => {
           this.toastService.showSuccess(`Package dispatched via ${this.selectedCarrier}! Tracking generated.`);
           this.router.navigate(['/logistics/queue']);

@@ -49,7 +49,6 @@ export class CheckoutComponent implements OnInit {
   }
 
   placeOrder(): void {
-    // 🛡️ THE FIX: Enterprise Form Validation UX
     if (this.checkoutForm.invalid) {
       this.checkoutForm.markAllAsTouched();
       this.toastService.showError('Please complete all required fields (highlighted in red) correctly.');
@@ -61,7 +60,6 @@ export class CheckoutComponent implements OnInit {
     const mappedItems = this.cartItems.map((item) => {
       let optionString = '';
       
-      // Handle the "None" string safely
       if (item.selectedOption && item.selectedOption !== "None") {
         optionString = `${item.selectedOption.type}: ${item.selectedOption.value}`;
       } else if (item.selectedOption === "None") {
@@ -90,24 +88,39 @@ export class CheckoutComponent implements OnInit {
           this.orderService.confirmPayment(response.orderId).subscribe({
             next: () => {
               this.cartService.clearCart();
-              this.toastService.showSuccess(
-                'Payment Successful! Order confirmed and sent to logistics.',
-              );
-              this.router.navigate(['/orders/history']);
+              this.toastService.showSuccess('Payment Successful! Order confirmed and sent to logistics.');
+              this.router.navigate(['/history']);
             },
             error: (err) => {
-              this.toastService.showError(
-                'Payment confirmed, but logistics sync failed.',
-              );
+              this.toastService.showError('Payment confirmed, but logistics sync failed.');
               this.isProcessing = false;
             },
           });
         },
         error: (err) => {
-          this.toastService.showError(
-            'Failed to process payment. Ensure your backend Microservices are running.',
-          );
           this.isProcessing = false;
+          
+          // THE FIX: Intercept the specific backend error payload
+          const errorMessage = err.error?.message || err.message || '';
+          
+          if (typeof errorMessage === 'string' && errorMessage.includes('CART_MODIFIED')) {
+            const parts = errorMessage.split(':');
+            
+            if (parts.length > 1) {
+              // Extract the dead product IDs and purge them from the local cart
+              const deadIds = parts[1].split(',').map((id: string) => parseInt(id.trim(), 10));
+              deadIds.forEach((id: number) => {
+                if (!isNaN(id)) {
+                  this.cartService.removeFromCart(id);
+                }
+              });
+            }
+            
+            this.toastService.showError('Oops! An item in your cart is out of stock or no longer available. We have updated your cart.');
+            this.router.navigate(['/cart']);
+          } else {
+            this.toastService.showError('Failed to process payment. Ensure your backend Microservices are running.');
+          }
         },
       });
   }

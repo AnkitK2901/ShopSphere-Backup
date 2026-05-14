@@ -34,4 +34,12 @@ export class OrderService {
     const payload = { newStatus: status }; 
     return this.http.patch(`${this.apiUrl}/${orderId}/status`, payload); 
   }
+  // THE FIX: Adding cancel and return API triggers
+  cancelOrder(orderId: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${orderId}/cancel`, {});
+  }
+
+  returnOrder(orderId: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${orderId}/return`, {});
+  }
 }

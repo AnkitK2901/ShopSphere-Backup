@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LogisticsService } from '../../../core/services/logistics.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { OrderService } from '../../../core/services/order.service';
 
 @Component({
   selector: 'app-packing',
@@ -11,53 +10,57 @@ import { OrderService } from '../../../core/services/order.service';
 })
 export class PackingComponent implements OnInit {
   shipment: any = null;
+  orderItems: any[] = [];
   isLoading: boolean = true;
 
   constructor(
     private route: ActivatedRoute,
     private logisticsService: LogisticsService,
     private router: Router,
-    private toastService: ToastService,
-    private orderService: OrderService
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
-      this.logisticsService.getShipmentById(Number(id)).subscribe({
-        next: (data) => {
-          this.shipment = data;
-          
-          // ADDED BLOCK: Fetch the Order details to get the real Customer ID
-          this.orderService.getOrderById(this.shipment.orderId).subscribe({
-             next: (orderData: any) => { // FIX: Added explicit ': any' here
-                this.shipment.customerId = orderData.customerId;
-             }
-          });
-
+      this.logisticsService.getEnrichedShipmentByOrderId(Number(id)).subscribe({
+        next: (data: any) => {
+          this.shipment = data.shipment;
+          this.orderItems = data.items.map((item: any) => ({
+            ...item,
+            packed: false 
+          }));
           this.isLoading = false;
         },
-        error: (err) => {
-          console.error(err);
-          this.toastService.showError('Failed to load shipment details.');
+        // THE FIX: Added ': any' to satisfy TypeScript's strict mode
+        error: (err: any) => {
+          this.toastService.showError('Failed to load enriched shipment data.');
           this.router.navigate(['/logistics/queue']);
         }
       });
     }
   }
 
+  toggleItemPacked(item: any): void {
+    item.packed = !item.packed;
+  }
+
+  get allItemsPacked(): boolean {
+    return this.orderItems.length > 0 && this.orderItems.every(i => i.packed);
+  }
+
+  formatStatus(status: string): string {
+    return status ? status.replace(/_/g, ' ') : '';
+  }
+
   markAsPacked(): void {
-    if (this.shipment) {
-      // FIX: Using the newly secured updateStatus method
+    if (this.shipment && this.allItemsPacked) {
       this.logisticsService.updateStatus(this.shipment.orderId, 'PACKED').subscribe({
         next: () => {
-          this.toastService.showSuccess('Shipment marked as PACKED. Ready for dispatch.');
+          this.toastService.showSuccess('Shipment Packed! Moving to Dispatch queue.');
           this.router.navigate(['/logistics/queue']);
         },
-        error: (err) => {
-          console.error(err);
-          this.toastService.showError('Failed to update status.');
-        }
+        error: (err: any) => this.toastService.showError('Status update failed.')
       });
     }
   }

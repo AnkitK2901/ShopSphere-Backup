@@ -13,13 +13,14 @@ export class CartService {
   private cartSubject = new BehaviorSubject<any[]>(this.cartItems);
   cartItems$ = this.cartSubject.asObservable();
 
-  // THE FIX: Injected HttpClient
   constructor(private http: HttpClient) {}
 
   addToCart(product: any, quantity: number = 1): void {
     const existingItemIndex = this.cartItems.findIndex((item) => {
-      const isSameProduct =
-        item.productId === product.productId || item.id === product.id;
+      // FIX: Safely check IDs so undefined doesn't match undefined
+      const incomingId = product.productId || product.id;
+      const existingId = item.productId || item.id;
+      const isSameProduct = incomingId === existingId;
 
       const isSameOption =
         (!item.selectedOption && !product.selectedOption) ||
@@ -90,7 +91,6 @@ export class CartService {
     localStorage.setItem('shopsphere_cart', JSON.stringify(this.cartItems));
     this.cartSubject.next(this.cartItems);
     
-    // THE FIX: Sync to backend
     this.syncWithBackend();
   }
 

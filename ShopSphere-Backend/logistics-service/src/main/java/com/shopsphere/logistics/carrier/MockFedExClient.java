@@ -2,20 +2,17 @@ package com.shopsphere.logistics.carrier;
 
 import com.shopsphere.logistics.entity.Shipment;
 import org.springframework.stereotype.Component;
-
 import java.time.LocalDate;
 
 @Component
-public class MockDelhiveryClient implements CarrierClient {
-
+public class MockFedExClient implements CarrierClient {
     @Override
     public Shipment createShipment(String orderId) {
         Shipment shipment = new Shipment();
-        shipment.setCarrier("DELHIVERY");
-        shipment.setTrackingNumber("DLV" + System.currentTimeMillis());
-        shipment.setTrackingUrl("https://mock-delhivery/track");
-        shipment.setEstimatedDelivery(LocalDate.now().plusDays(4));
+        shipment.setCarrier("FedEx");
+        shipment.setTrackingNumber("FX" + System.currentTimeMillis());
+        shipment.setTrackingUrl("https://www.fedex.com/fedextrack/");
+        shipment.setEstimatedDelivery(LocalDate.now().plusDays(2));
         return shipment;
     }
-
 }

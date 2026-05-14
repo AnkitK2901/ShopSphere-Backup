@@ -18,4 +18,6 @@ public class ProductRequestDTO {
     
     // RESTORED YOUR EXACT VARIABLE NAME
     private List<Long> selectedOptionIds; 
+    
+    private Integer stockLevel;
 }

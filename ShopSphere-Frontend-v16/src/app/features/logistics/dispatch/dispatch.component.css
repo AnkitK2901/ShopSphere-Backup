@@ -1,70 +1,157 @@
-/* Borrows the layout structure from Packing CSS */
-.logistics-wrapper {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 40px 20px;
+.dashboard-container {
+  padding: 40px 20px;
+  background-color: #f4f7f6;
+  min-height: calc(100vh - 80px);
+  display: flex;
+  justify-content: center;
 }
 
-.header-nav {
-    margin-bottom: 20px;
+.dispatch-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 600px;
+  overflow: hidden;
 }
 
-.back-link {
-    color: #0056b3;
-    text-decoration: none;
-    font-weight: bold;
-    margin-bottom: 10px;
-    display: inline-block;
+.dispatch-header {
+  background: #2f855a;
+  color: white;
+  padding: 25px 30px;
 }
 
-.packing-card {
-    background: #ffffff;
-    padding: 30px;
-    border: 1px solid #cccccc;
-    border-radius: 4px;
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
 }
 
-.instruction {
-    color: #666;
-    font-size: 14px;
-    margin-bottom: 20px;
+.header-content h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
 }
 
-.input-group {
-    margin-bottom: 20px;
+.dispatch-header p {
+  margin: 0;
+  color: #c6f6d5;
+  font-size: 14px;
 }
 
-.input-group label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 8px;
-    font-size: 13px;
-    text-transform: uppercase;
-    color: #444;
+.dispatch-body {
+  padding: 30px;
 }
 
-.input-group input,
-.input-group select {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 15px;
+.carrier-selection h4 {
+  margin: 0 0 20px 0;
+  color: #2d3748;
+  font-size: 16px;
 }
 
-.action-btn {
-    width: 100%;
-    padding: 15px;
-    background: #28a745;
-    color: white;
-    border: none;
-    font-size: 16px;
-    font-weight: bold;
-    border-radius: 4px;
-    cursor: pointer;
+.carrier-option {
+  display: block;
+  margin-bottom: 15px;
+  cursor: pointer;
 }
 
-.action-btn:disabled {
-    background: #cccccc;
-    cursor: not-allowed;
+.carrier-option input[type="radio"] {
+  display: none; /* Hide default radio */
+}
+
+.carrier-card {
+  display: flex;
+  align-items: center;
+  padding: 18px 20px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  transition: all 0.2s;
+  background: #fafa;
+}
+
+.carrier-option input[type="radio"]:checked + .carrier-card {
+  border-color: #2f855a;
+  background: #f0fff4;
+  box-shadow: 0 2px 8px rgba(47, 133, 90, 0.15);
+}
+
+.radio-circle {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #cbd5e0;
+  border-radius: 50%;
+  margin-right: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.carrier-option input[type="radio"]:checked + .carrier-card .radio-circle {
+  border-color: #2f855a;
+}
+
+.carrier-option input[type="radio"]:checked + .carrier-card .radio-circle::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  background: #2f855a;
+  border-radius: 50%;
+}
+
+.carrier-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.carrier-name {
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 16px;
+}
+
+.carrier-desc {
+  font-size: 13px;
+  color: #718096;
+  margin-top: 4px;
+}
+
+.dispatch-footer {
+  padding: 20px 30px;
+  background: #f7fafc;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+}
+
+.btn-outline {
+  padding: 10px 20px;
+  background: transparent;
+  border: 1px solid #a0aec0;
+  color: #4a5568;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-outline:hover {
+  background: #e2e8f0;
+}
+
+.btn-primary {
+  padding: 10px 24px;
+  background: #2f855a;
+  border: none;
+  color: white;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-primary:hover {
+  background: #276749;
 }

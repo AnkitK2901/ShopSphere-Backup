@@ -1,10 +1,13 @@
 <div class="history-wrapper">
+
   <div class="history-header">
     <h2>My Orders</h2>
     <p>Track your recent purchases and shipments.</p>
   </div>
 
-  <div *ngIf="isLoading" class="status-box">Loading your order history...</div>
+  <div *ngIf="isLoading" class="status-box">
+    Loading your order history...
+  </div>
 
   <div *ngIf="!isLoading && orders.length === 0" class="status-box empty-state">
     <h3>You haven't placed any orders yet.</h3>
@@ -26,48 +29,82 @@
 
       <div class="tracker-section">
         <p class="status-text">
-          Current Status: <strong [style.color]="getProgressColor(order.orderStatus)">{{ order.orderStatus || 'PENDING_PAYMENT' }}</strong>
+          Current Status: <strong [style.color]="getProgressColor(order.orderStatus)">{{ formatStatus(order.orderStatus
+            || 'PENDING_PAYMENT') | titlecase }}</strong>
         </p>
 
-        <div class="progress-track">
-          <div class="progress-fill" [style.width]="getProgressWidth(order.orderStatus)"
-            [style.background-color]="getProgressColor(order.orderStatus)">
+        <div class="modern-tracker" *ngIf="order.orderStatus !== 'CANCELLED' && order.orderStatus !== 'RETURNED'">
+          <div class="track-line">
+            <div class="track-fill" [style.width]="getProgressWidth(order.orderStatus)"
+              [style.background-color]="getProgressColor(order.orderStatus)">
+            </div>
+          </div>
+
+          <div class="track-steps" [style.color]="getProgressColor(order.orderStatus)">
+            <div class="step" [class.active]="isStatusReached(order.orderStatus, 'CONFIRMED')">
+              <div class="step-dot"></div>
+              <span class="step-label">Confirmed</span>
+            </div>
+            <div class="step" [class.active]="isStatusReached(order.orderStatus, 'PACKED')">
+              <div class="step-dot"></div>
+              <span class="step-label">Packed</span>
+            </div>
+            <div class="step" [class.active]="isStatusReached(order.orderStatus, 'SHIPPED')">
+              <div class="step-dot"></div>
+              <span class="step-label">Shipped</span>
+            </div>
+            <div class="step" [class.active]="isStatusReached(order.orderStatus, 'OUT_FOR_DELIVERY')">
+              <div class="step-dot"></div>
+              <span class="step-label" style="text-align: center;">Out For<br>Delivery</span>
+            </div>
+            <div class="step" [class.active]="isStatusReached(order.orderStatus, 'DELIVERED')">
+              <div class="step-dot"></div>
+              <span class="step-label">Delivered</span>
+            </div>
           </div>
         </div>
+      </div>
 
-        <div class="tracker-labels">
-          <span>Confirmed</span>
-          <span>Packed</span>
-          <span>Shipped</span>
-          <span>Delivered</span>
+      <div class="info-blocks">
+        <div *ngIf="order.trackingUrl" class="info-card tracking">
+          <h4>Carrier: {{ order.carrier }}</h4>
+          <a [href]="order.trackingUrl" target="_blank"
+            style="color:#3182ce; font-weight:bold; text-decoration:none;">Track Package ↗</a>
+        </div>
+
+        <div *ngIf="order.shippingAddress" class="info-card shipping"
+          [ngStyle]="{'grid-column': !order.trackingUrl ? '1 / -1' : 'auto'}">
+          <h4>Shipping To</h4>
+          <p>{{ order.shippingAddress }}</p>
         </div>
       </div>
+      <div class="order-actions" *ngIf="order.orderStatus !== 'CANCELLED' && order.orderStatus !== 'RETURNED'" 
+           style="padding: 15px 30px; background: #fff; border-top: 1px solid #edf2f7; display: flex; gap: 15px;">
+           
+        <button *ngIf="order.orderStatus === 'CONFIRMED' || order.orderStatus === 'PACKED' || order.orderStatus === 'PENDING_PAYMENT'" 
+                class="btn-outline" style="color: #e53e3e; border-color: #e53e3e;" 
+                (click)="cancelOrder(order.orderId)">
+            Cancel Order
+        </button>
 
-      <div *ngIf="order.trackingUrl" class="tracking-info"
-        style="margin-top:15px; padding:10px; background:#ebf8ff; border-radius:6px; color:#2b6cb0;">
-        <strong>Carrier:</strong> {{ order.carrier }} |
-        <a [href]="order.trackingUrl" target="_blank" style="color:#3182ce; text-decoration:underline;">Track Package</a>
+        <button *ngIf="order.orderStatus === 'DELIVERED'" 
+                class="btn-outline" 
+                (click)="returnOrder(order.orderId)">
+            Return Order
+        </button>
       </div>
-      <div *ngIf="order.shippingAddress" class="shipping-info"
-        style="margin-top:15px; padding:12px; background:#f7fafc; border-radius:6px; border: 1px solid #e2e8f0;">
-        <h4 style="margin:0 0 5px 0; color:#4a5568; font-size: 0.95rem;">Shipping To:</h4>
-        <p style="margin:0; color:#2d3748; font-size: 0.95rem;">{{ order.shippingAddress }}</p>
-      </div>
+
       <div class="order-items">
-        <h4>Items in this shipment:</h4>
+        <h4>Items in this shipment</h4>
 
-        <div *ngFor="let item of order.items" class="product-preview"
-          style="display: flex; gap: 15px; align-items: center; margin-top: 10px; padding-bottom: 10px; border-bottom: 1px solid #edf2f7;">
-          <img *ngIf="item.productImage" [src]="item.productImage" alt="Product"
-            style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0;">
-          <div *ngIf="!item.productImage"
-            style="width: 60px; height: 60px; background: #e2e8f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #a0aec0; font-size: 0.8rem;">
-            No Img</div>
-          <div>
-            <h4 style="margin: 0; font-size: 1.1rem; color: #2d3748;">{{ item.productName || 'Product ID: ' + item.productId }}</h4>
-            <p style="margin: 5px 0 0 0; color: #718096; font-size: 0.9rem;">Qty: {{ item.quantity }} | Unit Price: ₹{{
-              item.price | number:'1.2-2' }}</p>
-            <p *ngIf="item.selectedOption" style="margin: 2px 0 0 0; color: #4a5568; font-size: 0.85rem; font-style: italic;">
+        <div *ngFor="let item of order.items" class="product-preview">
+          <img *ngIf="item.productImage" [src]="item.productImage" alt="Product" class="product-img">
+          <div *ngIf="!item.productImage" class="no-img">No Img</div>
+
+          <div class="item-text">
+            <h4>{{ item.productName || 'Product ID: ' + item.productId }}</h4>
+            <p class="item-meta">Qty: {{ item.quantity }} | Unit Price: ₹{{ item.price | number:'1.2-2' }}</p>
+            <p *ngIf="item.selectedOption && item.selectedOption !== 'None'" class="item-custom">
               Customization: {{ item.selectedOption }}
             </p>
           </div>

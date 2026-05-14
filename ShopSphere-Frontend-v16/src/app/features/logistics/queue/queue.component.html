@@ -43,13 +43,14 @@
           </td>
           <td>
             <span class="status-badge" [ngClass]="shipment.status?.toLowerCase()">
-              {{ shipment.status }}
+              {{ formatStatus(shipment.status) | titlecase }}
             </span>
           </td>
           <td class="action-cell">
-            <button class="btn-small" (click)="goToPacking(shipment.orderId)" *ngIf="shipment.status?.toUpperCase() === 'CREATED' || shipment.status?.toUpperCase() === 'PENDING'">Pack</button>
-            <button class="btn-small primary" (click)="goToDispatch(shipment.orderId)" *ngIf="shipment.status?.toUpperCase() === 'PICKED_UP'">Dispatch</button>
-            <span *ngIf="shipment.status?.toUpperCase() === 'IN_TRANSIT'" class="text-success">In Transit</span>
+            <button class="btn-small" (click)="goToPacking(shipment.orderId)" *ngIf="shipment.status?.toUpperCase() === 'CREATED'">Pack</button>
+            <button class="btn-small primary" (click)="goToDispatch(shipment.orderId)" *ngIf="shipment.status?.toUpperCase() === 'PACKED'">Dispatch</button>
+            
+            <span *ngIf="shipment.status?.toUpperCase() !== 'CREATED' && shipment.status?.toUpperCase() !== 'PACKED'" class="text-muted">--</span>
           </td>
         </tr>
       </tbody>
