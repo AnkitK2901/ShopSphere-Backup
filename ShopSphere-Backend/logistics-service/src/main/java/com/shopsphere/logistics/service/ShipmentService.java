@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.ArrayList;
 
 @Service
 public class ShipmentService {
@@ -82,7 +83,6 @@ public class ShipmentService {
                         "Shipment not found for orderId: " + orderId));
     }
 
-    // THE FIX: Added warning suppression for the type cast to clear the VS Code yellow line
     @SuppressWarnings("unchecked")
     public Map<String, Object> getEnrichedShipmentByOrderId(String orderId) {
         Shipment shipment = repository.findByOrderId(orderId)
@@ -93,25 +93,25 @@ public class ShipmentService {
 
         try {
             Map<String, Object> orderDetails = orderFeignClient.getOrderById(Long.parseLong(orderId));
-            List<Map<String, Object>> orderItems = (List<Map<String, Object>>) orderDetails.get("items");
+            // FIX: Safely extract and check for null items
+            Object itemsObj = orderDetails.get("items");
+            List<Map<String, Object>> orderItems = (itemsObj instanceof List) ? (List<Map<String, Object>>) itemsObj : new ArrayList<>();
 
-            if (orderItems != null) {
-                for (Map<String, Object> item : orderItems) {
-                    try {
-                        Long productId = Long.valueOf(item.get("productId").toString());
-                        Map<String, Object> productData = catalogFeignClient.getProductById(productId);
-                        item.put("name", productData.get("name"));
-                        item.put("previewImage", productData.get("previewImage"));
-                        item.put("description", productData.get("description"));
-                    } catch (Exception e) {
-                        item.put("name", "Product Unavailable");
-                    }
+            for (Map<String, Object> item : orderItems) {
+                try {
+                    Long productId = Long.valueOf(item.get("productId").toString());
+                    Map<String, Object> productData = catalogFeignClient.getProductById(productId);
+                    item.put("name", productData.get("name"));
+                    item.put("previewImage", productData.get("previewImage"));
+                    item.put("description", productData.get("description"));
+                } catch (Exception e) {
+                    item.put("name", "Product ID: " + item.get("productId"));
                 }
             }
             response.put("items", orderItems);
         } catch (Exception e) {
             System.err.println("Failed to enrich shipment data: " + e.getMessage());
-            response.put("items", java.util.Collections.emptyList());
+            response.put("items", new ArrayList<>());
         }
 
         return response;

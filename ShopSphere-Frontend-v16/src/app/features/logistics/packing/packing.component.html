@@ -4,44 +4,50 @@
     <div class="slip-header">
       <div class="slip-title">
         <span class="icon">📦</span>
-        <h2>Warehouse Packing Slip</h2>
+        <h2>Packing Slip</h2>
       </div>
       <div class="order-badge">Order #{{ shipment.orderId }}</div>
     </div>
 
     <div class="slip-body">
       <div class="customer-info-box">
-        <h4>Shipment Details</h4>
-        <p class="customer-id">Destination Customer: <span>#{{ shipment.customerId || 'Order Detail' }}</span></p>
-        <div class="status-badge" [ngClass]="shipment.status | lowercase">
-            {{ formatStatus(shipment.status) | titlecase }}
-        </div>
+        <h4>Shipping Destination</h4>
+        <p class="customer-id">Customer ID: <span>{{ shipment.customerId || 'Loading...' }}</span></p>
+        <div class="status-badge" [ngClass]="shipment.status | lowercase">{{ formatStatus(shipment.status) | titlecase }}</div>
       </div>
 
       <div class="items-container">
-        <h4>Items to Verify ({{ orderItems.length }})</h4>
+        <h4>Items to Pack ({{ orderItems.length || 0 }})</h4>
         
         <div class="item-list">
           <div class="pack-item" *ngFor="let item of orderItems">
-            <img [src]="item.previewImage || 'assets/no-image.png'" class="item-thumb">
-            
+            <div class="item-img-container">
+               <img *ngIf="item.previewImage" [src]="item.previewImage" class="item-thumbnail">
+               <div *ngIf="!item.previewImage" class="no-img-placeholder">No Image</div>
+            </div>
+
             <div class="item-qty">{{ item.quantity }}x</div>
-            
             <div class="item-details">
               <span class="item-name">{{ item.name }}</span>
-              <span class="item-variant">ID: {{ item.productId }} | {{ item.selectedOption }}</span>
+              <span class="item-variant" *ngIf="item.selectedOption && item.selectedOption !== 'None'">Variant: {{ item.selectedOption }}</span>
+              <span class="product-id-tag">SKU: {{ item.productId }}</span>
             </div>
             
             <div class="check-box" [class.checked]="item.packed" (click)="toggleItemPacked(item)">
               <span *ngIf="item.packed">✓</span>
             </div>
           </div>
+          
+          <div class="empty-items" *ngIf="!orderItems || orderItems.length === 0">
+            No items found for this order.
+          </div>
         </div>
       </div>
     </div>
 
     <div class="slip-footer">
-      <button class="btn-outline" routerLink="/logistics/queue">Cancel</button>
+      <button class="btn-outline" routerLink="/logistics/queue">Back to Queue</button>
+      
       <button class="btn-primary" (click)="markAsPacked()" [disabled]="!allItemsPacked">
         <span class="icon">✔️</span> Verify & Mark Packed
       </button>

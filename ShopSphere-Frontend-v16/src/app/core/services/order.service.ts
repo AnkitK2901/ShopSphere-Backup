@@ -19,13 +19,10 @@ export class OrderService {
     return this.http.post(`${this.apiUrl}/${orderId}/confirm-payment`, {});
   }
 
-  // FIX: Completely secured. The API Gateway applies the JWT token,
-  // and the Backend controller figures out who the user is.
   getMyOrders(): Observable<any> {
     return this.http.get(`${this.apiUrl}/my-history`);
   }
 
-  // ADDED MISSING METHOD:
   getOrderById(orderId: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/${orderId}`);
   }
@@ -34,7 +31,7 @@ export class OrderService {
     const payload = { newStatus: status }; 
     return this.http.patch(`${this.apiUrl}/${orderId}/status`, payload); 
   }
-  // THE FIX: Adding cancel and return API triggers
+
   cancelOrder(orderId: number): Observable<any> {
     return this.http.put(`${this.apiUrl}/${orderId}/cancel`, {});
   }
