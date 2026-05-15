@@ -18,8 +18,8 @@ public class OrderResponse {
     private LocalDateTime updatedAt;
     private String trackingUrl;
     private String carrier;
-
+    private String cancellationReason;
     // FIX: Changed from String to Long to match the first item in the list
-    private Long productId; 
+    private Long productId;
     private int quantity;
 }

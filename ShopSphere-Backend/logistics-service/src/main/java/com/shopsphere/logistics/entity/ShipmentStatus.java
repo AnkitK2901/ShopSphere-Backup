@@ -5,11 +5,13 @@ public enum ShipmentStatus {
     PACKED,
     IN_TRANSIT,
     OUT_FOR_DELIVERY,
-    DELIVERED;
+    DELIVERED,
+    CANCELLED; // FIX: Added CANCELLED
 
     public boolean canTransitionTo(ShipmentStatus nextStatus) {
-        boolean isValid;
+        if (nextStatus == CANCELLED) return true; // Can cancel anytime
 
+        boolean isValid;
         switch (this) {
             case CREATED:
                 isValid = nextStatus == PACKED;
@@ -30,7 +32,6 @@ public enum ShipmentStatus {
                 isValid = false;
                 break;
         }
-
         return isValid;
     }
 }

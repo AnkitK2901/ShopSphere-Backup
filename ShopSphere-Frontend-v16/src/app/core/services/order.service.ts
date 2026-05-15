@@ -36,7 +36,8 @@ export class OrderService {
     return this.http.put(`${this.apiUrl}/${orderId}/cancel`, {});
   }
 
-  returnOrder(orderId: number): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${orderId}/return`, {});
+  // THE FIX: Logistics explicit cancellation API
+  logisticsCancelOrder(orderId: number, reason: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${orderId}/logistics-cancel`, { reason });
   }
 }

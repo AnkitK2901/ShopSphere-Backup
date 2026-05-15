@@ -13,6 +13,9 @@ export class HistoryComponent implements OnInit {
   orders: any[] = [];
   isLoading: boolean = true;
 
+  showCancelModal: boolean = false;
+  orderToCancel: number | null = null;
+
   constructor(
     private orderService: OrderService,
     private catalogService: CatalogService,
@@ -25,7 +28,13 @@ export class HistoryComponent implements OnInit {
           (a: any, b: any) => b.orderId - a.orderId,
         );
 
-        sortedOrders.forEach((order: any) => {
+        if (sortedOrders.length === 0) {
+          this.orders = [];
+          this.isLoading = false;
+          return;
+        }
+
+        const orderObservables = sortedOrders.map((order: any) => {
           if (order.items && order.items.length > 0) {
             const itemRequests = order.items.map((item: any) =>
               this.catalogService.getProductById(item.productId).pipe(
@@ -41,12 +50,15 @@ export class HistoryComponent implements OnInit {
                 }),
               ),
             );
-            forkJoin(itemRequests).subscribe();
+            return forkJoin(itemRequests).pipe(map(() => order));
           }
+          return of(order);
         });
 
-        this.orders = sortedOrders;
-        this.isLoading = false;
+        forkJoin(orderObservables).subscribe((completedOrders: any) => {
+          this.orders = completedOrders;
+          this.isLoading = false;
+        });
       },
       error: (err) => {
         console.error('Failed to load orders', err);
@@ -55,13 +67,12 @@ export class HistoryComponent implements OnInit {
     });
   }
 
-  // THE FIX: Cleans the raw backend enum string for the UI
   formatStatus(status: string): string {
     if (!status) return '';
     return status.replace(/_/g, ' ');
   }
+
   isStatusReached(currentStatus: string, targetStatus: string): boolean {
-    // FIX: Added the new status to the visual array
     const flow = [
       'PENDING_PAYMENT',
       'CONFIRMED',
@@ -76,7 +87,6 @@ export class HistoryComponent implements OnInit {
   }
 
   getProgressWidth(status: string): string {
-    // FIX: Math updated for 5 dots
     switch (status?.toUpperCase()) {
       case 'PENDING_PAYMENT':
         return '0%';
@@ -92,8 +102,6 @@ export class HistoryComponent implements OnInit {
         return '100%';
       case 'CANCELLED':
         return '0%';
-      case 'RETURNED':
-        return '0%';
       default:
         return '0%';
     }
@@ -107,27 +115,29 @@ export class HistoryComponent implements OnInit {
     if (safeStatus === 'CONFIRMED') return '#f39c12';
     return '#3182ce';
   }
-  // THE FIX: Trigger the Saga Rollback from the UI
-  cancelOrder(orderId: number): void {
-    if (confirm('Are you sure you want to cancel this order? This action cannot be undone.')) {
-      this.orderService.cancelOrder(orderId).subscribe({
-        next: () => {
-          // Refresh the page to show the CANCELLED status
-          this.ngOnInit();
-        },
-        error: (err) => console.error('Failed to cancel order', err)
-      });
-    }
+
+  openCancelModal(orderId: number): void {
+    this.orderToCancel = orderId;
+    this.showCancelModal = true;
   }
 
-  returnOrder(orderId: number): void {
-    if (confirm('Initiate a return for this order?')) {
-      this.orderService.returnOrder(orderId).subscribe({
+  closeCancelModal(): void {
+    this.showCancelModal = false;
+    this.orderToCancel = null;
+  }
+
+  confirmCancel(): void {
+    if (this.orderToCancel !== null) {
+      this.orderService.cancelOrder(this.orderToCancel).subscribe({
         next: () => {
-          // Refresh the page to show the RETURNED status
+          this.closeCancelModal();
+          this.isLoading = true;
           this.ngOnInit();
         },
-        error: (err) => console.error('Failed to return order', err)
+        error: (err) => {
+          console.error('Failed to cancel order', err);
+          this.closeCancelModal();
+        }
       });
     }
   }

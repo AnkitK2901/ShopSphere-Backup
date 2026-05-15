@@ -50,10 +50,28 @@
             <button class="btn-small" (click)="goToPacking(shipment.orderId)" *ngIf="shipment.status?.toUpperCase() === 'CREATED'">Pack</button>
             <button class="btn-small primary" (click)="goToDispatch(shipment.orderId)" *ngIf="shipment.status?.toUpperCase() === 'PACKED'">Dispatch</button>
             
+            <button class="btn-small" style="background-color: #e53e3e; color: white;" 
+                    (click)="openCancelModal(shipment.orderId)" 
+                    *ngIf="shipment.status?.toUpperCase() === 'CREATED' || shipment.status?.toUpperCase() === 'PACKED'">
+              Cancel
+            </button>
+
             <span *ngIf="shipment.status?.toUpperCase() !== 'CREATED' && shipment.status?.toUpperCase() !== 'PACKED'" class="text-muted">--</span>
           </td>
         </tr>
       </tbody>
     </table>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showCancelModal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+  <div class="modal-card" style="background: white; padding: 30px; border-radius: 12px; max-width: 400px; text-align: center;">
+    <div class="modal-icon" style="font-size: 40px; margin-bottom: 15px;">⚠️</div>
+    <h3 style="margin: 0 0 10px; color: #2d3748;">Cancel Order #{{orderToCancel}}?</h3>
+    <p style="color: #718096; font-size: 14px; margin-bottom: 25px;">This will cancel the order due to unavoidable circumstances and refund the customer.</p>
+    <div class="modal-buttons" style="display: flex; gap: 15px; justify-content: center;">
+      <button class="btn-keep" style="background: #edf2f7; color: #4a5568; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;" (click)="closeCancelModal()">Keep Order</button>
+      <button class="btn-confirm-cancel" style="background: #e53e3e; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;" (click)="confirmLogisticsCancel()">Yes, Cancel</button>
+    </div>
   </div>
 </div>

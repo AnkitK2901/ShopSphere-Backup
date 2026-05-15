@@ -15,9 +15,6 @@ import com.shopsphere.logistics.repository.ShipmentRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Recover;
-import org.springframework.retry.annotation.Retryable;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -65,12 +62,10 @@ public class ShipmentService {
         shipment.setShipmentId(UUID.randomUUID().toString());
         shipment.setOrderId(orderId);
         shipment.setStatus(ShipmentStatus.CREATED);
-
         shipment.setCarrier("Unassigned");
         shipment.setTrackingNumber(null);
         shipment.setTrackingUrl(null);
         shipment.setEstimatedDelivery(null);
-
         shipment.setCreatedAt(LocalDateTime.now());
         shipment.setUpdatedAt(LocalDateTime.now());
 
@@ -93,7 +88,6 @@ public class ShipmentService {
 
         try {
             Map<String, Object> orderDetails = orderFeignClient.getOrderById(Long.parseLong(orderId));
-            // FIX: Safely extract and check for null items
             Object itemsObj = orderDetails.get("items");
             List<Map<String, Object>> orderItems = (itemsObj instanceof List) ? (List<Map<String, Object>>) itemsObj : new ArrayList<>();
 
@@ -110,13 +104,13 @@ public class ShipmentService {
             }
             response.put("items", orderItems);
         } catch (Exception e) {
-            System.err.println("Failed to enrich shipment data: " + e.getMessage());
             response.put("items", new ArrayList<>());
         }
 
         return response;
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public Shipment updateShipmentStatusByOrderId(String orderId, String status, String carrierName) {
         String internalStatus = status.toUpperCase();
         
@@ -164,11 +158,15 @@ public class ShipmentService {
         shipment.setUpdatedAt(LocalDateTime.now());
         Shipment updatedShipment = repository.save(shipment);
 
-        syncWithOrderService(orderId, newStatus.name());
+        // THE FIX: If sync completely fails, the Exception is thrown, and the database perfectly rolls back.
+        if (newStatus != ShipmentStatus.CANCELLED) {
+            syncWithOrderService(orderId, newStatus.name());
+        }
 
         return updatedShipment;
     }
 
+    @Scheduled(fixedRate = 60000) 
     @Transactional
     public void simulateShipmentProgress() {
         List<Shipment> activeShipments = repository.findByStatusNot(ShipmentStatus.DELIVERED);
@@ -183,30 +181,40 @@ public class ShipmentService {
             shipment.setUpdatedAt(LocalDateTime.now());
             repository.save(shipment);
             
-            syncWithOrderService(shipment.getOrderId(), nextStatus.name());
+            try {
+                syncWithOrderService(shipment.getOrderId(), nextStatus.name());
+            } catch (Exception e) {
+                System.err.println("Simulator sync failed for Order: " + shipment.getOrderId());
+            }
         }
     }
 
-    @Retryable(retryFor = {Exception.class}, maxAttempts = 5, backoff = @Backoff(delay = 2000))
+    // THE FIX: A professional retry mechanism to protect data integrity against micro-outages
     private void syncWithOrderService(String orderId, String internalStatus) {
         String mappedStatus = internalStatus;
-        
         if ("IN_TRANSIT".equals(internalStatus)) {
             mappedStatus = "SHIPPED";
         }
-
-        try {
-            orderFeignClient.updateOrderStatus(Long.parseLong(orderId), Map.of("newStatus", mappedStatus));
-            System.out.println("✅ Successfully synced " + mappedStatus + " status to Order Service for Order: " + orderId);
-        } catch (Exception e) {
-            System.err.println("❌ Failed to sync status to Order Service: " + e.getMessage());
-            throw new RuntimeException("Triggering retry mechanism");
+        
+        int maxRetries = 3;
+        for (int i = 1; i <= maxRetries; i++) {
+            try {
+                orderFeignClient.updateOrderStatus(Long.parseLong(orderId), Map.of("newStatus", mappedStatus));
+                System.out.println("✅ Successfully synced " + mappedStatus + " status to Order Service for Order: " + orderId);
+                return; // Success! Exit the method.
+            } catch (Exception e) {
+                if (i == maxRetries) {
+                    // Final failure. Throwing this triggers the @Transactional rollback so DBs stay identical.
+                    throw new IllegalStateException("CRITICAL: Order Service unreachable after " + maxRetries + " attempts. Rolling back packing action to maintain Data Integrity.", e);
+                }
+                System.err.println("⚠️ Sync failed for Order " + orderId + ", retrying... (" + i + "/" + maxRetries + ")");
+                try {
+                    Thread.sleep(1000); // Wait 1 second before retrying
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                }
+            }
         }
-    }
-
-    @Recover
-    private void recoverSyncFailure(Exception e, String orderId, String internalStatus) {
-        System.err.println("❌ CRITICAL: Order Service is completely unreachable. Failed to sync Order " + orderId + ". Please alert DevOps.");
     }
 
     @Scheduled(fixedRate = 300000)
@@ -214,11 +222,9 @@ public class ShipmentService {
         System.out.println("🧹 SWEEPER: Checking for ghost orders...");
         try {
             List<Map<String, Object>> confirmedOrders = orderFeignClient.getOrdersByStatus("CONFIRMED");
-            
             for (Map<String, Object> order : confirmedOrders) {
                 Long orderId = Long.valueOf(order.get("orderId").toString());
                 boolean exists = repository.findByOrderId(String.valueOf(orderId)).isPresent();
-                
                 if (!exists) {
                     System.out.println("🚨 GHOST ORDER DETECTED: Order ID " + orderId + " has no shipment! Creating now...");
                     createShipment(String.valueOf(orderId));
@@ -242,11 +248,11 @@ public class ShipmentService {
     
     private ShipmentStatus getNextStatus(ShipmentStatus current) {
         return switch (current) {
-            case CREATED -> throw new IllegalStateException("Cannot auto-progress CREATED. Manual packing required.");
-            case PACKED -> throw new IllegalStateException("Cannot auto-progress PACKED. Manual dispatch required."); 
+            case CREATED -> throw new IllegalStateException("Cannot auto-progress CREATED.");
+            case PACKED -> throw new IllegalStateException("Cannot auto-progress PACKED."); 
             case IN_TRANSIT -> ShipmentStatus.OUT_FOR_DELIVERY;
             case OUT_FOR_DELIVERY -> ShipmentStatus.DELIVERED;
-            default -> throw new IllegalStateException("Shipment already delivered or in invalid state");
+            default -> throw new IllegalStateException("Invalid state");
         };
     }
 }

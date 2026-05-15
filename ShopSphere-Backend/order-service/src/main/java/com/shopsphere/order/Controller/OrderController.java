@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -30,19 +31,14 @@ public class OrderController {
     public ResponseEntity<OrderResponse> placeOrder(
             @Valid @RequestBody OrderRequest orderRequest,
             @RequestHeader(value = "X-Logged-In-User", defaultValue = "UNKNOWN_USER") String username) {
-
         log.info("Order placement initiated by secure user: {}", username);
         orderRequest.setUserName(username);
-        OrderResponse response = orderService.placeOrder(orderRequest);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return new ResponseEntity<>(orderService.placeOrder(orderRequest), HttpStatus.CREATED);
     }
 
-    // THE FIX: Explicitly defined name inside @PathVariable
     @PostMapping("/{orderId}/confirm-payment")
     public ResponseEntity<OrderResponse> confirmPayment(@PathVariable("orderId") Long orderId) {
-        log.info("Payment confirmed for Order ID: {}", orderId);
-        OrderResponse response = orderService.confirmPayment(orderId);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(orderService.confirmPayment(orderId));
     }
 
     @GetMapping
@@ -50,13 +46,11 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getAllOrders());
     }
 
-    // THE FIX: Explicitly defined name inside @PathVariable
     @GetMapping("/{orderId}")
     public ResponseEntity<OrderResponse> getOrderById(@PathVariable("orderId") Long orderId) {
         return ResponseEntity.ok(orderService.getOrderById(orderId));
     }
 
-    // THE FIX: Explicitly defined name inside @PathVariable
     @GetMapping("/customer/{customerId}")
     public ResponseEntity<List<OrderResponse>> getOrdersByCustomerId(@PathVariable("customerId") Long customerId) {
         return ResponseEntity.ok(orderService.getOrdersByCustomerId(customerId));
@@ -65,13 +59,10 @@ public class OrderController {
     @GetMapping("/my-history")
     public ResponseEntity<List<OrderResponse>> getMySecureOrderHistory(
             @RequestHeader(value = "X-Logged-In-User") String username) {
-        
-        log.info("Fetching secure order history for: {}", username);
         UserDTO user = userClient.getUserByUserName(username);
         return ResponseEntity.ok(orderService.getOrdersByCustomerId(user.getId()));
     }
 
-    // THE FIX: Explicitly defined name inside @PathVariable
     @PatchMapping("/{orderId}/status")
     public ResponseEntity<OrderResponse> updateStatus(
             @PathVariable("orderId") Long orderId,
@@ -79,21 +70,19 @@ public class OrderController {
         return ResponseEntity.ok(orderService.updateStatus(orderId, request.getNewStatus()));
     }
 
-    // THE FIX: Explicitly defined name inside @PathVariable
     @PutMapping("/{orderId}/cancel")
     public ResponseEntity<OrderResponse> cancelOrder(@PathVariable("orderId") Long orderId) {
         return ResponseEntity.ok(orderService.cancelOrder(orderId));
     }
 
-    // THE FIX: Explicitly defined name inside @PathVariable
-    @PutMapping("/{orderId}/return")
-    public ResponseEntity<OrderResponse> returnOrder(@PathVariable("orderId") Long orderId) {
-        return ResponseEntity.ok(orderService.returnOrder(orderId));
+    // THE FIX: New endpoint specifically for Logistics to cancel with a reason
+    @PutMapping("/{orderId}/logistics-cancel")
+    public ResponseEntity<OrderResponse> logisticsCancelOrder(
+            @PathVariable("orderId") Long orderId,
+            @RequestBody Map<String, String> payload) {
+        return ResponseEntity.ok(orderService.logisticsCancelOrder(orderId, payload.get("reason")));
     }
 
-    // ==========================================
-    // 🛡️ THE ABANDONED CART FIX 🛡️
-    // ==========================================
     @PostMapping("/cart/sync")
     public ResponseEntity<Void> syncCart(
             @RequestBody String cartJson, 
@@ -102,11 +91,9 @@ public class OrderController {
         return ResponseEntity.ok().build();
     }
 
-    // THE FIX: Endpoint for Logistics Sweeper
     @GetMapping("/status/{status}")
     public ResponseEntity<List<OrderResponse>> getOrdersByStatus(@PathVariable("status") OrderStatus status) {
-        List<OrderResponse> allOrders = orderService.getAllOrders();
-        List<OrderResponse> filtered = allOrders.stream()
+        List<OrderResponse> filtered = orderService.getAllOrders().stream()
                 .filter(o -> o.getOrderStatus() == status)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(filtered);

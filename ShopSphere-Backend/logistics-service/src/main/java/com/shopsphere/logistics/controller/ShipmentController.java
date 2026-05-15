@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
-import java.util.Map; // NEW: Added import
+import java.util.Map; 
 
 @RestController
 @RequestMapping("/api/shipments")
@@ -63,7 +63,6 @@ public class ShipmentController {
         }
     }
 
-    // THE FIX: Added the missing endpoint to serve the enriched data to Angular
     @GetMapping("/enriched/order/{orderId}")
     public ResponseEntity<?> getEnrichedByOrderId(@PathVariable("orderId") Long orderId) {
         try {
@@ -75,7 +74,8 @@ public class ShipmentController {
         }
     }
 
-    @PatchMapping("/order/{orderId}/{status}")
+    // THE FIX: Converted PATCH to PUT. Clean DB record keeping maintained!
+    @PutMapping("/order/{orderId}/{status}")
     public ResponseEntity<?> updateStatusByOrderId(
             @PathVariable("orderId") Long orderId,
             @PathVariable("status") String status,

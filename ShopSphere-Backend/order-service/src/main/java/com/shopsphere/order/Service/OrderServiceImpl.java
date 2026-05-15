@@ -22,21 +22,13 @@ import java.util.stream.Collectors;
 @Service
 public class OrderServiceImpl implements OrderService {
 
-    @Autowired
-    private UserClient userClient;
-    @Autowired
-    private ProductClient productClient;
-    @Autowired
-    private LogisticsClient logisticsClient;
-    @Autowired
-    private OrderRepository orderRepository;
-    @Autowired
-    private InventoryClient inventoryClient;
-    @Autowired
-    private AnalyticsClient analyticsClient;
-
-    @Autowired
-    private CartRepository cartRepository;
+    @Autowired private UserClient userClient;
+    @Autowired private ProductClient productClient;
+    @Autowired private LogisticsClient logisticsClient;
+    @Autowired private OrderRepository orderRepository;
+    @Autowired private InventoryClient inventoryClient;
+    @Autowired private AnalyticsClient analyticsClient;
+    @Autowired private CartRepository cartRepository;
 
     @Override
     public List<OrderResponse> getAllOrders() {
@@ -45,25 +37,21 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponse getOrderById(Long orderId) {
-        OrderEntity order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order ID is not Found"));
+        OrderEntity order = orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order ID is not Found"));
         return mapToResponse(order);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<OrderResponse> getOrdersByCustomerId(Long customerId) {
-        return orderRepository.findByCustomerId(customerId).stream().map(this::mapToResponse)
-                .collect(Collectors.toList());
+        return orderRepository.findByCustomerId(customerId).stream().map(this::mapToResponse).collect(Collectors.toList());
     }
 
     @Override
     @Transactional
     public OrderResponse placeOrder(OrderRequest orderRequest) {
         UserDTO user = userClient.getUserByUserName(orderRequest.getUserName());
-        if (user == null) {
-            throw new ResourceNotFoundException("Customer Not found");
-        }
+        if (user == null) throw new ResourceNotFoundException("Customer Not found");
 
         double totalOrderAmount = 0.0;
         List<OrderItemEntity> orderItems = new ArrayList<>();
@@ -71,42 +59,22 @@ public class OrderServiceImpl implements OrderService {
 
         for (OrderItemRequest itemReq : orderRequest.getItems()) {
             ProductDTO product = null;
+            try { product = productClient.findProductById(itemReq.getProductId()); } catch (Exception e) {}
 
-            try {
-                product = productClient.findProductById(itemReq.getProductId());
-            } catch (Exception e) {
-            }
-
-            if (product == null) {
-                deadProductIds.add(itemReq.getProductId());
-                continue;
-            }
+            if (product == null) { deadProductIds.add(itemReq.getProductId()); continue; }
 
             Boolean inStock = null;
-            try {
-                inStock = inventoryClient.checkStock(new StockRequest(product.getProductId(), itemReq.getQuantity()))
-                        .getBody();
-            } catch (Exception e) {
-            }
+            try { inStock = inventoryClient.checkStock(new StockRequest(product.getProductId(), itemReq.getQuantity())).getBody(); } catch (Exception e) {}
 
-            if (inStock == null || !inStock) {
-                deadProductIds.add(product.getProductId());
-                continue;
-            }
+            if (inStock == null || !inStock) { deadProductIds.add(product.getProductId()); continue; }
 
             double unitPrice = product.getTotalPrice() > 0.0 ? product.getTotalPrice() : product.getBasePrice();
+            if (unitPrice <= 0.0) { deadProductIds.add(product.getProductId()); continue; }
 
-            if (unitPrice <= 0.0) {
-                deadProductIds.add(product.getProductId());
-                continue;
-            }
-
-            if (itemReq.getSelectedOption() != null && !itemReq.getSelectedOption().isEmpty()
-                    && !itemReq.getSelectedOption().equals("None")) {
+            if (itemReq.getSelectedOption() != null && !itemReq.getSelectedOption().isEmpty() && !itemReq.getSelectedOption().equals("None")) {
                 if (product.getCustomOptions() != null) {
                     for (CustomOptionDTO opt : product.getCustomOptions()) {
-                        String optionMatch = opt.getType() + ": " + opt.getValue();
-                        if (optionMatch.equals(itemReq.getSelectedOption())) {
+                        if ((opt.getType() + ": " + opt.getValue()).equals(itemReq.getSelectedOption())) {
                             unitPrice += opt.getPriceAdjustment();
                             break;
                         }
@@ -131,9 +99,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         if (orderRequest.getExpectedTotal() != null) {
-            if (Math.abs(totalOrderAmount - orderRequest.getExpectedTotal()) > 0.01) {
-                throw new IllegalStateException("Security Alert: Price Mismatch Detected.");
-            }
+            if (Math.abs(totalOrderAmount - orderRequest.getExpectedTotal()) > 0.01) throw new IllegalStateException("Security Alert: Price Mismatch Detected.");
         }
 
         OrderEntity order = new OrderEntity();
@@ -144,20 +110,16 @@ public class OrderServiceImpl implements OrderService {
         order.setShippingAddress(orderRequest.getShippingAddress());
 
         cartRepository.findById(user.getId()).ifPresent(cartRepository::delete);
-
         return mapToResponse(orderRepository.save(order));
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public OrderResponse confirmPayment(Long orderId) {
-        OrderEntity order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order Id not found"));
-
+        OrderEntity order = orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order Id not found"));
         ValidTransaction(order.getStatus(), OrderStatus.CONFIRMED);
 
         List<StockRequest> deductedStocks = new ArrayList<>();
-
         try {
             for (OrderItemEntity item : order.getItems()) {
                 StockRequest stockRequest = new StockRequest(item.getProductId(), item.getQuantity());
@@ -169,24 +131,13 @@ public class OrderServiceImpl implements OrderService {
             order.setUpdatedAt(LocalDateTime.now());
             OrderEntity savedOrder = orderRepository.save(order);
 
-            try {
-                logisticsClient.createShipment(orderId);
-            } catch (Exception logisticsErr) {
-            }
-
-            try {
-                analyticsClient.logRevenueEvent(savedOrder.getTotalAmount());
-            } catch (Exception analyticsErr) {
-            }
+            try { logisticsClient.createShipment(orderId); } catch (Exception e) {}
+            try { analyticsClient.logRevenueEvent(savedOrder.getTotalAmount()); } catch (Exception e) {}
 
             return mapToResponse(savedOrder);
-
         } catch (Exception e) {
             for (StockRequest refundReq : deductedStocks) {
-                try {
-                    inventoryClient.refundStock(refundReq);
-                } catch (Exception refundException) {
-                }
+                try { inventoryClient.refundStock(refundReq); } catch (Exception refEx) {}
             }
             throw new IllegalStateException("Payment confirmation failed. Transaction rolled back.", e);
         }
@@ -195,68 +146,53 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public OrderResponse updateStatus(Long orderId, OrderStatus newStatus) {
-        OrderEntity order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order Id not found"));
-
-        if (order.getStatus() == newStatus)
-            return mapToResponse(order);
-
+        OrderEntity order = orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order Id not found"));
+        if (order.getStatus() == newStatus) return mapToResponse(order);
         ValidTransaction(order.getStatus(), newStatus);
         order.setStatus(newStatus);
         order.setUpdatedAt(LocalDateTime.now());
         return mapToResponse(orderRepository.save(order));
     }
 
-    // THE FIX: Saga Rollback for Cancellations
     @Override
     @Transactional(rollbackFor = Exception.class)
     public OrderResponse cancelOrder(Long orderId) {
-        OrderEntity order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order Id not found"));
+        OrderEntity order = orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order Id not found"));
         ValidTransaction(order.getStatus(), OrderStatus.CANCELLED);
 
         if (order.getStatus() != OrderStatus.PENDING_PAYMENT) {
             for (OrderItemEntity item : order.getItems()) {
-                try {
-                    inventoryClient.refundStock(new StockRequest(item.getProductId(), item.getQuantity()));
-                } catch (Exception e) {
-                    System.err.println("WARNING: Failed to refund stock for cancelled product.");
-                }
+                try { inventoryClient.refundStock(new StockRequest(item.getProductId(), item.getQuantity())); } catch (Exception e) {}
             }
-            try {
-                // Deduct the refunded amount from the total revenue
-                analyticsClient.logRevenueEvent(-order.getTotalAmount());
-            } catch (Exception e) {
-            }
+            try { analyticsClient.logRevenueEvent(-order.getTotalAmount()); } catch (Exception e) {}
         }
+
+        // THE FIX: Use PUT to sync status securely!
+        try { logisticsClient.updateShipmentStatus(orderId, "CANCELLED", "ROLE_ADMIN"); } catch (Exception e) { System.err.println("WARNING: Failed to sync CANCELLED status."); }
 
         order.setStatus(OrderStatus.CANCELLED);
         order.setUpdatedAt(LocalDateTime.now());
         return mapToResponse(orderRepository.save(order));
     }
 
-    // THE FIX: Saga Rollback for Returns
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public OrderResponse returnOrder(Long orderId) {
-        OrderEntity order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order Id not found"));
-        ValidTransaction(order.getStatus(), OrderStatus.RETURNED);
+    public OrderResponse logisticsCancelOrder(Long orderId, String reason) {
+        OrderEntity order = orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order Id not found"));
+        ValidTransaction(order.getStatus(), OrderStatus.CANCELLED);
 
-        for (OrderItemEntity item : order.getItems()) {
-            try {
-                inventoryClient.refundStock(new StockRequest(item.getProductId(), item.getQuantity()));
-            } catch (Exception e) {
-                System.err.println("WARNING: Failed to refund stock for returned product.");
+        if (order.getStatus() != OrderStatus.PENDING_PAYMENT) {
+            for (OrderItemEntity item : order.getItems()) {
+                try { inventoryClient.refundStock(new StockRequest(item.getProductId(), item.getQuantity())); } catch (Exception e) {}
             }
-        }
-        try {
-            // Deduct the refunded amount from the total revenue
-            analyticsClient.logRevenueEvent(-order.getTotalAmount());
-        } catch (Exception e) {
+            try { analyticsClient.logRevenueEvent(-order.getTotalAmount()); } catch (Exception e) {}
         }
 
-        order.setStatus(OrderStatus.RETURNED);
+        // THE FIX: Use PUT to sync status securely!
+        try { logisticsClient.updateShipmentStatus(orderId, "CANCELLED", "ROLE_ADMIN"); } catch (Exception e) { System.err.println("WARNING: Failed to sync CANCELLED status."); }
+
+        order.setStatus(OrderStatus.CANCELLED);
+        order.setCancellationReason(reason); 
         order.setUpdatedAt(LocalDateTime.now());
         return mapToResponse(orderRepository.save(order));
     }
@@ -264,8 +200,6 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public void syncCart(String username, String cartJson) {
-        // ... (Sanitized for brevity, remains exactly identical to your previous code)
-        // ...
         try {
             UserDTO user = userClient.getUserByUserName(username);
             if (user != null) {
@@ -275,36 +209,45 @@ public class OrderServiceImpl implements OrderService {
                 cart.setLastUpdated(LocalDateTime.now());
                 cartRepository.save(cart);
             }
-        } catch (Exception e) {
-        }
+        } catch (Exception e) {}
     }
 
     private static final Map<OrderStatus, List<OrderStatus>> ALLOWED_TRANSITIONS = Map.of(
             OrderStatus.PENDING_PAYMENT, List.of(OrderStatus.CONFIRMED, OrderStatus.CANCELLED),
             OrderStatus.CONFIRMED, List.of(OrderStatus.PACKED, OrderStatus.CANCELLED),
             OrderStatus.PACKED, List.of(OrderStatus.SHIPPED, OrderStatus.CANCELLED),
-            OrderStatus.SHIPPED, List.of(OrderStatus.OUT_FOR_DELIVERY, OrderStatus.DELIVERED),
+            OrderStatus.SHIPPED, List.of(OrderStatus.OUT_FOR_DELIVERY, OrderStatus.DELIVERED, OrderStatus.CANCELLED),
             OrderStatus.OUT_FOR_DELIVERY, List.of(OrderStatus.DELIVERED),
-            OrderStatus.DELIVERED, List.of(OrderStatus.RETURNED),
-            OrderStatus.CANCELLED, List.of(),
-            OrderStatus.RETURNED, List.of());
+            OrderStatus.DELIVERED, List.of(),
+            OrderStatus.CANCELLED, List.of());
 
     private void ValidTransaction(OrderStatus current, OrderStatus newStatus) {
         List<OrderStatus> valid = ALLOWED_TRANSITIONS.getOrDefault(current, List.of());
-        if (!valid.contains(newStatus)) {
-            throw new IllegalStateException("Invalid transition: " + current + " → " + newStatus);
-        }
+        if (!valid.contains(newStatus)) throw new IllegalStateException("Invalid transition");
     }
 
     private OrderResponse mapToResponse(OrderEntity orderEntity) {
-        // ... (Sanitized for brevity, remains exactly identical to your previous code)
-        // ...
         OrderResponse res = new OrderResponse();
         res.setOrderId(orderEntity.getOrderId());
+        res.setCustomerId(orderEntity.getCustomerId()); 
         res.setOrderStatus(orderEntity.getStatus());
         res.setTotalOrderAmount(orderEntity.getTotalAmount());
         res.setCreatedAt(orderEntity.getCreatedAt());
         res.setUpdatedAt(orderEntity.getUpdatedAt());
+        res.setShippingAddress(orderEntity.getShippingAddress()); 
+        res.setCancellationReason(orderEntity.getCancellationReason()); 
+
+        if (orderEntity.getItems() != null && !orderEntity.getItems().isEmpty()) {
+            List<OrderItemResponse> mappedItems = orderEntity.getItems().stream().map(item -> {
+                OrderItemResponse ir = new OrderItemResponse();
+                ir.setProductId(item.getProductId());
+                ir.setQuantity(item.getQuantity());
+                ir.setPrice(item.getPrice());
+                ir.setSelectedOption(item.getSelectedOption());
+                return ir;
+            }).collect(Collectors.toList());
+            res.setItems(mappedItems);
+        }
 
         if (orderEntity.getStatus() == OrderStatus.SHIPPED ||
                 orderEntity.getStatus() == OrderStatus.OUT_FOR_DELIVERY ||
@@ -315,8 +258,7 @@ public class OrderServiceImpl implements OrderService {
                     res.setTrackingUrl(shipment.getTrackingUrl());
                     res.setCarrier(shipment.getCarrier());
                 }
-            } catch (Exception e) {
-            }
+            } catch (Exception e) {}
         }
         return res;
     }

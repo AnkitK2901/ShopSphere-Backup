@@ -25,7 +25,6 @@ export class LogisticsService {
       .pipe(catchError(this.handleError));
   }
 
-  // THE FIX: Added the missing method to talk to the new backend endpoint
   getEnrichedShipmentByOrderId(id: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/enriched/order/${id}`)
       .pipe(catchError(this.handleError));
@@ -41,7 +40,8 @@ export class LogisticsService {
     if (carrier) {
       url += `?carrier=${encodeURIComponent(carrier)}`;
     }
-    return this.http.patch<ShipmentResponse>(url, {})
+    // THE FIX: Changed from .patch to .put to match the new backend controller
+    return this.http.put<ShipmentResponse>(url, {})
       .pipe(catchError(this.handleError));
   }
 

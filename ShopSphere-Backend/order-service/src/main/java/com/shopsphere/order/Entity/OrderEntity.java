@@ -29,20 +29,13 @@ public class OrderEntity {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    // Add this right below private LocalDateTime updatedAt;
     @Column(columnDefinition = "TEXT")
     private String shippingAddress;
 
-    // Add these getters and setters at the bottom:
-    public String getShippingAddress() {
-        return shippingAddress;
-    }
+    // THE FIX: Added cancellation reason column
+    @Column(columnDefinition = "TEXT")
+    private String cancellationReason;
 
-    public void setShippingAddress(String shippingAddress) {
-        this.shippingAddress = shippingAddress;
-    }
-
-    // The Master-Detail Relationship
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "order_id")
     private List<OrderItemEntity> items;
@@ -61,63 +54,33 @@ public class OrderEntity {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public OrderEntity() {
-    }
+    public OrderEntity() {}
 
     // Getters and Setters
-    public Long getOrderId() {
-        return orderId;
-    }
+    public Long getOrderId() { return orderId; }
+    public void setOrderId(Long orderId) { this.orderId = orderId; }
 
-    public void setOrderId(Long orderId) {
-        this.orderId = orderId;
-    }
+    public Long getCustomerId() { return customerId; }
+    public void setCustomerId(Long customerId) { this.customerId = customerId; }
 
-    public Long getCustomerId() {
-        return customerId;
-    }
+    public Double getTotalAmount() { return totalAmount; }
+    public void setTotalAmount(Double totalAmount) { this.totalAmount = totalAmount; }
 
-    public void setCustomerId(Long customerId) {
-        this.customerId = customerId;
-    }
+    public OrderStatus getStatus() { return status; }
+    public void setStatus(OrderStatus status) { this.status = status; }
 
-    public Double getTotalAmount() {
-        return totalAmount;
-    }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public void setTotalAmount(Double totalAmount) {
-        this.totalAmount = totalAmount;
-    }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 
-    public OrderStatus getStatus() {
-        return status;
-    }
+    public String getShippingAddress() { return shippingAddress; }
+    public void setShippingAddress(String shippingAddress) { this.shippingAddress = shippingAddress; }
 
-    public void setStatus(OrderStatus status) {
-        this.status = status;
-    }
+    public String getCancellationReason() { return cancellationReason; }
+    public void setCancellationReason(String cancellationReason) { this.cancellationReason = cancellationReason; }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public List<OrderItemEntity> getItems() {
-        return items;
-    }
-
-    public void setItems(List<OrderItemEntity> items) {
-        this.items = items;
-    }
+    public List<OrderItemEntity> getItems() { return items; }
+    public void setItems(List<OrderItemEntity> items) { this.items = items; }
 }

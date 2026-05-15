@@ -22,7 +22,7 @@ public interface OrderService {
 
     OrderResponse cancelOrder(Long orderId);
 
-    OrderResponse returnOrder(Long orderId);
+    OrderResponse logisticsCancelOrder(Long orderId, String reason);
 
     void syncCart(String username, String cartJson);
 }

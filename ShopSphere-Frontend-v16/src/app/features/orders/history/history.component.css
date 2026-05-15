@@ -91,7 +91,6 @@
   font-size: 18px;
 }
 
-/* 🚀 NEW STEPPER PROGRESS BAR */
 .tracker-section {
   padding: 30px;
   border-bottom: 1px solid #edf2f7;
@@ -112,9 +111,9 @@
 
 .track-line {
   position: absolute;
-  top: 14px; /* Centers line behind the 32px dots */
-  left: 20px;
-  right: 20px;
+  top: 14px; 
+  left: 35px; /* THE FIX: Pulled the line in so it hides behind the dot */
+  right: 35px; /* THE FIX: Pulled the line in so it hides behind the dot */
   height: 4px;
   background: #edf2f7;
   z-index: 1;
@@ -153,7 +152,7 @@
 }
 
 .step.active .step-dot {
-  background: currentColor; /* Inherits color from the inline style injected by HTML */
+  background: currentColor; 
   box-shadow: 0 0 0 2px currentColor;
 }
 
@@ -169,7 +168,6 @@
   color: #2d3748;
 }
 
-/* Info Blocks */
 .info-blocks {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -194,6 +192,20 @@
   border: 1px solid #e2e8f0;
 }
 
+.info-card.cancellation {
+  background: #fff5f5;
+  border: 1px solid #fed7d7;
+  grid-column: 1 / -1;
+}
+
+.info-card.cancellation h4 {
+  color: #c53030;
+}
+
+.info-card.cancellation p {
+  color: #e53e3e;
+}
+
 .info-card h4 {
   margin: 0 0 8px 0;
   font-size: 13px;
@@ -207,7 +219,6 @@
   color: #2d3748;
 }
 
-/* Items */
 .order-items {
   padding: 25px 30px;
 }
@@ -269,4 +280,59 @@
   color: #4a5568;
   font-size: 13px;
   font-style: italic;
+}
+
+.btn-cancel {
+  background: white;
+  color: #e53e3e;
+  border: 1px solid #e53e3e;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-cancel:hover {
+  background: #fff5f5;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modal-card {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.modal-icon {
+  font-size: 40px;
+  margin-bottom: 15px;
+}
+
+.modal-card h3 { margin: 0 0 10px; color: #2d3748; }
+.modal-card p { color: #718096; font-size: 14px; margin-bottom: 25px; line-height: 1.5; }
+
+.modal-buttons {
+  display: flex; gap: 15px; justify-content: center;
+}
+
+.btn-keep {
+  background: #edf2f7; color: #4a5568; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer;
+}
+
+.btn-confirm-cancel {
+  background: #e53e3e; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer;
 }
