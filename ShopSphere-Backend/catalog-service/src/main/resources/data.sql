@@ -29,8 +29,23 @@ INSERT IGNORE INTO product (product_id, name, description, base_price, preview_i
 (18, 'Bamboo Phone Stand', 'Adjustable desktop stand for all smartphones.', 450.0, 'https://ik.imagekit.io/20wdsy6cl/images/Phone-Stand(1).jpg', 1),
 (19, 'Handmade Soap Bar', 'Cold-process soap with activated charcoal.', 350.0, 'https://ik.imagekit.io/20wdsy6cl/images/Red-Wine-Soap(1).png', 1),
 (20, 'Ceramic Coffee Mug', 'Large 15oz mug with reactive glaze.', 650.0, 'https://ik.imagekit.io/20wdsy6cl/images/photo-1514228742587-6b1558fcca3d_auto=format&fit=crop&w=600&q=80', 1);
-
--- STITCHING PRODUCTS TO OPTIONS
+-- STITCHING PRODUCTS TO OPTIONS (Logically Corrected)
 INSERT IGNORE INTO product_selected_options (product_id, option_id) VALUES 
-(1, 1), (1, 4), (1, 7), (2, 1), (2, 8), (3, 10), (4, 17), (5, 1), (5, 8), (6, 11),
-(7, 12), (7, 13), (10, 2), (10, 5), (14, 9), (14, 5), (16, 17), (18, 1), (18, 8);
+-- Premium Hoodie (Colors, Sizes, Cotton)
+(1, 1), (1, 2), (1, 4), (1, 5), (1, 6), (1, 7), 
+-- Wallet & Satchel (Black, Leather)
+(2, 1), (2, 8), (5, 1), (5, 8), 
+-- Face Serum & Soap (Scents)
+(3, 12), (3, 14), (19, 12), (19, 13), 
+-- Ceramic Vase (Finishes)
+(4, 15), (4, 17), 
+-- Bamboo Watch (Warranties)
+(6, 10), (6, 11), 
+-- Candle (Scents)
+(7, 12), (7, 13), (7, 14), 
+-- Denim Jacket (Sizes, Recycled Poly)
+(14, 4), (14, 5), (14, 6), (14, 9), 
+-- Sterling Silver Ring (Rose Gold option)
+(16, 3), 
+-- Bamboo Phone Stand (Wood Finishes)
+(18, 15), (18, 16);
