@@ -13,7 +13,6 @@ export class ProductDetailsComponent implements OnInit {
   product: any = null;
   isLoading: boolean = true;
   selectedQuantity: number = 1;
-  
   errorMessage: string = '';
   finalPrice: number = 0;
   customOptions: any[] = [];
@@ -39,7 +38,6 @@ export class ProductDetailsComponent implements OnInit {
   fetchProductDetails(id: string): void {
     this.isLoading = true;
     this.errorMessage = '';
-    
     this.catalogService.getProductById(id).subscribe({
       next: (data) => {
         this.product = data;
@@ -48,8 +46,7 @@ export class ProductDetailsComponent implements OnInit {
         this.isLoading = false;
       },
       error: (err) => {
-        console.error('Failed to load product', err);
-        this.errorMessage = 'Could not load product details. Please try again later.';
+        this.errorMessage = 'Could not load product details.';
         this.isLoading = false;
       }
     });
@@ -60,22 +57,18 @@ export class ProductDetailsComponent implements OnInit {
     this.finalPrice = this.product.basePrice + (opt.priceAdjustment || 0);
   }
 
-  increaseQuantity(): void {
-    this.selectedQuantity++;
-  }
-
-  decreaseQuantity(): void {
-    if (this.selectedQuantity > 1) {
-      this.selectedQuantity--;
-    }
-  }
+  increaseQuantity(): void { this.selectedQuantity++; }
+  decreaseQuantity(): void { if (this.selectedQuantity > 1) this.selectedQuantity--; }
 
   addToCart(): void {
     if (this.product) {
-      
-      // 🛡️ THE FIX: Set to "None" if user didn't pick anything
-      const finalOptionToSave = this.selectedOption ? this.selectedOption : "None";
+      // FIXED: Strictly enforce option selection if the product has variations
+      if (this.customOptions.length > 0 && !this.selectedOption) {
+        this.toastService.showInfo('Please select a variation (Size/Color/Material) before adding to cart.');
+        return;
+      }
 
+      const finalOptionToSave = this.selectedOption ? this.selectedOption : "None";
       const cartItem = {
         ...this.product,
         basePrice: this.finalPrice, 

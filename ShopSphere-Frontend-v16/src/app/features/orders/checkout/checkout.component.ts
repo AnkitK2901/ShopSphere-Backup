@@ -22,7 +22,7 @@ export class CheckoutComponent implements OnInit {
     private orderService: OrderService,
     private router: Router,
     private toastService: ToastService,
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.cartService.cartItems$.subscribe((items) => {
@@ -38,12 +38,23 @@ export class CheckoutComponent implements OnInit {
       fullName: ['', Validators.required],
       shippingAddress: ['', Validators.required],
       city: ['', Validators.required],
+      // FIXED: Enforced numeric Zip (5-6 digits)
       zipCode: ['', [Validators.required, Validators.pattern('^[0-9]{5,6}$')]],
+      // FIXED: Enforced strict 16-digit card number
       cardNumber: [
         '',
         [Validators.required, Validators.pattern('^[0-9]{16}$')],
       ],
-      expiry: ['', Validators.required],
+      // FIXED: Enforced MM/YY pattern
+      // Replace your current expiry line with this:
+      expiry: [
+        '',
+        [
+          Validators.required,
+          Validators.pattern(/^(0[1-9]|1[0-2])\/?([0-9]{2})$/),
+        ],
+      ],
+      // FIXED: Enforced strict 3-digit CVV
       cvv: ['', [Validators.required, Validators.pattern('^[0-9]{3}$')]],
     });
   }
@@ -51,25 +62,26 @@ export class CheckoutComponent implements OnInit {
   placeOrder(): void {
     if (this.checkoutForm.invalid) {
       this.checkoutForm.markAllAsTouched();
-      this.toastService.showError('Please complete all required fields (highlighted in red) correctly.');
-      return; 
+      this.toastService.showError(
+        'Please complete all required fields (highlighted in red) correctly.',
+      );
+      return;
     }
 
     this.isProcessing = true;
 
     const mappedItems = this.cartItems.map((item) => {
       let optionString = '';
-      
-      if (item.selectedOption && item.selectedOption !== "None") {
+      if (item.selectedOption && item.selectedOption !== 'None') {
         optionString = `${item.selectedOption.type}: ${item.selectedOption.value}`;
-      } else if (item.selectedOption === "None") {
-        optionString = "None";
+      } else {
+        optionString = 'None';
       }
 
       return {
         productId: String(item.productId || item.id),
         quantity: item.quantity || 1,
-        selectedOption: optionString, 
+        selectedOption: optionString,
       };
     });
 
@@ -78,48 +90,52 @@ export class CheckoutComponent implements OnInit {
 
     this.orderService
       .placeOrder({
-        shippingAddress: fullAddress, 
+        shippingAddress: fullAddress,
         items: mappedItems,
         paymentMode: 'CREDIT_CARD',
-        expectedTotal: this.cartTotal 
+        expectedTotal: this.cartTotal,
       })
       .subscribe({
         next: (response: any) => {
           this.orderService.confirmPayment(response.orderId).subscribe({
             next: () => {
               this.cartService.clearCart();
-              this.toastService.showSuccess('Payment Successful! Order confirmed and sent to logistics.');
+              this.toastService.showSuccess(
+                'Payment Successful! Order confirmed.',
+              );
               this.router.navigate(['/history']);
             },
             error: (err) => {
-              this.toastService.showError('Payment confirmed, but logistics sync failed.');
+              this.toastService.showError(
+                'Payment confirmed, but logistics sync failed.',
+              );
               this.isProcessing = false;
             },
           });
         },
         error: (err) => {
           this.isProcessing = false;
-          
-          // THE FIX: Intercept the specific backend error payload
           const errorMessage = err.error?.message || err.message || '';
-          
-          if (typeof errorMessage === 'string' && errorMessage.includes('CART_MODIFIED')) {
+
+          if (
+            typeof errorMessage === 'string' &&
+            errorMessage.includes('CART_MODIFIED')
+          ) {
             const parts = errorMessage.split(':');
-            
             if (parts.length > 1) {
-              // Extract the dead product IDs and purge them from the local cart
-              const deadIds = parts[1].split(',').map((id: string) => parseInt(id.trim(), 10));
+              const deadIds = parts[1]
+                .split(',')
+                .map((id: string) => parseInt(id.trim(), 10));
               deadIds.forEach((id: number) => {
-                if (!isNaN(id)) {
-                  this.cartService.removeFromCart(id);
-                }
+                if (!isNaN(id)) this.cartService.removeFromCart(id);
               });
             }
-            
-            this.toastService.showError('Oops! An item in your cart is out of stock or no longer available. We have updated your cart.');
+            this.toastService.showError(
+              'Oops! An item is out of stock. Cart updated.',
+            );
             this.router.navigate(['/cart']);
           } else {
-            this.toastService.showError('Failed to process payment. Ensure your backend Microservices are running.');
+            this.toastService.showError('Failed to process payment.');
           }
         },
       });

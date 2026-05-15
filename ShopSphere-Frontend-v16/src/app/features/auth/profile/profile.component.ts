@@ -12,17 +12,17 @@ export class ProfileComponent implements OnInit {
   profileForm!: FormGroup;
   isLoading = true;
   isSaving = false;
-  private apiUrl = 'http://localhost:9090/api/auth/profile'; // adjust if needed
+  private apiUrl = 'http://localhost:9090/api/auth/profile'; 
 
   constructor(private fb: FormBuilder, private http: HttpClient, private toast: ToastService) {}
 
   ngOnInit(): void {
     this.profileForm = this.fb.group({
       name: ['', Validators.required],
-      email: [{value: '', disabled: true}], // Cannot change email
+      username: [{value: '', disabled: true}], // FIXED: Added separate username field (Locked)
+      email: [{value: '', disabled: true}],    // FIXED: email stays Locked
       address: [''],
       gender: [''],
-      // ADDED: Optional password field for updating
       password: [''] 
     });
     this.loadProfile();
@@ -37,10 +37,10 @@ export class ProfileComponent implements OnInit {
       next: (user) => {
         this.profileForm.patchValue({
           name: user.name,
+          username: user.username, // FIXED: Now mapping the separate username field
           email: user.email,
           address: user.address,
           gender: user.gender
-          // Note: We purposely do NOT patch the password here! It stays blank.
         });
         this.isLoading = false;
       },
@@ -54,12 +54,8 @@ export class ProfileComponent implements OnInit {
   saveProfile() {
     if (this.profileForm.valid) {
       this.isSaving = true;
-      
-      // 1. Extract the raw values from the form
       const payload = this.profileForm.getRawValue();
 
-      // 2. THE FIX: If the password field is empty, delete it from the payload
-      // so the backend completely ignores it and keeps the old password safe.
       if (!payload.password || payload.password.trim() === '') {
         delete payload.password;
       }
@@ -68,8 +64,6 @@ export class ProfileComponent implements OnInit {
         next: () => {
           this.toast.showSuccess('Profile updated successfully!');
           this.isSaving = false;
-          
-          // Clear the password field after a successful save
           this.profileForm.get('password')?.setValue('');
         },
         error: () => {
