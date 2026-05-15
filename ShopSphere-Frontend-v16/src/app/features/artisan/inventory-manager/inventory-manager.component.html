@@ -6,7 +6,7 @@
 
   <div *ngIf="isLoading" class="loading-state">
     <div class="spinner"></div>
-    <p>Loading inventory...</p>
+    <p>Syncing with Global Catalog...</p>
   </div>
 
   <div *ngIf="!isLoading && inventoryList.length === 0" class="info-banner success">
@@ -14,14 +14,15 @@
     <p>You haven't listed any products yet. Head to the dashboard to create your first listing!</p>
   </div>
 
-  <div class="table-container" *ngIf="inventoryList.length > 0">
+  <div class="table-container" *ngIf="!isLoading && inventoryList.length > 0">
     <table class="modern-table">
       <thead>
         <tr>
-          <th>Product Image</th>
-          <th>Product Name</th>
-          <th>Base Price</th>
+          <th>Preview</th>
+          <th>Product Details</th>
+          <th>Price</th>
           <th>Current Stock</th>
+          <th>Lead Time</th>
           <th>Status</th>
           <th>Action</th>
         </tr>
@@ -29,14 +30,26 @@
       <tbody>
         <tr *ngFor="let item of inventoryList">
           <td>
-            <img [src]="item.previewImage || 'https://via.placeholder.com/50'" alt="Product" style="width: 50px; height: 50px; border-radius: 6px; object-fit: cover;">
+            <img [src]="item.previewImage || 'assets/images/placeholder-product.png'" 
+                 alt="Product" 
+                 style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 1px solid #e2e8f0; display: block;">
           </td>
-          <td><strong>{{ item.name }}</strong><br><span style="font-size: 0.85rem; color: #718096;">ID: {{ item.productId }}</span></td>
-          <td>₹{{ item.basePrice | number:'1.2-2' }}</td>
           <td>
-            <span [style.color]="item.stockLevel < item.reorderThreshold ? '#e53e3e' : '#2d3748'" style="font-weight: bold;">
+            <div style="font-weight: 700; color: #1a202c; margin-bottom: 2px;">{{ item.name || 'Loading Name...' }}</div>
+            <div style="font-size: 0.75rem; color: #a0aec0; font-family: monospace;">SKU: {{ item.productId }}</div>
+          </td>
+          <td style="font-weight: 600; color: #2d3748;">
+            {{ item.basePrice ? '₹' + (item.basePrice | number:'1.2-2') : '---' }}
+          </td>
+          <td>
+            <div [style.color]="item.stockLevel <= item.reorderThreshold ? '#e53e3e' : '#2d3748'" style="font-weight: 700;">
               {{ item.stockLevel }} units
-            </span>
+            </div>
+            <div *ngIf="item.stockLevel <= item.reorderThreshold" 
+                 style="font-size: 10px; color: #e53e3e; font-weight: 800; letter-spacing: 0.5px;">LOW STOCK ALERT</div>
+          </td>
+          <td style="color: #718096; font-size: 0.9rem;">
+            {{ item.supplierLeadTimeDays || 7 }} Days
           </td>
           <td>
             <span class="status-badge" [ngClass]="item.stockLevel > 0 ? 'shipped' : 'pending'">
@@ -44,7 +57,7 @@
             </span>
           </td>
           <td class="action-cell">
-            <button class="btn-small">Edit</button>
+            <button class="btn-small" (click)="editProduct(item.productId)">Edit</button>
           </td>
         </tr>
       </tbody>

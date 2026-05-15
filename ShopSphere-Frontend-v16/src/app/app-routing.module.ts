@@ -40,7 +40,7 @@ const routes: Routes = [
   { path: 'catalog', component: CatalogComponent },
   { path: 'product/:id', component: ProductDetailsComponent },
 
-  // Auth (Public)
+  // Auth (Public & Protected)
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
@@ -65,6 +65,13 @@ const routes: Routes = [
   },
   {
     path: 'artisan/product/new',
+    component: ProductFormComponent,
+    canActivate: [RoleGuard],
+    data: { expectedRole: 'ROLE_ARTISAN' },
+  },
+  // FIX: Added the Edit route so the Inventory Manager "Edit" button actually works
+  {
+    path: 'artisan/product/edit/:id',
     component: ProductFormComponent,
     canActivate: [RoleGuard],
     data: { expectedRole: 'ROLE_ARTISAN' },

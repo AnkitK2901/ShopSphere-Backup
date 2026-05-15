@@ -28,7 +28,9 @@
 
         <ng-container *ngIf="isLoggedIn$ | async">
           <a routerLink="/profile" (click)="closeDropdown()">My Profile</a>
-          <a *ngIf="userRole === 'ROLE_CUSTOMER' || userRole === 'ROLE_ARTISAN'" routerLink="/history" (click)="closeDropdown()">My Orders</a>
+          
+          <a *ngIf="userRole === 'ROLE_CUSTOMER'" routerLink="/history" (click)="closeDropdown()">My Orders</a>
+          
           <a *ngIf="userRole === 'ROLE_ARTISAN'" routerLink="/artisan/dashboard" (click)="closeDropdown()">Artisan Dashboard</a>
           <a *ngIf="userRole === 'ROLE_LOGISTICS'" routerLink="/logistics/queue" (click)="closeDropdown()">Logistics Dashboard</a>
           <a *ngIf="userRole === 'ROLE_ADMIN'" routerLink="/admin/dashboard" (click)="closeDropdown()">Analytics Dashboard</a>

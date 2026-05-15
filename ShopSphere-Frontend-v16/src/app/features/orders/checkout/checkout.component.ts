@@ -22,7 +22,7 @@ export class CheckoutComponent implements OnInit {
     private orderService: OrderService,
     private router: Router,
     private toastService: ToastService,
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.cartService.cartItems$.subscribe((items) => {
@@ -35,18 +35,22 @@ export class CheckoutComponent implements OnInit {
     }
 
     this.checkoutForm = this.fb.group({
-      fullName: ['', Validators.required],
-      shippingAddress: ['', Validators.required],
-      city: ['', Validators.required],
-      // FIXED: Enforced numeric Zip (5-6 digits)
+      // FIXED: Strictly Alphabetical check for Name
+      fullName: [
+        '',
+        [Validators.required, Validators.pattern(/^[a-zA-Z\s]{3,50}$/)],
+      ],
+      shippingAddress: ['', [Validators.required, Validators.minLength(5)]],
+      // FIXED: Strictly Alphabetical check for City
+      city: [
+        '',
+        [Validators.required, Validators.pattern(/^[a-zA-Z\s]{2,50}$/)],
+      ],
       zipCode: ['', [Validators.required, Validators.pattern('^[0-9]{5,6}$')]],
-      // FIXED: Enforced strict 16-digit card number
       cardNumber: [
         '',
         [Validators.required, Validators.pattern('^[0-9]{16}$')],
       ],
-      // FIXED: Enforced MM/YY pattern
-      // Replace your current expiry line with this:
       expiry: [
         '',
         [
@@ -54,7 +58,6 @@ export class CheckoutComponent implements OnInit {
           Validators.pattern(/^(0[1-9]|1[0-2])\/?([0-9]{2})$/),
         ],
       ],
-      // FIXED: Enforced strict 3-digit CVV
       cvv: ['', [Validators.required, Validators.pattern('^[0-9]{3}$')]],
     });
   }
@@ -63,7 +66,7 @@ export class CheckoutComponent implements OnInit {
     if (this.checkoutForm.invalid) {
       this.checkoutForm.markAllAsTouched();
       this.toastService.showError(
-        'Please complete all required fields (highlighted in red) correctly.',
+        'Invalid input. Names and Cities cannot contain numbers, and all fields must be valid.',
       );
       return;
     }
@@ -77,7 +80,6 @@ export class CheckoutComponent implements OnInit {
       } else {
         optionString = 'None';
       }
-
       return {
         productId: String(item.productId || item.id),
         quantity: item.quantity || 1,
@@ -116,7 +118,6 @@ export class CheckoutComponent implements OnInit {
         error: (err) => {
           this.isProcessing = false;
           const errorMessage = err.error?.message || err.message || '';
-
           if (
             typeof errorMessage === 'string' &&
             errorMessage.includes('CART_MODIFIED')

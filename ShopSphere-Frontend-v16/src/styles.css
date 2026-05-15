@@ -30,12 +30,13 @@ button {
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
 }
 
 button:hover:not(:disabled) {
   background-color: #004494; /* Darker blue on hover */
-  transform: translateY(-2px);
+  opacity: 0.9;
+  /* REMOVED: transform: translateY(-2px) to stop ghosting artifacts */
 }
 
 button:disabled {
@@ -47,7 +48,7 @@ button:disabled {
 
 /* 🛡️ ENTERPRISE VALIDATION CSS - GLOBAL */
 .is-invalid {
-  border-color: #e53e3e !important;
+  border: 2px solid #e53e3e !important;
   background-color: #fff5f5 !important;
 }
 

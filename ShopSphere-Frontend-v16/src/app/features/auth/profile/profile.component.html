@@ -2,37 +2,33 @@
   <div class="profile-card">
     <h2>My Account Hub</h2>
     <p>Manage your personal details and default shipping address.</p>
-
+    
     <div *ngIf="isLoading" style="text-align: center; padding: 40px; color: #718096;">
       Loading your details...
     </div>
 
     <form *ngIf="!isLoading" [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="modern-form">
+      
+      <div class="form-row">
+        <div class="form-group half">
+          <label>Username</label>
+          <input type="text" formControlName="username" [readOnly]="true" class="locked-field">
+        </div>
+        <div class="form-group half">
+          <label>Email Address</label>
+          <input type="email" formControlName="email" [readOnly]="true" class="locked-field">
+        </div>
+      </div>
 
       <div class="form-row">
         <div class="form-group half">
           <label>Full Name</label>
           <input type="text" formControlName="name" placeholder="John Doe"
-            [ngClass]="{'is-invalid': profileForm.get('name')?.invalid && profileForm.get('name')?.touched}">
+                 [ngClass]="{'is-invalid': profileForm.get('name')?.invalid && profileForm.get('name')?.touched}">
           <small class="error-text" *ngIf="profileForm.get('name')?.invalid && profileForm.get('name')?.touched">
             Name is required.
           </small>
         </div>
-        <div class="form-group half">
-          <label>Username (Unique ID)</label>
-          <input type="text" formControlName="username" [readOnly]="true"
-            style="background-color: #edf2f7; color: #a0aec0; cursor: not-allowed;">
-          <small style="color: #718096;">Usernames are permanent and cannot be changed.</small>
-        </div>
-        <div class="form-group half">
-          <label>Email (Username)</label>
-          <input type="email" formControlName="email" [readOnly]="true"
-            style="background-color: #edf2f7; color: #a0aec0; cursor: not-allowed;"
-            title="Your username/email cannot be changed">
-        </div>
-      </div>
-
-      <div class="form-row">
         <div class="form-group half">
           <label>Gender</label>
           <select formControlName="gender">
@@ -41,17 +37,19 @@
             <option value="FEMALE">Female</option>
           </select>
         </div>
-        <div class="form-group half">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group full-width">
           <label>Default Shipping Address</label>
-          <input type="text" formControlName="address" placeholder="123 Artisan Lane, NY">
+          <input type="text" formControlName="address" placeholder="e.g. 123 Artisan Lane, NY">
         </div>
       </div>
 
       <div class="form-row">
-        <div class="form-group" style="width: 100%;">
+        <div class="form-group full-width">
           <label>Update Password</label>
-          <input type="password" formControlName="password"
-            placeholder="Leave blank to keep your current password safe">
+          <input type="password" formControlName="password" placeholder="Leave blank to keep current password">
         </div>
       </div>
 

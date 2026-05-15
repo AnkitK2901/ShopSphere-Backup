@@ -1,57 +1,117 @@
-.inventory-container {
-  padding: 40px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+.dashboard-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
 }
 
-.header {
-  margin-bottom: 30px;
-  color: #333;
+.dashboard-header {
+    margin-bottom: 30px;
 }
 
-.inventory-table {
-  width: 100%;
-  border-collapse: collapse;
-  background-color: white;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  overflow: hidden;
+.dashboard-header h1 {
+    font-size: 2.2rem;
+    color: #2d3748;
+    margin-bottom: 5px;
 }
 
-.inventory-table th,
-.inventory-table td {
-  padding: 15px 20px;
-  text-align: left;
-  border-bottom: 1px solid #eaeaea;
+.dashboard-header p {
+    color: #718096;
+    font-size: 1.1rem;
 }
 
-.inventory-table th {
-  background-color: #f8f9fa;
-  color: #555;
-  font-weight: 600;
+.table-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
 }
 
-.inventory-table tr:hover {
-  background-color: #fcfcfc;
+.modern-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
 }
 
-.badge {
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: 600;
+.modern-table th {
+    background: #f8fafc;
+    color: #4a5568;
+    font-weight: 600;
+    padding: 18px 20px;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid #e2e8f0;
 }
 
-.in-stock {
-  background-color: #d4edda;
-  color: #155724;
+.modern-table td {
+    padding: 20px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+    color: #2d3748;
 }
 
-.low-stock {
-  background-color: #fff3cd;
-  color: #856404;
+.modern-table tr:last-child td {
+    border-bottom: none;
 }
 
-.out-stock {
-  background-color: #f8d7da;
-  color: #721c24;
+.modern-table tr:hover {
+    background-color: #f8fafc;
+}
+
+/* Status Badges aligned with global theme */
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    display: inline-block;
+}
+
+.status-badge.shipped { /* Using your 'shipped' class for 'In Stock' */
+    background-color: #f0fff4;
+    color: #2f855a;
+}
+
+.status-badge.pending { /* Using your 'pending' class for 'Out of Stock' */
+    background-color: #fff5f5;
+    color: #c53030;
+}
+
+.action-cell .btn-small {
+    padding: 8px 16px;
+    background-color: white;
+    color: #3182ce;
+    border: 1px solid #3182ce;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.action-cell .btn-small:hover {
+    background-color: #3182ce;
+    color: white;
+}
+
+.loading-state {
+    text-align: center;
+    padding: 100px;
+    color: #718096;
+}
+
+/* Reusing your spinner from other pages */
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3182ce;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
