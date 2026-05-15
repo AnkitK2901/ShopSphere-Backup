@@ -1,16 +1,109 @@
-.navbar { display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background-color: #ffffff; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 1000; }
-.nav-brand a { font-size: 1.5rem; font-weight: bold; color: #2d3748; text-decoration: none; }
-.nav-links { display: flex; align-items: center; gap: 20px; }
-.cart-wrapper { position: relative; display: flex; align-items: center; }
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background-color: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
 
-/* Icon adjustments */
-.icon-btn { background: none; border: none; cursor: pointer; padding: 5px; color: #4a5568; display: flex; align-items: center; justify-content: center; transition: color 0.2s; }
-.icon-btn:hover { color: #3182ce; }
-.badge { position: absolute; top: -5px; right: -8px; background-color: #e53e3e; color: white; font-size: 0.75rem; font-weight: bold; padding: 2px 6px; border-radius: 10px; border: 2px solid white; }
+.nav-brand a {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #2d3748;
+    text-decoration: none;
+}
 
-.profile-menu { position: relative; }
-.dropdown-menu { position: absolute; top: 120%; right: 0; background-color: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0; min-width: 200px; display: flex; flex-direction: column; margin-top: 5px; overflow: hidden; }
-.dropdown-menu a { padding: 12px 15px; font-size: 0.95rem; color: #4a5568; text-decoration: none; border-bottom: 1px solid #edf2f7; transition: background 0.2s; }
-.dropdown-menu a:last-child { border-bottom: none; }
-.dropdown-menu a:hover { background-color: #f7fafc; color: #2b6cb0; }
-.dropdown-menu hr { margin: 0; border: none; border-bottom: 1px solid #e2e8f0; }
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.cart-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* Update the existing .icon-btn class */
+.icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    /* Slightly increased padding for a better click target */
+    color: #4a5568;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    /* Animate all properties, including background */
+    border-radius: 50%;
+    /* THE FIX: Ensures hover effects are perfectly circular */
+}
+
+.icon-btn:hover {
+    color: #3182ce;
+    background-color: #ebf8ff;
+    /* Soft blue background on hover */
+}
+
+.badge {
+    position: absolute;
+    top: -5px;
+    right: -8px;
+    background-color: #e53e3e;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 10px;
+    border: 2px solid white;
+}
+
+.profile-menu {
+    position: relative;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 120%;
+    right: 0;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    margin-top: 5px;
+    overflow: hidden;
+}
+
+.dropdown-menu a {
+    padding: 12px 15px;
+    font-size: 0.95rem;
+    color: #4a5568;
+    text-decoration: none;
+    border-bottom: 1px solid #edf2f7;
+    transition: background 0.2s;
+}
+
+.dropdown-menu a:last-child {
+    border-bottom: none;
+}
+
+.dropdown-menu a:hover {
+    background-color: #f7fafc;
+    color: #2b6cb0;
+}
+
+.dropdown-menu hr {
+    margin: 0;
+    border: none;
+    border-bottom: 1px solid #e2e8f0;
+}

@@ -16,26 +16,42 @@
 
       <div class="form-row">
         <div class="form-group full-width">
-          <label>Product Name</label>
-          <input type="text" formControlName="name" placeholder="e.g., Hand-Thrown Ceramic Vase" />
+          <label>Product Name *</label>
+          <input type="text" formControlName="name" placeholder="e.g., Hand-Thrown Ceramic Vase" 
+                 [ngClass]="{'is-invalid': productForm.get('name')?.invalid && productForm.get('name')?.touched}"/>
+          <small class="error-text" *ngIf="productForm.get('name')?.invalid && productForm.get('name')?.touched">
+            Product name is required.
+          </small>
         </div>
       </div>
 
       <div class="form-row">
         <div class="form-group full-width">
-          <label>Description</label>
-          <textarea formControlName="description" rows="3" placeholder="Describe the product..."></textarea>
+          <label>Description *</label>
+          <textarea formControlName="description" rows="3" placeholder="Describe the product..."
+                    [ngClass]="{'is-invalid': productForm.get('description')?.invalid && productForm.get('description')?.touched}"></textarea>
+          <small class="error-text" *ngIf="productForm.get('description')?.invalid && productForm.get('description')?.touched">
+            Description is required.
+          </small>
         </div>
       </div>
 
       <div class="form-row">
         <div class="form-group">
-          <label>Base Price ($)</label>
-          <input type="number" formControlName="price" placeholder="0.00" />
+          <label>Base Price (₹) *</label>
+          <input type="number" formControlName="price" placeholder="0.00" 
+                 [ngClass]="{'is-invalid': productForm.get('price')?.invalid && productForm.get('price')?.touched}"/>
+          <small class="error-text" *ngIf="productForm.get('price')?.invalid && productForm.get('price')?.touched">
+            Valid price is required.
+          </small>
         </div>
         <div class="form-group">
-          <label>Initial Stock Level</label>
-          <input type="number" formControlName="stockLevel" placeholder="100" />
+          <label>Initial Stock Level *</label>
+          <input type="number" formControlName="stockLevel" placeholder="100" 
+                 [ngClass]="{'is-invalid': productForm.get('stockLevel')?.invalid && productForm.get('stockLevel')?.touched}"/>
+          <small class="error-text" *ngIf="productForm.get('stockLevel')?.invalid && productForm.get('stockLevel')?.touched">
+            Valid stock level is required.
+          </small>
         </div>
       </div>
 
@@ -67,9 +83,11 @@
           <label>Supplier Lead Time (Days)</label>
           <input type="number" formControlName="supplierLeadTimeDays" placeholder="7" />
         </div>
+        
         <div class="form-group">
-          <label>Preview Image URL</label>
+          <label>Product Image (Direct URL)</label>
           <input type="text" formControlName="previewImageUrl" placeholder="https://unsplash.com/..." />
+          <small style="color: #718096; margin-top: 4px; display: block;">Paste a direct link to the image. File uploads coming soon.</small>
         </div>
       </div>
 

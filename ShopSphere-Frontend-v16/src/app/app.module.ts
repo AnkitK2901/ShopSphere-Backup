@@ -11,7 +11,6 @@ import { InventoryManagerComponent } from './features/artisan/inventory-manager/
 import { ProductFormComponent } from './features/artisan/product-form/product-form.component';
 import { DashboardComponent as AnalyticsDashboard } from './features/analytics/dashboard/dashboard.component';
 import { CustomerInsightsComponent } from './features/analytics/customer-insights/customer-insights.component';
-import { RevenueReportComponent } from './features/analytics/revenue-report/revenue-report.component';
 
 import { AuthInterceptor } from './core/interceptors/auth.interceptor';
 import { LoginComponent } from './features/auth/login/login.component';
@@ -38,7 +37,6 @@ import { ProfileComponent } from './features/auth/profile/profile.component';
     ProductFormComponent,
     AnalyticsDashboard,
     CustomerInsightsComponent,
-    RevenueReportComponent,
     LoginComponent,
     RegisterComponent,
     HomeComponent,

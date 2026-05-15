@@ -14,7 +14,7 @@ body {
 }
 
 /* Basic inputs and dropdowns to save time on other pages */
-input, select {
+input, select, textarea {
   padding: 8px;
   border: 1px solid #cccccc;
   border-radius: 4px;
@@ -30,14 +30,30 @@ button {
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-button:hover {
+button:hover:not(:disabled) {
   background-color: #004494; /* Darker blue on hover */
+  transform: translateY(-2px);
 }
 
 button:disabled {
   background-color: #cccccc;
   color: #666666;
   cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* 🛡️ ENTERPRISE VALIDATION CSS - GLOBAL */
+.is-invalid {
+  border-color: #e53e3e !important;
+  background-color: #fff5f5 !important;
+}
+
+.error-text {
+  color: #e53e3e;
+  font-size: 0.85rem;
+  margin-top: 6px;
+  display: block;
 }

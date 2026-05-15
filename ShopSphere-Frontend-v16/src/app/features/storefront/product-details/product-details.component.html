@@ -1,10 +1,11 @@
 <div class="container" *ngIf="!isLoading && product">
-  
+
   <div *ngIf="errorMessage" class="error-state">{{ errorMessage }}</div>
 
   <div class="product-details-grid">
     <div class="image-section">
-      <img [src]="product.previewImage || 'https://via.placeholder.com/500?text=No+Image+Available'" [alt]="product.name" class="main-image" />
+      <img [src]="product.previewImage || 'https://via.placeholder.com/500?text=No+Image+Available'"
+        [alt]="product.name" class="main-image" />
     </div>
 
     <div class="info-section">
@@ -15,10 +16,7 @@
       <div class="options-section" *ngIf="customOptions.length > 0">
         <h3>Select an Option:</h3>
         <div class="options-grid">
-          <button 
-            *ngFor="let opt of customOptions" 
-            class="option-box"
-            [class.selected-option]="selectedOption === opt"
+          <button *ngFor="let opt of customOptions" class="option-box" [class.selected-option]="selectedOption === opt"
             (click)="onOptionSelect(opt)">
             <span class="opt-type">{{ opt.type }}</span>
             <span class="opt-value">{{ opt.value }}</span>
@@ -33,7 +31,9 @@
           <span>{{ selectedQuantity }}</span>
           <button (click)="increaseQuantity()">+</button>
         </div>
-        <button class="btn-primary add-cart-btn" (click)="addToCart()">Add to Cart</button>
+        <button class="btn-primary add-cart-btn" [disabled]="product.stockLevel === 0" (click)="addToCart()">
+          {{ product.stockLevel === 0 ? 'Out of Stock' : 'Add to Cart' }}
+        </button>
       </div>
     </div>
   </div>

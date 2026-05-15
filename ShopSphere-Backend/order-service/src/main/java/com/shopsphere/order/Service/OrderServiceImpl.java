@@ -27,7 +27,7 @@ public class OrderServiceImpl implements OrderService {
     @Autowired private LogisticsClient logisticsClient;
     @Autowired private OrderRepository orderRepository;
     @Autowired private InventoryClient inventoryClient;
-    @Autowired private AnalyticsClient analyticsClient;
+    // THE FIX: AnalyticsClient removed completely to comply with LLD.
     @Autowired private CartRepository cartRepository;
 
     @Override
@@ -132,7 +132,7 @@ public class OrderServiceImpl implements OrderService {
             OrderEntity savedOrder = orderRepository.save(order);
 
             try { logisticsClient.createShipment(orderId); } catch (Exception e) {}
-            try { analyticsClient.logRevenueEvent(savedOrder.getTotalAmount()); } catch (Exception e) {}
+            // THE FIX: logRevenueEvent removed
 
             return mapToResponse(savedOrder);
         } catch (Exception e) {
@@ -164,10 +164,9 @@ public class OrderServiceImpl implements OrderService {
             for (OrderItemEntity item : order.getItems()) {
                 try { inventoryClient.refundStock(new StockRequest(item.getProductId(), item.getQuantity())); } catch (Exception e) {}
             }
-            try { analyticsClient.logRevenueEvent(-order.getTotalAmount()); } catch (Exception e) {}
+            // THE FIX: logRevenueEvent removed
         }
 
-        // THE FIX: Use PUT to sync status securely!
         try { logisticsClient.updateShipmentStatus(orderId, "CANCELLED", "ROLE_ADMIN"); } catch (Exception e) { System.err.println("WARNING: Failed to sync CANCELLED status."); }
 
         order.setStatus(OrderStatus.CANCELLED);
@@ -185,10 +184,9 @@ public class OrderServiceImpl implements OrderService {
             for (OrderItemEntity item : order.getItems()) {
                 try { inventoryClient.refundStock(new StockRequest(item.getProductId(), item.getQuantity())); } catch (Exception e) {}
             }
-            try { analyticsClient.logRevenueEvent(-order.getTotalAmount()); } catch (Exception e) {}
+            // THE FIX: logRevenueEvent removed
         }
 
-        // THE FIX: Use PUT to sync status securely!
         try { logisticsClient.updateShipmentStatus(orderId, "CANCELLED", "ROLE_ADMIN"); } catch (Exception e) { System.err.println("WARNING: Failed to sync CANCELLED status."); }
 
         order.setStatus(OrderStatus.CANCELLED);

@@ -34,6 +34,9 @@
               <label>City *</label>
               <input type="text" formControlName="city" placeholder="New York"
                      [ngClass]="{'is-invalid': checkoutForm.get('city')?.invalid && checkoutForm.get('city')?.touched}">
+              <small class="error-text" *ngIf="checkoutForm.get('city')?.invalid && checkoutForm.get('city')?.touched">
+                City is required.
+              </small>
             </div>
             <div class="input-group half">
               <label>Zip/Postal Code *</label>
@@ -63,6 +66,9 @@
               <label>Expiry Date *</label>
               <input type="text" formControlName="expiry" placeholder="MM/YY"
                      [ngClass]="{'is-invalid': checkoutForm.get('expiry')?.invalid && checkoutForm.get('expiry')?.touched}">
+              <small class="error-text" *ngIf="checkoutForm.get('expiry')?.invalid && checkoutForm.get('expiry')?.touched">
+                Must be MM/YY format.
+              </small>
             </div>
             <div class="input-group half">
               <label>CVV *</label>
@@ -75,7 +81,7 @@
           </div>
         </div>
 
-        <button type="submit" class="place-order-btn" [disabled]="isProcessing">
+        <button type="submit" class="place-order-btn" [disabled]="isProcessing || checkoutForm.invalid">
           {{ isProcessing ? 'Processing Payment...' : 'Place Order' }}
         </button>
 

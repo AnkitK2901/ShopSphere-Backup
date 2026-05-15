@@ -29,7 +29,6 @@ import { MonitorComponent } from './features/logistics/monitor/monitor.component
 
 // Analytics Components
 import { DashboardComponent as AdminDashboard } from './features/analytics/dashboard/dashboard.component';
-import { RevenueReportComponent } from './features/analytics/revenue-report/revenue-report.component';
 import { CustomerInsightsComponent } from './features/analytics/customer-insights/customer-insights.component';
 
 import { AuthGuard } from './core/guards/auth.guard';
@@ -101,12 +100,6 @@ const routes: Routes = [
   {
     path: 'admin/dashboard',
     component: AdminDashboard,
-    canActivate: [RoleGuard],
-    data: { expectedRole: 'ROLE_ADMIN' },
-  },
-  {
-    path: 'admin/revenue',
-    component: RevenueReportComponent,
     canActivate: [RoleGuard],
     data: { expectedRole: 'ROLE_ADMIN' },
   },
